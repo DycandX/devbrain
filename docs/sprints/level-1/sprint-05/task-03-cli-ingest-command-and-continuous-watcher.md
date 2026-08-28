@@ -3,7 +3,7 @@
 | Attribute | Detail |
 | :--- | :--- |
 | **Sprint** | Level 1 / Sprint 05 (Ingestion & Vault Seeding) |
-| **Status** | ⏳ Todo |
+| **Status** | ✅ Done |
 | **Target Files** | `src/devbrain/cli/commands/ingest_cmd.py`, `src/devbrain/harvester/service.py` |
 
 ---

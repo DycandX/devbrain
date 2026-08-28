@@ -3,7 +3,7 @@
 | Attribute | Detail |
 | :--- | :--- |
 | **Sprint** | Level 1 / Sprint 05 (Ingestion & Vault Seeding) |
-| **Status** | ⏳ Todo |
+| **Status** | ✅ Done |
 | **Target Files** | `src/devbrain/harvester/extractor.py`, `src/devbrain/harvester/formatter.py` |
 
 ---

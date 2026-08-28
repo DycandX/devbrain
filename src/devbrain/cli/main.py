@@ -6,6 +6,7 @@ import typer
 
 from devbrain import __version__
 from devbrain.cli.commands.index_cmd import index_command
+from devbrain.cli.commands.ingest_cmd import ingest_command
 from devbrain.cli.commands.init_cmd import init_command
 from devbrain.cli.commands.search_cmd import search_command
 from devbrain.cli.commands.serve_cmd import serve_command
@@ -41,6 +42,16 @@ app.command(
     name="index",
     help="Index or re-index Obsidian Markdown files into FastEmbed & BM25 local stores.",
 )(index_command)
+
+app.command(
+    name="ingest",
+    help="Harvest and seed external AI Agent sessions into Obsidian 90_Agent_Inbox/.",
+)(ingest_command)
+
+app.command(
+    name="pull",
+    help="Alias for 'ingest' — pull AI sessions from Antigravity/Claude into vault.",
+)(ingest_command)
 
 app.command(
     name="serve",

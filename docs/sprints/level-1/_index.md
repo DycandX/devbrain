@@ -47,7 +47,7 @@ Dokumen ini memetakan seluruh Sprint dan Task yang harus diselesaikan untuk mera
 ### 🚜 [Sprint 05: Automated Session Ingestion & Initial Vault Seeding](./sprint-05/)
 | Task | Deskripsi | Target File | Status |
 | :--- | :--- | :--- | :--- |
-| 📄 [Task 01](./sprint-05/task-01-agent-storage-discovery-and-secret-sanitizer.md) | Multi-Agent Storage Discovery & Secret Sanitizer | `src/devbrain/harvester/discovery.py`, `sanitizer.py` | ⏳ Todo |
-| 📄 [Task 02](./sprint-05/task-02-session-artifact-extractor-and-formatter.md) | Session Artifact Extractor & Markdown Formatter | `src/devbrain/harvester/extractor.py`, `formatter.py` | ⏳ Todo |
-| 📄 [Task 03](./sprint-05/task-03-cli-ingest-command-and-continuous-watcher.md) | CLI `devbrain ingest` & Continuous Service | `src/devbrain/cli/commands/ingest_cmd.py`, `service.py` | ⏳ Todo |
-| 📄 [Task 04](./sprint-05/task-04-integration-testing-and-benchmarking.md) | Automated Tests & Documentation | `tests/test_ingestion.py`, `docs/changelog/` | ⏳ Todo |
+| 📄 [Task 01](./sprint-05/task-01-agent-storage-discovery-and-secret-sanitizer.md) | Multi-Agent Storage Discovery & Secret Sanitizer | `src/devbrain/harvester/discovery.py`, `sanitizer.py` | ✅ Done |
+| 📄 [Task 02](./sprint-05/task-02-session-artifact-extractor-and-formatter.md) | Session Artifact Extractor & Markdown Formatter | `src/devbrain/harvester/extractor.py`, `formatter.py` | ✅ Done |
+| 📄 [Task 03](./sprint-05/task-03-cli-ingest-command-and-continuous-watcher.md) | CLI `devbrain ingest` & Continuous Service | `src/devbrain/cli/commands/ingest_cmd.py`, `service.py` | ✅ Done |
+| 📄 [Task 04](./sprint-05/task-04-integration-testing-and-benchmarking.md) | Automated Tests & Documentation | `tests/test_ingestion.py`, `docs/changelog/` | ✅ Done |

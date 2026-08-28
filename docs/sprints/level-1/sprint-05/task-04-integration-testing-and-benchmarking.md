@@ -3,7 +3,7 @@
 | Attribute | Detail |
 | :--- | :--- |
 | **Sprint** | Level 1 / Sprint 05 (Ingestion & Vault Seeding) |
-| **Status** | ⏳ Todo |
+| **Status** | ✅ Done |
 | **Target Files** | `tests/test_ingestion.py`, `docs/changelog/v1.1.0-alpha.md`, `README.md` |
 
 ---

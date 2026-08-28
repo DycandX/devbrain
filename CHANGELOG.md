@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.1.0-alpha] - 2026-08-29
+
+### 🚀 Added
+- **Multi-Agent Storage Discovery Engine:** Dynamic detection of session directories for Google Antigravity IDE, Claude Code, Cline, and Aider.
+- **Secret Redaction Regex Sanitizer:** Automated credential scrubbing for OpenAI, Anthropic, Google, and GitHub API keys, Bearer headers, and passwords into safe `[REDACTED_SECRET]` placeholders.
+- **Session Artifact Extractor & Formatter:** Formats walkthroughs, plans, and transcripts into Obsidian notes with standardized YAML frontmatter.
+- **CLI Commands:** Added `devbrain ingest [--from <agent>] [--dry-run] [--watch]` and alias `devbrain pull` with deduplication registry (`.brain_data/ingested_sessions.json`).
+- **Automated Tests:** 27 passing unit, integration, and E2E tests in <14s.
+
+For complete release details, see [docs/changelog/v1.1.0-alpha.md](docs/changelog/v1.1.0-alpha.md).
+
+---
+
 ## [1.0.0-alpha] - 2026-08-29
 
 ### 🚀 Milestone: Level 1 Standalone Local Zero-Friction Core Complete
@@ -22,14 +35,10 @@ For complete release details, see [docs/changelog/v1.0.0-alpha.md](docs/changelo
 
 ### 🚀 Added
 - **FastMCP Protocol Server:** Integrated MCP 2.x SDK with stdio transport and background incremental indexer.
-- **4 Core AI Memory Tools:**
-  - `search_brain`: Semantic + keyword hybrid query across notes.
-  - `get_project_context`: Direct retrieval of active project architecture & roadmap notes from `10_Projects/`.
-  - `write_agent_log`: Append-only session notes in `90_Agent_Inbox/` with immutable UUID partition tags.
-  - `load_skill`: Just-in-time loading of agent workflows from `00_System/Agent_Skills/`.
+- **4 Core AI Memory Tools:** `search_brain`, `get_project_context`, `write_agent_log`, `load_skill`.
 - **AI Client Auto-Configurator:** Zero-friction registration for Antigravity IDE (`mcp_config.json`) and Claude Code (`~/.claude.json`).
 - **Agent Skill Commands:** Added `devbrain skill list`, `devbrain skill add <name>`, and `devbrain skill symlink`.
-- **Clean Uninstallation:** Added `devbrain uninstall [--purge]` to safely remove MCP registrations without affecting Markdown notes.
+- **Clean Uninstallation:** Added `devbrain uninstall [--purge]`.
 
 For complete release details, see [docs/changelog/v0.3.0-alpha.md](docs/changelog/v0.3.0-alpha.md).
 
