@@ -179,10 +179,20 @@ tags: [index, inbox, agent-logs]
 # 📥 Agent Inbox & Daily Logs
 
 Drop zone for automated session notes and logs authored by AI Agents:
-- `antigravity/`: Sessions extracted from Antigravity IDE
+- `antigravity-ide/`: Sessions extracted from Google Antigravity IDE
+- `antigravity-cli/`: Sessions extracted from Antigravity CLI (`agy`)
 - `claude-code/`: Transcripts and solutions from Claude Code
-- `hermes/`: Autonomous task logs from Hermes Agent
+- `cline/`: Tasks and logs from Cline / Roo Code
 - `manual_review/`: Notes requiring human validation
+
+## ⚡ Live Recent Ingestions:
+```dataview
+TABLE source, device, created, tags
+FROM "90_Agent_Inbox"
+WHERE file.name != "_Inbox_Index"
+SORT created DESC
+LIMIT 20
+```
 """
 
 DAILY_INDEX_TEMPLATE = """---

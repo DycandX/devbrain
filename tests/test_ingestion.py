@@ -1,5 +1,6 @@
 """Unit and integration tests for Session Ingestion and Secret Sanitizer."""
 
+import json
 from pathlib import Path
 from typer.testing import CliRunner
 
@@ -9,6 +10,7 @@ from devbrain.core.constants import DIR_INBOX
 from devbrain.core.scaffolder import scaffold_vault
 from devbrain.harvester.discovery import discover_sessions
 from devbrain.harvester.extractor import extract_session_payload
+from devbrain.harvester.formatter import format_session_note
 from devbrain.harvester.sanitizer import sanitize_text
 from devbrain.harvester.service import IngestionService
 
@@ -44,7 +46,7 @@ def test_discovery_and_extraction(tmp_path: Path):
     with open(wt_file, "w", encoding="utf-8") as f:
         f.write("# Building Auth Service\n\nCompleted JWT authentication.\nUsed api_key = 'sk-proj-testkey1234567890123456'.")
 
-    discovered = discover_sessions(sources=["antigravity"], custom_paths={"antigravity": mock_brain_dir})
+    discovered = discover_sessions(sources=["antigravity-ide"], custom_paths={"antigravity-ide": mock_brain_dir})
     assert len(discovered) == 1
     assert discovered[0].session_id == "session-uuid-1234"
 
@@ -53,6 +55,28 @@ def test_discovery_and_extraction(tmp_path: Path):
     assert payload.title == "Building Auth Service"
     assert "sk-proj-" not in payload.body_markdown
     assert payload.num_redactions >= 1
+
+
+def test_transcript_xml_and_newline_cleaning(tmp_path: Path):
+    mock_brain_dir = tmp_path / "mock_antigravity_brain"
+    session_dir = mock_brain_dir / "session-transcript-only"
+    logs_dir = session_dir / ".system_generated" / "logs"
+    logs_dir.mkdir(parents=True)
+
+    raw_user_prompt = "<USER_REQUEST>\nanalisis dan pelajari projek ini\ndan buatkan arsitekturnya\n</USER_REQUEST>\n<ADDITIONAL_METADATA>\ntime: 2026-08-29\n</ADDITIONAL_METADATA>"
+    with open(logs_dir / "transcript.jsonl", "w", encoding="utf-8") as f:
+        f.write(json.dumps({"type": "USER_INPUT", "content": raw_user_prompt}) + "\n")
+
+    discovered = discover_sessions(sources=["antigravity-ide"], custom_paths={"antigravity-ide": mock_brain_dir})
+    payload = extract_session_payload(discovered[0])
+    assert payload is not None
+    assert "<USER_REQUEST>" not in payload.title
+    assert "\n" not in payload.title
+    assert "analisis dan pelajari projek ini" in payload.title
+
+    filename, content = format_session_note(payload, device_name="test-omen")
+    assert '<USER_REQUEST>' not in content.split("---")[1]  # Frontmatter has no XML tags
+    assert "\nanalisis" not in content.split("---")[1]     # Frontmatter has no broken newlines in title
 
 
 def test_ingestion_service_lifecycle_and_deduplication(tmp_path: Path):
@@ -70,13 +94,13 @@ def test_ingestion_service_lifecycle_and_deduplication(tmp_path: Path):
     service = IngestionService(vault_path=vault_dir, config=config)
 
     # 1. Run Ingestion First Time
-    res1 = service.run_ingestion(sources=["antigravity"], custom_paths={"antigravity": mock_ag_root})
+    res1 = service.run_ingestion(sources=["antigravity-ide"], custom_paths={"antigravity-ide": mock_ag_root})
     assert res1.ingested == 1
     assert res1.skipped == 0
-    assert len(list((vault_dir / DIR_INBOX / "antigravity").glob("*.md"))) == 1
+    assert len(list((vault_dir / DIR_INBOX / "antigravity-ide").glob("*.md"))) == 1
 
     # 2. Run Ingestion Second Time (Should deduplicate and skip)
-    res2 = service.run_ingestion(sources=["antigravity"], custom_paths={"antigravity": mock_ag_root})
+    res2 = service.run_ingestion(sources=["antigravity-ide"], custom_paths={"antigravity-ide": mock_ag_root})
     assert res2.ingested == 0
     assert res2.skipped == 1
 
