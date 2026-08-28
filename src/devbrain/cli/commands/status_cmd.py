@@ -58,7 +58,10 @@ def status_command(
     skills_count = len(list((vault_dir / DIR_AGENT_SKILLS).glob("*/SKILL.md"))) if (vault_dir / DIR_AGENT_SKILLS).is_dir() else 0
     projects_count = len(list((vault_dir / DIR_PROJECTS).rglob("*.md"))) if (vault_dir / DIR_PROJECTS).is_dir() else 0
     knowledge_count = len(list((vault_dir / DIR_KNOWLEDGE).rglob("*.md"))) if (vault_dir / DIR_KNOWLEDGE).is_dir() else 0
+    from devbrain.core.constants import DIR_DECISIONS, DIR_DAILY
+    decisions_count = len(list((vault_dir / DIR_DECISIONS).rglob("*.md"))) if (vault_dir / DIR_DECISIONS).is_dir() else 0
     inbox_count = len(list((vault_dir / DIR_INBOX).rglob("*.md"))) if (vault_dir / DIR_INBOX).is_dir() else 0
+    daily_count = len(list((vault_dir / DIR_DAILY).rglob("*.md"))) if (vault_dir / DIR_DAILY).is_dir() else 0
 
     # 3. Tampilkan Tabel Ringkasan
     table = Table(title="📊 Status Central AI Brain Hub", border_style="cyan", show_header=True)
@@ -70,11 +73,13 @@ def status_command(
     table.add_row("Embedding Provider", f"{config.embedding_provider} ({config.embedding_model})")
     table.add_row("Scope Filter", config.scope)
     table.add_row("Total Markdown Notes", f"{len(all_md_files)} file")
-    table.add_row("  ├── 00_System (Rules)", f"{system_count} file")
+    table.add_row("  ├── 00_System (Rules & Context)", f"{system_count} file")
     table.add_row("  ├── Agent Skills Active", f"{skills_count} skills")
-    table.add_row("  ├── 10_Projects (Context)", f"{projects_count} file")
-    table.add_row("  ├── 20_Knowledge", f"{knowledge_count} file")
-    table.add_row("  └── 90_Agent_Inbox (Logs)", f"{inbox_count} file")
+    table.add_row("  ├── 10_Projects (Active Context)", f"{projects_count} file")
+    table.add_row("  ├── 20_Knowledge (Patterns & Bugs)", f"{knowledge_count} file")
+    table.add_row("  ├── 30_Decisions (ADR Records)", f"{decisions_count} file")
+    table.add_row("  ├── 90_Agent_Inbox (Logs)", f"{inbox_count} file")
+    table.add_row("  └── 99_Daily (Daily Notes)", f"{daily_count} file")
     table.add_row("Terakhir Diperbarui", config.updated_at)
 
     console.print(table)
