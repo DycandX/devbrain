@@ -47,3 +47,5 @@ htmlcov/
 # devbrain internal cache
 .brain_data/
 *.brainrc.local.json
+
+demo_vault

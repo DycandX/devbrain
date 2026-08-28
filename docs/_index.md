@@ -70,14 +70,15 @@ Setiap agen AI dan kontributor diwajibkan mematuhi aturan berikut saat melakukan
 * **Sintesis Terpusat:** Rangkum seluruh keputusan final, arsitektur sistem, dan roadmap strategis di file [docs/_summary/00.md](./_summary/00.md).
 * **Single Source of Truth:** Dokumen `_summary/00.md` menjadi acuan utama sebelum masuk ke tahap eksekusi kode.
 
-### 3. Rencana Eksekusi & Changelog (`docs/changelog-plan/`)
-* Setiap rencana implementasi teknis (*Implementation Plan* / *PRD*) dan catatan perubahan (*changelog*) disimpan di `docs/changelog-plan/`.
+### 3. Rencana Eksekusi & Changelog Protocol (`docs/changelog/` & `docs/sprints/`)
+* **Changelog Wajib:** Setiap rilis versi, penambahan fitur, perubahan arsitektur, atau perbaikan bug wajib dicatat di [docs/changelog/](./changelog/_index.md) dan `CHANGELOG.md`.
+* **Sprint Tracking:** Kemajuan tugas teknis dipantau melalui kartu task di [docs/sprints/](./sprints/level-1/_index.md).
 
 ### 4. Git Version Control & Commit Protocol
-* Setelah sesi pencatatan atau perancangan selesai, simpan perubahan ke git dengan commit message yang rapi dan deskriptif mengikuti standar conventional commits:
-  * `docs(brainstorm): add 06-10 deep dive and update brainstorming index`
-  * `docs(summary): update master blueprint with multi-device sync strategy`
-  * `docs(governance): define documentation rules and repository structure in _index.md`
+* Setiap perubahan kode, fitur, dan dokumentasi disimpan ke git dengan commit message mengikuti standar conventional commits:
+  * `feat(scope): ...` untuk penambahan fitur baru
+  * `docs(scope): ...` untuk perubahan dokumentasi / changelog
+  * `test(scope): ...` untuk penambahan unit test
 
 ---
 
@@ -85,3 +86,6 @@ Setiap agen AI dan kontributor diwajibkan mematuhi aturan berikut saat melakukan
 
 * 🏛️ **[Master Blueprint & Architecture](./_summary/00.md)**
 * 🧠 **[Indeks Brainstorming Documents](./brainstorming/_index.md)**
+* 📄 **[Product Requirements Documents (PRD)](./prd/_index.md)**
+* 🏃‍♂️ **[Sprint Execution Tasks](./sprints/level-1/_index.md)**
+* 📜 **[Changelog & Release History](./changelog/_index.md)**

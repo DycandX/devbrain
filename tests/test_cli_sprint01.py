@@ -17,7 +17,7 @@ def test_cli_version():
 def test_cli_status_no_config(tmp_path: Path):
     result = runner.invoke(app, ["status", "--vault", str(tmp_path)])
     assert result.exit_code != 0
-    assert "tidak ditemukan" in result.output or "Error" in result.output
+    assert "not found" in result.output or "Error" in result.output
 
 
 def test_cli_init_and_status(tmp_path: Path):
@@ -32,5 +32,5 @@ def test_cli_init_and_status(tmp_path: Path):
     # Run status
     status_result = runner.invoke(app, ["status", "--vault", str(vault_dir)])
     assert status_result.exit_code == 0
-    assert "Status Central AI Brain Hub" in status_result.output
+    assert "Central AI Brain Hub Status" in status_result.output
     assert "test-device" in status_result.output

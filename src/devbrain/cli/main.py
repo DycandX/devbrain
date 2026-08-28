@@ -17,8 +17,15 @@ app = typer.Typer(
 )
 
 # Register Sub-Commands
-app.command(name="init", help="Inisialisasi vault baru atau attach existing vault secara interaktif.")(init_command)
-app.command(name="status", help="Menampilkan status, konfigurasi, dan jumlah catatan di vault.")(status_command)
+app.command(
+    name="init",
+    help="Interactively initialize a new vault or attach an existing Obsidian vault.",
+)(init_command)
+
+app.command(
+    name="status",
+    help="Display vault status, configuration parameters, and note statistics.",
+)(status_command)
 
 
 def version_callback(value: bool):
@@ -33,7 +40,7 @@ def main(
         None,
         "--version",
         "-V",
-        help="Tampilkan versi devbrain.",
+        help="Show devbrain version and exit.",
         callback=version_callback,
         is_eager=True,
     ),

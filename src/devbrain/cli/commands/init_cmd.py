@@ -8,7 +8,7 @@ import typer
 from rich.prompt import Confirm, Prompt
 
 from devbrain.cli.ui.console import console, print_banner, print_info, print_success
-from devbrain.core.config import BrainConfig, find_config, load_config, save_config
+from devbrain.core.config import BrainConfig, save_config
 from devbrain.core.constants import CONFIG_FILENAME, DEFAULT_EMBEDDING_MODEL
 from devbrain.core.scaffolder import scaffold_vault
 
@@ -16,23 +16,23 @@ from devbrain.core.scaffolder import scaffold_vault
 def init_command(
     path: Optional[str] = typer.Argument(
         None,
-        help="Path lokasi direktori Obsidian Vault (default: interaktif)",
+        help="Obsidian Vault directory path (default: interactive prompt)",
     ),
     template: bool = typer.Option(
         True,
         "--template/--no-template",
-        help="Otomatis buat folder standar (00_System, 10_Projects, dll)",
+        help="Automatically generate standard folder hierarchy (00_System, 10_Projects, etc.)",
     ),
 ):
-    """Setup & hubungkan Obsidian Vault dengan devbrain secara interaktif."""
+    """Setup and connect an Obsidian Vault with devbrain interactively."""
     print_banner()
-    console.print("\n[bold yellow]🚀 Memulai Wizard Inisialisasi devbrain...[/bold yellow]\n")
+    console.print("\n[bold yellow]🚀 Starting devbrain Initialization Wizard...[/bold yellow]\n")
 
-    # 1. Tentukan Path Vault
+    # 1. Resolve Vault Path
     if not path:
         default_path = str(Path.home() / "DevBrainVault")
         path_input = Prompt.ask(
-            "[bold white]Masukkan path folder Obsidian Vault[/bold white]",
+            "[bold white]Enter Obsidian Vault directory path[/bold white]",
             default=default_path,
         )
     else:
@@ -40,26 +40,26 @@ def init_command(
 
     vault_path = Path(path_input).expanduser().resolve()
 
-    # 2. Cek Existing Config
+    # 2. Check Existing Config
     existing_config_file = vault_path / CONFIG_FILENAME
     if existing_config_file.is_file():
-        console.print(f"[bold cyan]ℹ Konfigurasi lama terdeteksi di {existing_config_file}[/bold cyan]")
+        console.print(f"[bold cyan]ℹ Existing configuration detected at {existing_config_file}[/bold cyan]")
         overwrite = Confirm.ask(
-            "Apakah Anda ingin memperbarui konfigurasi yang sudah ada?",
+            "Do you want to overwrite existing configuration?",
             default=False,
         )
         if not overwrite:
-            print_info("Inisialisasi dibatalkan. Menggunakan konfigurasi yang sudah ada.")
+            print_info("Initialization aborted. Keeping existing configuration.")
             return
 
-    # 3. Pilihan Mode Embedding
-    console.print("\n[bold white]Pilih Mode Embedding Engine:[/bold white]")
-    console.print("  [cyan]1[/cyan]. Local CPU FastEmbed (100% Offline, Gratis, Tanpa GPU) [bold green][Recommended][/bold green]")
+    # 3. Select Embedding Mode
+    console.print("\n[bold white]Select Embedding Engine Mode:[/bold white]")
+    console.print("  [cyan]1[/cyan]. Local CPU FastEmbed (100% Offline, Free, Zero-GPU) [bold green][Recommended][/bold green]")
     console.print("  [cyan]2[/cyan]. Cloud API (Google Gemini / OpenAI)")
     console.print("  [cyan]3[/cyan]. Ollama Local Server")
-    
-    choice = Prompt.ask("Pilihan", choices=["1", "2", "3"], default="1")
-    
+
+    choice = Prompt.ask("Choice", choices=["1", "2", "3"], default="1")
+
     ollama_host = None
     if choice == "1":
         provider = "fastembed"
@@ -69,21 +69,21 @@ def init_command(
         model_name = "models/embedding-001"
     else:
         provider = "ollama"
-        ollama_host = Prompt.ask("Masukkan URL Ollama Host", default="http://localhost:11434")
-        model_name = Prompt.ask("Masukkan Model Embedding Ollama", default="bge-m3")
+        ollama_host = Prompt.ask("Enter Ollama Host URL", default="http://localhost:11434")
+        model_name = Prompt.ask("Enter Ollama Embedding Model", default="bge-m3")
 
-    # 4. Device Tag Identifier
+    # 4. Device Identifier Tag
     default_device = socket.gethostname().lower()
-    device_name = Prompt.ask("Beri nama identifier device ini", default=default_device)
+    device_name = Prompt.ask("Enter a device identifier for this machine", default=default_device)
 
-    # 5. Scaffolding Folder Vault
+    # 5. Scaffold Vault Directory Hierarchy
     is_new = not vault_path.exists() or len(list(vault_path.glob("*"))) == 0
     if template:
-        with console.status("[bold green]Menyiapkan struktur direktori vault...[/bold green]"):
+        with console.status("[bold green]Setting up standard vault directory hierarchy...[/bold green]"):
             created_items = scaffold_vault(vault_path, is_new=is_new)
-        print_success(f"Struktur folder berhasil disiapkan ({len(created_items)} item baru).")
+        print_success(f"Vault structure created ({len(created_items)} new items).")
 
-    # 6. Simpan .brainrc.json
+    # 6. Save .brainrc.json
     config = BrainConfig(
         vault_path=str(vault_path),
         device_name=device_name,
@@ -92,13 +92,13 @@ def init_command(
         ollama_host=ollama_host,
     )
     saved_path = save_config(config, vault_path)
-    print_success(f"Konfigurasi disimpan di: [bold cyan]{saved_path}[/bold cyan]")
+    print_success(f"Configuration saved to: [bold cyan]{saved_path}[/bold cyan]")
 
-    # 7. Informasi Selesai
+    # 7. Completion Summary
     console.print("\n" + "─" * 60)
-    console.print("[bold green]🎉 Inisialisasi Selesai! Central Brain Anda Telah Siap.[/bold green]")
-    console.print("\n[bold white]Langkah Selanjutnya:[/bold white]")
-    console.print(f"  1. Buka aplikasi Obsidian, pilih [bold cyan]'Open folder as vault'[/bold cyan] dan arahkan ke: [underline]{vault_path}[/underline]")
-    console.print("  2. Jalankan [bold cyan]devbrain status[/bold cyan] untuk memeriksa kondisi vault.")
-    console.print("  3. Buka [bold cyan]Antigravity IDE[/bold cyan] untuk mulai berinteraksi dengan AI Agent!")
+    console.print("[bold green]🎉 Initialization Complete! Your Central AI Brain is ready.[/bold green]")
+    console.print("\n[bold white]Next Steps:[/bold white]")
+    console.print(f"  1. Open Obsidian, click [bold cyan]'Open folder as vault'[/bold cyan] and navigate to: [underline]{vault_path}[/underline]")
+    console.print("  2. Run [bold cyan]devbrain status[/bold cyan] to verify vault statistics and health.")
+    console.print("  3. Open [bold cyan]Antigravity IDE[/bold cyan] or [bold cyan]Claude Code[/bold cyan] to start coding with your AI Agent!")
     console.print("─" * 60 + "\n")

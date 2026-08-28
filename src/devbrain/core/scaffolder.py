@@ -11,7 +11,6 @@ from devbrain.core.constants import (
     DIR_INBOX,
     DIR_KNOWLEDGE,
     DIR_KNOWLEDGE_ARCH,
-    DIR_KNOWLEDGE_BUGS,
     DIR_PROJECTS,
     DIR_SYSTEM,
     DIR_SYSTEM_PERSONAS,
@@ -20,7 +19,7 @@ from devbrain.core.constants import (
     STANDARD_DIRS,
 )
 
-# Starter Templates Matching 07-taksonomi-vault-dan-standar-metadata.md
+# Starter Templates in English Matching 07-taksonomi-vault-dan-standar-metadata.md
 
 GLOBAL_CONTEXT_TEMPLATE = """---
 title: Global User & System Context
@@ -31,17 +30,17 @@ tags: [system, context, global]
 
 # 🌐 Global User & System Context
 
-Dokumen ini memuat profil preferensi global, stack teknologi utama, dan aturan umum untuk AI Agent yang terhubung ke Central Brain ini.
+This document outlines global user preferences, primary technology stacks, and universal protocol guidelines for AI Agents connected to this Central Brain Hub.
 
-## 👤 Profil & Preferensi:
-- **Default Language:** Python / TypeScript
+## 👤 Profile & Preferences:
+- **Default Languages:** Python / TypeScript
 - **Environment:** Windows (PowerShell) / Linux / WSL
-- **UI PKM App:** Obsidian Desktop
+- **Visual PKM Application:** Obsidian Desktop
 
-## 📌 Prinsip Utama AI:
-1. **Single Source of Truth (SSOT):** Selalu baca context proyek dari `10_Projects/` sebelum memulai task baru.
-2. **Append-Only Logging:** Catat ringkasan sesi kerja penting dan keputusan arsitektur baru ke `90_Agent_Inbox/`.
-3. **Skill Discovery:** Gunakan skill dari `00_System/Agent_Skills/` untuk alur kerja yang sudah terstandarisasi.
+## 📌 Core Memory Principles:
+1. **Single Source of Truth (SSOT):** Always read project context from `10_Projects/` before starting a new task.
+2. **Append-Only Logging:** Record important session summaries and architectural decisions into `90_Agent_Inbox/`.
+3. **Skill Discovery:** Leverage modular skills from `00_System/Agent_Skills/` for standardized multi-step workflows.
 """
 
 RULES_TEMPLATE = """---
@@ -52,9 +51,9 @@ tags: [system, rules, guidelines]
 
 # 📌 General System & Coding Rules
 
-1. **Clean Code & Type Hints:** Selalu gunakan type hints (`typing`) dan docstring standar.
-2. **No Secret Leaks:** Jangan pernah menyimpan API Key, token rahasia, atau kredensial mentah ke dalam catatan Markdown.
-3. **Wikilinks Convention:** Gunakan `[[Wikilinks]]` saat mereferensikan konsep, modul, atau catatan proyek lain.
+1. **Clean Code & Type Annotations:** Always use explicit type annotations (`typing`) and standard docstrings.
+2. **No Secret Leaks:** Never write raw API keys, secrets, or sensitive credentials into Markdown notes.
+3. **Wikilinks Convention:** Use `[[Wikilinks]]` whenever referencing related concepts, architecture patterns, or project notes.
 """
 
 PERSONA_ARCHITECT_TEMPLATE = """---
@@ -66,23 +65,23 @@ tags: [persona, backend, architecture]
 
 # 🏗️ Persona: Senior Backend & System Architect
 
-Ketika mengaktifkan persona ini:
-- Fokus pada efisiensi resource, modularitas, skalabilitas, dan keamanan sistem.
-- Dokumentasikan setiap keputusan desain kritis ke dalam format Architecture Decision Record (ADR) di `30_Decisions/`.
+When this persona is activated:
+- Emphasize resource efficiency, modularity, system scalability, and security.
+- Document critical design decisions into Architecture Decision Record (ADR) format inside `30_Decisions/`.
 """
 
 EXAMPLE_SKILL_TEMPLATE = """---
 name: example-workflow
-description: Contoh template skill standar untuk AI Agent di Central Brain
+description: Standard example skill template for AI Agents in Central Brain
 ---
 
 # Example Workflow Skill
 
-Gunakan skill ini sebagai acuan format penulisan Agent Skill baru di Central Brain.
+Use this skill as a standard template for authoring new Agent Skills in Central Brain.
 
-## Instruksi:
-1. Selalu lakukan verifikasi prasyarat sebelum memulai task.
-2. Catat perubahan kode pada catatan proyek terkait di `10_Projects/`.
+## Instructions:
+1. Always verify prerequisites before executing the task.
+2. Document code changes and progress in the relevant project note inside `10_Projects/`.
 """
 
 PROJECTS_INDEX_TEMPLATE = """---
@@ -93,9 +92,9 @@ tags: [index, projects]
 
 # 📂 Active Projects Index
 
-Hub indeks seluruh proyek aktif:
+Index hub of all active projects:
 
-- [[example_project/README|Example Project]] — Inisialisasi Proyek Perdana
+- [[example_project/README|Example Project]] — Initial Project Setup & Testing
 """
 
 EXAMPLE_PROJECT_README = """---
@@ -108,12 +107,12 @@ tags: [project, example]
 # 🚀 Example Project
 
 ## 📋 Overview
-Proyek inisialisasi awal untuk menguji konektivitas AI Agent dan Obsidian Central Brain.
+Initial project workspace to test AI Agent connectivity and Obsidian Central Brain features.
 
 ## 🎯 Milestones & Tasks:
-- [x] Inisialisasi struktur vault Obsidian
-- [ ] Uji coba pencarian hybrid FastEmbed & BM25
-- [ ] Hubungkan ke Antigravity IDE & Claude Code
+- [x] Initialize Obsidian vault structure
+- [ ] Test FastEmbed & BM25 hybrid search
+- [ ] Connect with Antigravity IDE & Claude Code
 """
 
 KNOWLEDGE_INDEX_TEMPLATE = """---
@@ -124,23 +123,23 @@ tags: [index, knowledge]
 
 # 📚 Knowledge Base Index
 
-Kumpulan dokumentasi teknis, pola arsitektur, dan solusi bug:
+Collection of technical documentation, architecture patterns, and bug solutions:
 
-- [[Architecture_Patterns/clean_architecture|Clean Architecture]] — Prinsip desain modular
+- [[Architecture_Patterns/clean_architecture|Clean Architecture]] — Modular design principles
 """
 
 CLEAN_ARCH_TEMPLATE = """---
 id: "KNOW-ARCH-001"
-title: "Prinsip Clean & Modular Architecture"
+title: "Clean & Modular Architecture Principles"
 type: knowledge-pattern
 category: architecture
 tags: [architecture, design-pattern, best-practice]
 ---
 
-# 🏛️ Prinsip Clean & Modular Architecture
+# 🏛️ Clean & Modular Architecture Principles
 
-## Ringkasan:
-Memisahkan logika bisnis inti dari antarmuka luar (CLI, Web, UI, MCP) agar sistem mudah diuji dan dikembangkan.
+## Summary:
+Isolate core business logic from external interfaces (CLI, Web, UI, MCP) to ensure high testability, maintainability, and rapid evolution.
 """
 
 DECISIONS_INDEX_TEMPLATE = """---
@@ -151,24 +150,24 @@ tags: [index, adr, decisions]
 
 # 📋 Architecture Decision Records (ADR) Index
 
-- [[ADR-001-use-fastmcp-and-fastembed|ADR-001]]: Pemilihan FastMCP Stdio & FastEmbed CPU ONNX
+- [[ADR-001-use-fastmcp-and-fastembed|ADR-001]]: Selection of FastMCP Stdio & Local CPU FastEmbed
 """
 
 ADR_001_TEMPLATE = """---
 id: "ADR-001"
-title: "Pemilihan FastMCP & FastEmbed Local CPU"
+title: "Selection of FastMCP & FastEmbed Local CPU"
 status: accepted
 date: 2026-08-29
 tags: [adr, architecture, mcp, fastembed]
 ---
 
-# ADR-001: Pemilihan FastMCP & FastEmbed Local CPU
+# ADR-001: Selection of FastMCP & FastEmbed Local CPU
 
-## Konteks:
-Dibutuhkan sistem Central Brain yang ringan, 100% offline, bebas GPU, dan kompatibel langsung dengan Antigravity IDE & Claude Code.
+## Context:
+Required a lightweight, 100% offline, zero-GPU second brain hub compatible out-of-the-box with Antigravity IDE and Claude Code.
 
-## Keputusan:
-Menggunakan FastMCP Python Stdio server dan FastEmbed CPU ONNX (`bge-small-en-v1.5`) untuk Level 1 Standalone.
+## Decision:
+Adopted FastMCP Python Stdio server and FastEmbed CPU ONNX (`BAAI/bge-small-en-v1.5`) for Level 1 Standalone deployment.
 """
 
 INBOX_INDEX_TEMPLATE = """---
@@ -179,11 +178,11 @@ tags: [index, inbox, agent-logs]
 
 # 📥 Agent Inbox & Daily Logs
 
-Zona drop catatan otomatis yang ditulis oleh AI Agent:
-- `antigravity/`: Log dan solusi dari sesi Antigravity IDE
-- `claude-code/`: Log dari Claude Code
-- `hermes/`: Log dari Hermes Agent
-- `manual_review/`: Catatan yang butuh review manusia
+Drop zone for automated session notes and logs authored by AI Agents:
+- `antigravity/`: Sessions extracted from Antigravity IDE
+- `claude-code/`: Transcripts and solutions from Claude Code
+- `hermes/`: Autonomous task logs from Hermes Agent
+- `manual_review/`: Notes requiring human validation
 """
 
 DAILY_INDEX_TEMPLATE = """---
@@ -194,7 +193,7 @@ tags: [index, daily]
 
 # 📅 Daily Notes Index
 
-Catatan harian dan refleksi progres coding harian.
+Daily logs, reflections, and session journal entries.
 """
 
 
