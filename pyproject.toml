@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "devbrain"
+version = "0.1.0"
+description = "Central AI Second Brain Hub - Single Source of Truth for Multi-Agent Coding & Obsidian"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Antigravity AI Team" }
+]
+keywords = ["ai", "mcp", "obsidian", "rag", "second-brain", "multi-agent", "developer-tools"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing :: Markup :: Markdown",
+]
+dependencies = [
+    "typer[all]>=0.9.0",
+    "rich>=13.7.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.2.0",
+    "watchdog>=4.0.0",
+    "fastembed>=0.2.0",
+    "rank-bm25>=0.2.2",
+    "mcp>=1.0.0",
+    "pyyaml>=6.0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.23.0",
+    "ruff>=0.3.0",
+]
+
+[project.scripts]
+devbrain = "devbrain.cli.main:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/devbrain"]

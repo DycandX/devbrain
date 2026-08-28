@@ -3,7 +3,7 @@
 | Attribute | Detail |
 | :--- | :--- |
 | **Sprint** | Level 1 / Sprint 01 |
-| **Status** | Todo |
+| **Status** | ✅ Done |
 | **Target Files** | `src/devbrain/core/config.py`, `src/devbrain/core/scaffolder.py`, `src/devbrain/core/constants.py` |
 
 ---

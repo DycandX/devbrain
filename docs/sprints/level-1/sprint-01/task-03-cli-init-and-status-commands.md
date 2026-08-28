@@ -3,7 +3,7 @@
 | Attribute | Detail |
 | :--- | :--- |
 | **Sprint** | Level 1 / Sprint 01 |
-| **Status** | Todo |
+| **Status** | ✅ Done |
 | **Target Files** | `src/devbrain/cli/commands/init_cmd.py`, `src/devbrain/cli/commands/status_cmd.py` |
 
 ---

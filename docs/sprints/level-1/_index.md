@@ -9,9 +9,9 @@ Dokumen ini memetakan seluruh Sprint dan Task yang harus diselesaikan untuk mera
 ### 🚀 [Sprint 01: Project Setup, CLI Scaffolding & Configuration](./sprint-01/)
 | Task | Deskripsi | Target File | Status |
 | :--- | :--- | :--- | :--- |
-| 📄 [Task 01](./sprint-01/task-01-pyproject-and-package-structure.md) | Setup `pyproject.toml` & Struktur Package | `pyproject.toml`, `src/devbrain/cli/main.py` | ⏳ Todo |
-| 📄 [Task 02](./sprint-01/task-02-config-and-vault-scaffolder.md) | Config Schema (`.brainrc.json`) & Vault Scaffolder | `src/devbrain/core/config.py`, `scaffolder.py` | ⏳ Todo |
-| 📄 [Task 03](./sprint-01/task-03-cli-init-and-status-commands.md) | CLI Init Wizard & Status Command | `src/devbrain/cli/commands/init_cmd.py` | ⏳ Todo |
+| 📄 [Task 01](./sprint-01/task-01-pyproject-and-package-structure.md) | Setup `pyproject.toml` & Struktur Package | `pyproject.toml`, `src/devbrain/cli/main.py` | ✅ Done |
+| 📄 [Task 02](./sprint-01/task-02-config-and-vault-scaffolder.md) | Config Schema (`.brainrc.json`) & Vault Scaffolder | `src/devbrain/core/config.py`, `scaffolder.py` | ✅ Done |
+| 📄 [Task 03](./sprint-01/task-03-cli-init-and-status-commands.md) | CLI Init Wizard & Status Command | `src/devbrain/cli/commands/init_cmd.py` | ✅ Done |
 
 ---
 

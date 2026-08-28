@@ -3,7 +3,7 @@
 | Attribute | Detail |
 | :--- | :--- |
 | **Sprint** | Level 1 / Sprint 01 |
-| **Status** | Todo |
+| **Status** | ✅ Done |
 | **Target Files** | `pyproject.toml`, `src/devbrain/__init__.py`, `src/devbrain/cli/main.py`, `.gitignore` |
 
 ---
