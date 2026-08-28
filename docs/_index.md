@@ -36,7 +36,13 @@ docs/
 │   ├── 21-metode-sync-obsidian-dan-prosedur-uninstall-bersih.md
 │   ├── 22-panduan-detail-syncthing-dan-git-auto-sync.md
 │   └── 23-filosofi-zero-friction-dan-level-adopsi-gradual.md
-└── changelog-plan/                # [Execution Plans] Implementation plan, task list, & progress log
+├── prd/                           # [Product Requirements Documents] Spesifikasi produk 3 level
+│   ├── _index.md                  # Indeks navigasi PRD
+│   ├── 01-prd-level-1-standalone-local.md
+│   ├── 02-prd-level-2-local-cloud-backup.md
+│   └── 03-prd-level-3-multi-device-mesh.md
+├── changelog/                     # [Changelogs] Catatan riwayat perubahan versi
+└── sprints/                       # [Sprint Plans] Implementation plan & sprint execution tasks
 ```
 
 ---
