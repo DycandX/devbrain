@@ -22,7 +22,8 @@ docs/
 │   ├── 07-taksonomi-vault-dan-standar-metadata.md
 │   ├── 08-server-stack-jarvis-dan-fastmcp.md
 │   ├── 09-client-adapters-dan-distillation-pipeline.md
-│   └── 10-security-privacy-dan-boundary-protocol.md
+│   ├── 10-security-privacy-dan-boundary-protocol.md
+│   └── 11-sentralisasi-agent-skills-dan-efisiensi-token.md
 └── changelog-plan/                # [Execution Plans] Implementation plan, task list, & progress log
 ```
 
