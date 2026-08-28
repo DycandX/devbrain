@@ -25,7 +25,8 @@ docs/
 │   ├── 10-security-privacy-dan-boundary-protocol.md
 │   ├── 11-sentralisasi-agent-skills-dan-efisiensi-token.md
 │   ├── 12-opsi-deployment-dan-konsep-embedding.md
-│   └── 13-korelasi-projek-fxmedia-dan-hybrid-graph-rag.md
+│   ├── 13-korelasi-projek-fxmedia-dan-hybrid-graph-rag.md
+│   └── 14-panduan-implementasi-praktis-dan-koneksi-obsidian.md
 └── changelog-plan/                # [Execution Plans] Implementation plan, task list, & progress log
 ```
 
