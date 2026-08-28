@@ -111,6 +111,12 @@ Level 1 dibagi menjadi **4 Sprint Berurutan**:
 * 📄 [Task 02: Benchmarking & RAM Profiling](../sprints/level-1/sprint-04/task-02-benchmarking-and-profiling.md)
 * 📄 [Task 03: Quickstart & Release Packaging](../sprints/level-1/sprint-04/task-03-developer-guide-and-release-readiness.md)
 
+### Sprint 05: Automated Session Ingestion & Initial Vault Seeding
+* 📄 [Task 01: Multi-Agent Storage Discovery & Secret Sanitizer](../sprints/level-1/sprint-05/task-01-agent-storage-discovery-and-secret-sanitizer.md)
+* 📄 [Task 02: Session Artifact Extractor & Formatter](../sprints/level-1/sprint-05/task-02-session-artifact-extractor-and-formatter.md)
+* 📄 [Task 03: CLI Ingest Command & Continuous Watcher](../sprints/level-1/sprint-05/task-03-cli-ingest-command-and-continuous-watcher.md)
+* 📄 [Task 04: Automated Tests & Documentation](../sprints/level-1/sprint-05/task-04-integration-testing-and-benchmarking.md)
+
 ---
 
 ## 4. Standar Kualitas & Definisi Selesai (*Definition of Done*)
