@@ -24,7 +24,8 @@ docs/
 │   ├── 09-client-adapters-dan-distillation-pipeline.md
 │   ├── 10-security-privacy-dan-boundary-protocol.md
 │   ├── 11-sentralisasi-agent-skills-dan-efisiensi-token.md
-│   └── 12-opsi-deployment-dan-konsep-embedding.md
+│   ├── 12-opsi-deployment-dan-konsep-embedding.md
+│   └── 13-korelasi-projek-fxmedia-dan-hybrid-graph-rag.md
 └── changelog-plan/                # [Execution Plans] Implementation plan, task list, & progress log
 ```
 
