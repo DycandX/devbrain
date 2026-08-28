@@ -29,7 +29,8 @@ docs/
 │   ├── 14-panduan-implementasi-praktis-dan-koneksi-obsidian.md
 │   ├── 15-multi-vault-dan-strategi-adopsi-existing-vault.md
 │   ├── 16-cli-architecture-dan-konsep-obsidian-sebagai-database.md
-│   └── 17-core-mechanics-server-deployment-dan-tech-stack.md
+│   ├── 17-core-mechanics-server-deployment-dan-tech-stack.md
+│   └── 18-onboarding-laptop-pribadi-dan-alur-development.md
 └── changelog-plan/                # [Execution Plans] Implementation plan, task list, & progress log
 ```
 
