@@ -33,7 +33,8 @@ docs/
 │   ├── 18-onboarding-laptop-pribadi-dan-alur-development.md
 │   ├── 19-analisis-komprehensif-pemilihan-tech-stack.md
 │   ├── 20-analisis-repo-obsidian-mcp-zettelkasten-dan-daftar-command.md
-│   └── 21-metode-sync-obsidian-dan-prosedur-uninstall-bersih.md
+│   ├── 21-metode-sync-obsidian-dan-prosedur-uninstall-bersih.md
+│   └── 22-panduan-detail-syncthing-dan-git-auto-sync.md
 └── changelog-plan/                # [Execution Plans] Implementation plan, task list, & progress log
 ```
 
