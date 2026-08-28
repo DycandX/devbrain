@@ -49,4 +49,6 @@ htmlcov/
 *.brainrc.local.json
 
 demo/
-demo-vault
+demo-vault/
+demo_vault/
+*_vault/
