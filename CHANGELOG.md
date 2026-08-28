@@ -9,11 +9,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [1.1.0-alpha] - 2026-08-29
 
 ### 🚀 Added
-- **Multi-Agent Storage Discovery Engine:** Dynamic detection of session directories for Google Antigravity IDE, Claude Code, Cline, and Aider.
+- **Multi-Agent Storage Discovery Engine:** Dynamic detection of session directories for Google Antigravity IDE, Antigravity CLI (`agy`), Claude Code, Cline, and Aider.
 - **Secret Redaction Regex Sanitizer:** Automated credential scrubbing for OpenAI, Anthropic, Google, and GitHub API keys, Bearer headers, and passwords into safe `[REDACTED_SECRET]` placeholders.
 - **Session Artifact Extractor & Formatter:** Formats walkthroughs, plans, and transcripts into Obsidian notes with standardized YAML frontmatter.
 - **CLI Commands:** Added `devbrain ingest [--from <agent>] [--dry-run] [--watch]` and alias `devbrain pull` with deduplication registry (`.brain_data/ingested_sessions.json`).
-- **Automated Tests:** 27 passing unit, integration, and E2E tests in <14s.
+- **Automated Tests:** 28 passing unit, integration, and E2E tests in ~15s.
+
+### 🐛 Fixed
+- **YAML Frontmatter Malformation:** Fixed unescaped newlines and raw `<USER_REQUEST>` XML tags from transcript fallbacks breaking Obsidian Properties parser.
+- **Storage Disambiguation:** Split `antigravity` into `antigravity-ide` and `antigravity-cli` destination folders.
+
+### 🔄 Changed
+- **Live Dataview Inbox Template:** Embedded live Dataview queries into `_Inbox_Index.md` template for automatic real-time table rendering in Obsidian.
 
 For complete release details, see [docs/changelog/v1.1.0-alpha.md](docs/changelog/v1.1.0-alpha.md).
 
