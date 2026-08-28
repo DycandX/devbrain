@@ -41,8 +41,17 @@ docs/
 │   ├── 01-prd-level-1-standalone-local.md
 │   ├── 02-prd-level-2-local-cloud-backup.md
 │   └── 03-prd-level-3-multi-device-mesh.md
-├── changelog/                     # [Changelogs] Catatan riwayat perubahan versi
-└── sprints/                       # [Sprint Plans] Implementation plan & sprint execution tasks
+├── implementation-plan/           # [Implementation Plans] Rencana implementasi teknis
+│   ├── _index.md                  # Indeks Implementation Plan
+│   └── 01-implementation-plan-level-1-standalone.md
+├── sprints/                       # [Sprint Plans] Implementation plan & sprint execution tasks
+│   └── level-1/                   # Sprint tasks Level 1 Standalone Local
+│       ├── _index.md              # Indeks sprint level 1
+│       ├── sprint-01/             # Setup, Scaffolder, Config & CLI Init
+│       ├── sprint-02/             # Hybrid Indexer & Real-time Watcher
+│       ├── sprint-03/             # FastMCP Gateway & IDE Auto-Config
+│       └── sprint-04/             # Tests, Benchmark & Release Readiness
+└── changelog/                     # [Changelogs] Catatan riwayat perubahan versi
 ```
 
 ---
