@@ -32,7 +32,8 @@ docs/
 │   ├── 17-core-mechanics-server-deployment-dan-tech-stack.md
 │   ├── 18-onboarding-laptop-pribadi-dan-alur-development.md
 │   ├── 19-analisis-komprehensif-pemilihan-tech-stack.md
-│   └── 20-analisis-repo-obsidian-mcp-zettelkasten-dan-daftar-command.md
+│   ├── 20-analisis-repo-obsidian-mcp-zettelkasten-dan-daftar-command.md
+│   └── 21-metode-sync-obsidian-dan-prosedur-uninstall-bersih.md
 └── changelog-plan/                # [Execution Plans] Implementation plan, task list, & progress log
 ```
 
