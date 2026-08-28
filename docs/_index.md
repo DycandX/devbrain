@@ -23,7 +23,8 @@ docs/
 │   ├── 08-server-stack-jarvis-dan-fastmcp.md
 │   ├── 09-client-adapters-dan-distillation-pipeline.md
 │   ├── 10-security-privacy-dan-boundary-protocol.md
-│   └── 11-sentralisasi-agent-skills-dan-efisiensi-token.md
+│   ├── 11-sentralisasi-agent-skills-dan-efisiensi-token.md
+│   └── 12-opsi-deployment-dan-konsep-embedding.md
 └── changelog-plan/                # [Execution Plans] Implementation plan, task list, & progress log
 ```
 
