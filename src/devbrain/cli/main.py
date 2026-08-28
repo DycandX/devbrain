@@ -8,7 +8,10 @@ from devbrain import __version__
 from devbrain.cli.commands.index_cmd import index_command
 from devbrain.cli.commands.init_cmd import init_command
 from devbrain.cli.commands.search_cmd import search_command
+from devbrain.cli.commands.serve_cmd import serve_command
+from devbrain.cli.commands.skill_cmd import skill_app
 from devbrain.cli.commands.status_cmd import status_command
+from devbrain.cli.commands.uninstall_cmd import uninstall_command
 from devbrain.cli.ui.console import console
 
 app = typer.Typer(
@@ -18,7 +21,7 @@ app = typer.Typer(
     add_completion=False,
 )
 
-# Register Sub-Commands
+# Register Core Commands
 app.command(
     name="init",
     help="Interactively initialize a new vault or attach an existing Obsidian vault.",
@@ -38,6 +41,19 @@ app.command(
     name="index",
     help="Index or re-index Obsidian Markdown files into FastEmbed & BM25 local stores.",
 )(index_command)
+
+app.command(
+    name="serve",
+    help="Launch the FastMCP Protocol Server for Antigravity IDE and Claude Code.",
+)(serve_command)
+
+app.command(
+    name="uninstall",
+    help="Safely unregister FastMCP servers from IDEs and clean up local caches.",
+)(uninstall_command)
+
+# Register Sub-Apps
+app.add_typer(skill_app, name="skill")
 
 
 def version_callback(value: bool):

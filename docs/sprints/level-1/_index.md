@@ -28,10 +28,10 @@ Dokumen ini memetakan seluruh Sprint dan Task yang harus diselesaikan untuk mera
 ### ⚡ [Sprint 03: FastMCP Protocol Gateway & AI Client Auto-Config](./sprint-03/)
 | Task | Deskripsi | Target File | Status |
 | :--- | :--- | :--- | :--- |
-| 📄 [Task 01](./sprint-03/task-01-fastmcp-stdio-server.md) | FastMCP Stdio Server Setup | `src/devbrain/mcp_server/server.py` | ⏳ Todo |
-| 📄 [Task 02](./sprint-03/task-02-mcp-tools-implementation.md) | Implementasi 4 Core MCP Tools | `src/devbrain/mcp_server/tools/*.py` | ⏳ Todo |
-| 📄 [Task 03](./sprint-03/task-03-ide-auto-configurator-and-skills-symlink.md) | IDE Auto-Configurator & Agent Skill Manager | `src/devbrain/core/client_config.py` | ⏳ Todo |
-| 📄 [Task 04](./sprint-03/task-04-cli-uninstall-and-clean-teardown.md) | CLI Uninstall & Clean Teardown Command | `src/devbrain/cli/commands/uninstall_cmd.py` | ⏳ Todo |
+| 📄 [Task 01](./sprint-03/task-01-fastmcp-stdio-server.md) | FastMCP Stdio Server Setup | `src/devbrain/mcp_server/server.py` | ✅ Done |
+| 📄 [Task 02](./sprint-03/task-02-mcp-tools-implementation.md) | Implementasi 4 Core MCP Tools | `src/devbrain/mcp_server/server.py` | ✅ Done |
+| 📄 [Task 03](./sprint-03/task-03-ide-auto-configurator-and-skills-symlink.md) | IDE Auto-Configurator & Agent Skill Manager | `src/devbrain/core/client_config.py` | ✅ Done |
+| 📄 [Task 04](./sprint-03/task-04-cli-uninstall-and-clean-teardown.md) | CLI Uninstall & Clean Teardown Command | `src/devbrain/cli/commands/uninstall_cmd.py` | ✅ Done |
 
 ---
 

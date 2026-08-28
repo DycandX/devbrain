@@ -3,7 +3,7 @@
 | Attribute | Detail |
 | :--- | :--- |
 | **Sprint** | Level 1 / Sprint 03 |
-| **Status** | Todo |
+| **Status** | ✅ Done |
 | **Target Files** | `src/devbrain/mcp_server/tools/search_brain.py`, `src/devbrain/mcp_server/tools/project_context.py`, `src/devbrain/mcp_server/tools/agent_logger.py`, `src/devbrain/mcp_server/tools/skill_loader.py` |
 
 ---

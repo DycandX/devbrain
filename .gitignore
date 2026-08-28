@@ -48,4 +48,5 @@ htmlcov/
 .brain_data/
 *.brainrc.local.json
 
-demo_vault
+demo/
+demo-vault

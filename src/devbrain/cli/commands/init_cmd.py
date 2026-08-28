@@ -94,7 +94,16 @@ def init_command(
     saved_path = save_config(config, vault_path)
     print_success(f"Configuration saved to: [bold cyan]{saved_path}[/bold cyan]")
 
-    # 7. Completion Summary
+    # 7. Auto-configure IDEs (Antigravity & Claude Code)
+    from devbrain.core.client_config import configure_antigravity, configure_claude
+    with console.status("[bold green]Registering FastMCP server in AI coding assistants...[/bold green]"):
+        ag_configs = configure_antigravity(vault_path)
+        claude_config = configure_claude(vault_path)
+
+    print_success(f"Registered FastMCP server in Antigravity IDE ({len(ag_configs)} configs updated).")
+    print_success(f"Registered FastMCP server in Claude Code ({claude_config}).")
+
+    # 8. Completion Summary
     console.print("\n" + "─" * 60)
     console.print("[bold green]🎉 Initialization Complete! Your Central AI Brain is ready.[/bold green]")
     console.print("\n[bold white]Next Steps:[/bold white]")

@@ -8,13 +8,13 @@ Index of all product versions, feature updates, and sprint releases for **`devbr
 
 | Version | Release Date | Key Highlights | Status | Link |
 | :--- | :--- | :--- | :--- | :--- |
+| **`v0.3.0-alpha`** | 2026-08-29 | Sprint 03: FastMCP Protocol Gateway, 4 Core AI Memory Tools, Antigravity/Claude Auto-Config, `devbrain serve`, `devbrain skill`, `devbrain uninstall` | ✅ Released | [v0.3.0-alpha.md](./v0.3.0-alpha.md) |
 | **`v0.2.0-alpha`** | 2026-08-29 | Sprint 02: Markdown Parser, Header-Aware Chunker, FastEmbed + Rank-BM25 Hybrid Search, Watchdog Live Watcher, CLI `search` & `index` | ✅ Released | [v0.2.0-alpha.md](./v0.2.0-alpha.md) |
 | **`v0.1.0-alpha`** | 2026-08-29 | Sprint 01: Core Packaging, Config Manager, Full 07 Taxonomy Scaffolder, CLI `init` Wizard, CLI `status`, & English Localization | ✅ Released | [v0.1.0-alpha.md](./v0.1.0-alpha.md) |
-| **`v0.3.0-alpha`** | *Upcoming* | Sprint 03: FastMCP Protocol Gateway & IDE Auto-Configurator | ⏳ In Planning | — |
 | **`v1.0.0-alpha`** | *Upcoming* | Sprint 04: Full Integration Tests, Latency Benchmarks, & Release Readiness | ⏳ In Planning | — |
 
 ---
 
 ## 📌 Changelog Policy
 - Every sprint completion, bug fix, feature addition, or breaking change must be recorded in `docs/changelog/`.
-- Releases follow [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH` (e.g. `v0.2.0-alpha`).
+- Releases follow [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH` (e.g. `v0.3.0-alpha`).
