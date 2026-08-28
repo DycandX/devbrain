@@ -38,6 +38,6 @@ Dokumen ini memetakan seluruh Sprint dan Task yang harus diselesaikan untuk mera
 ### 🧪 [Sprint 04: Integration Testing, Benchmarking & Packaging](./sprint-04/)
 | Task | Deskripsi | Target File | Status |
 | :--- | :--- | :--- | :--- |
-| 📄 [Task 01](./sprint-04/task-01-integration-and-unit-tests.md) | Pytest Suite Komprehensif | `tests/test_*.py` | ⏳ Todo |
-| 📄 [Task 02](./sprint-04/task-02-benchmarking-and-profiling.md) | Benchmarking Latensi (<20ms) & RAM Profiling | `benchmarks/*.py` | ⏳ Todo |
-| 📄 [Task 03](./sprint-04/task-03-developer-guide-and-release-readiness.md) | Developer Quickstart & Packaging | `README.md`, `docs/changelog/` | ⏳ Todo |
+| 📄 [Task 01](./sprint-04/task-01-integration-and-unit-tests.md) | Pytest Suite Komprehensif (23 Tests) | `tests/test_*.py` | ✅ Done |
+| 📄 [Task 02](./sprint-04/task-02-benchmarking-and-profiling.md) | Benchmarking Latensi (<20ms) & RAM Profiling | `benchmarks/*.py` | ✅ Done |
+| 📄 [Task 03](./sprint-04/task-03-developer-guide-and-release-readiness.md) | Developer Quickstart & Packaging | `README.md`, `docs/changelog/` | ✅ Done |

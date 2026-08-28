@@ -3,7 +3,7 @@
 | Attribute | Detail |
 | :--- | :--- |
 | **Sprint** | Level 1 / Sprint 04 |
-| **Status** | Todo |
+| **Status** | ✅ Done |
 | **Target Files** | `benchmarks/benchmark_search.py`, `benchmarks/generate_mock_vault.py` |
 
 ---

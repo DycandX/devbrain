@@ -3,7 +3,7 @@
 | Attribute | Detail |
 | :--- | :--- |
 | **Sprint** | Level 1 / Sprint 04 |
-| **Status** | Todo |
+| **Status** | ✅ Done |
 | **Target Files** | `README.md`, `docs/changelog/v1.0.0-alpha.md` |
 
 ---

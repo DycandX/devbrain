@@ -3,7 +3,7 @@
 | Attribute | Detail |
 | :--- | :--- |
 | **Sprint** | Level 1 / Sprint 04 |
-| **Status** | Todo |
+| **Status** | ✅ Done |
 | **Target Files** | `tests/test_config.py`, `tests/test_parser.py`, `tests/test_hybrid_search.py`, `tests/test_mcp_tools.py`, `tests/test_cli.py` |
 
 ---
