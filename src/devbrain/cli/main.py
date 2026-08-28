@@ -5,7 +5,9 @@ from typing import Optional
 import typer
 
 from devbrain import __version__
+from devbrain.cli.commands.index_cmd import index_command
 from devbrain.cli.commands.init_cmd import init_command
+from devbrain.cli.commands.search_cmd import search_command
 from devbrain.cli.commands.status_cmd import status_command
 from devbrain.cli.ui.console import console
 
@@ -26,6 +28,16 @@ app.command(
     name="status",
     help="Display vault status, configuration parameters, and note statistics.",
 )(status_command)
+
+app.command(
+    name="search",
+    help="Perform semantic, keyword, or hybrid search across indexed vault notes.",
+)(search_command)
+
+app.command(
+    name="index",
+    help="Index or re-index Obsidian Markdown files into FastEmbed & BM25 local stores.",
+)(index_command)
 
 
 def version_callback(value: bool):

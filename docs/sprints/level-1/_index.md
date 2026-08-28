@@ -18,10 +18,10 @@ Dokumen ini memetakan seluruh Sprint dan Task yang harus diselesaikan untuk mera
 ### 🔍 [Sprint 02: Hybrid Indexer & Real-time Vault Watcher](./sprint-02/)
 | Task | Deskripsi | Target File | Status |
 | :--- | :--- | :--- | :--- |
-| 📄 [Task 01](./sprint-02/task-01-markdown-parser-and-chunker.md) | Markdown Parser & Header-Aware Chunker | `src/devbrain/engine/parser.py`, `chunker.py` | ⏳ Todo |
-| 📄 [Task 02](./sprint-02/task-02-fastembed-and-bm25-hybrid-engine.md) | FastEmbed & Rank-BM25 Hybrid Search Engine | `src/devbrain/engine/hybrid_search.py` | ⏳ Todo |
-| 📄 [Task 03](./sprint-02/task-03-vault-watcher-and-incremental-indexer.md) | Watchdog Vault Watcher & Incremental Indexer | `src/devbrain/watcher/vault_watcher.py` | ⏳ Todo |
-| 📄 [Task 04](./sprint-02/task-04-cli-search-and-index-commands.md) | CLI Search & Index Commands | `src/devbrain/cli/commands/search_cmd.py` | ⏳ Todo |
+| 📄 [Task 01](./sprint-02/task-01-markdown-parser-and-chunker.md) | Markdown Parser & Header-Aware Chunker | `src/devbrain/engine/parser.py`, `chunker.py` | ✅ Done |
+| 📄 [Task 02](./sprint-02/task-02-fastembed-and-bm25-hybrid-engine.md) | FastEmbed & Rank-BM25 Hybrid Search Engine | `src/devbrain/engine/hybrid_search.py` | ✅ Done |
+| 📄 [Task 03](./sprint-02/task-03-vault-watcher-and-incremental-indexer.md) | Watchdog Vault Watcher & Incremental Indexer | `src/devbrain/watcher/vault_watcher.py` | ✅ Done |
+| 📄 [Task 04](./sprint-02/task-04-cli-search-and-index-commands.md) | CLI Search & Index Commands | `src/devbrain/cli/commands/search_cmd.py` | ✅ Done |
 
 ---
 

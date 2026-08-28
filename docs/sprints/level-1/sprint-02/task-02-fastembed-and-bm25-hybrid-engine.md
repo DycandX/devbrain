@@ -3,7 +3,7 @@
 | Attribute | Detail |
 | :--- | :--- |
 | **Sprint** | Level 1 / Sprint 02 |
-| **Status** | Todo |
+| **Status** | ✅ Done |
 | **Target Files** | `src/devbrain/engine/embeddings.py`, `src/devbrain/engine/bm25.py`, `src/devbrain/engine/hybrid_search.py`, `src/devbrain/engine/storage.py` |
 
 ---

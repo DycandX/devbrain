@@ -3,7 +3,7 @@
 | Attribute | Detail |
 | :--- | :--- |
 | **Sprint** | Level 1 / Sprint 02 |
-| **Status** | Todo |
+| **Status** | ✅ Done |
 | **Target Files** | `src/devbrain/engine/parser.py`, `src/devbrain/engine/chunker.py`, `src/devbrain/engine/models.py` |
 
 ---

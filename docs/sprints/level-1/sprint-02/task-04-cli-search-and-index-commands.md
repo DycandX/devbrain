@@ -3,7 +3,7 @@
 | Attribute | Detail |
 | :--- | :--- |
 | **Sprint** | Level 1 / Sprint 02 |
-| **Status** | Todo |
+| **Status** | ✅ Done |
 | **Target Files** | `src/devbrain/cli/commands/search_cmd.py`, `src/devbrain/cli/commands/index_cmd.py` |
 
 ---
