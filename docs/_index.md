@@ -31,7 +31,8 @@ docs/
 │   ├── 16-cli-architecture-dan-konsep-obsidian-sebagai-database.md
 │   ├── 17-core-mechanics-server-deployment-dan-tech-stack.md
 │   ├── 18-onboarding-laptop-pribadi-dan-alur-development.md
-│   └── 19-analisis-komprehensif-pemilihan-tech-stack.md
+│   ├── 19-analisis-komprehensif-pemilihan-tech-stack.md
+│   └── 20-analisis-repo-obsidian-mcp-zettelkasten-dan-daftar-command.md
 └── changelog-plan/                # [Execution Plans] Implementation plan, task list, & progress log
 ```
 
