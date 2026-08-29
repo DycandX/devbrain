@@ -16,22 +16,57 @@ Namun, sebuah *Second Brain* seorang *software engineer* tidak hanya berisi cata
 
 ```mermaid
 graph TD
-    subgraph "Dual Ingestion Engine"
-        A["🚜 Session Ingestion<br/>(Antigravity, Claude, Cline)"] --> Inbox["90_Agent_Inbox/<br/>(Session Notes & Walkthroughs)"]
-        B["🏗️ Project & Workspace Harvester<br/>(Git Repos, Manifests, READMEs)"] --> Projects["10_Projects/<br/>(Project Cards & Tech Specs)"]
+    subgraph "Dual Ingestion Architecture"
+        A["🚜 Session Ingestion<br/>(devbrain ingest sessions)"] --> Inbox["90_Agent_Inbox/<br/>(Session Notes & Walkthroughs)"]
+        B["🏗️ Project & Workspace Harvester<br/>(devbrain ingest projects)"] --> Projects["10_Projects/<br/>(Project Cards & Tech Specs)"]
     end
     
     Inbox -. "[[Wikilinks Auto-Connection]]" .-> Projects
 ```
 
+### Matriks Perbandingan Ingest Sesi AI vs Ingest Projek:
+| Aspek | `devbrain ingest` (Sesi AI) | `devbrain ingest projects` (Katalog Repo) |
+| :--- | :--- | :--- |
+| **Sumber Data** | File internal AI Agent (`~/.gemini/antigravity-ide/brain/`, `~/.claude/projects/`, dll.) | Folder repositori koding fisik di harddisk (misal `E:/_PROJECT/`) |
+| **Data yang Diambil** | Ringkasan walkthrough, prompt user, plan arsitektur, dan logs. | Git remote URL, branch aktif, file `README.md`, bahasa, dan daftar *dependencies* (`pyproject.toml`, `package.json`). |
+| **Tujuan di Vault** | Disimpan ke **`90_Agent_Inbox/<source>/`** sebagai catatan riwayat log. | Disimpan ke **`10_Projects/<Nama_Projek>/`** sebagai dokumen kartu induk projek. |
+| **Peran di Graph View** | Menjadi **node cabang (*leaf node*)**. | Menjadi **simpul sentral (*hub node / matahari*)**. |
+
 ---
 
-## 2. Bagaimana Cara Kerja *Project Harvester* (`devbrain ingest projects`)?
+## 2. Tiga Mode Eksekusi: Apakah Harus Manual & Masukkan Path Tiap Kali?
 
-### A. Lokasi Pemindaian (*Scan Targets*)
-Pengguna dapat menentukan folder root projek mereka (misal: `E:/_PROJECT/`, `~/workspace/`, `~/Projects/`, `~/Documents/GitHub/`).
+Untuk mempertahankan prinsip **Zero-Friction**, developer **TIDAK PERLU mengetik path satu per satu**. Kita merancang 3 tingkat fleksibilitas:
 
-### B. Indikator Deteksi Repositori Otomatis:
+### 🌟 Mode 1: 100% Otomatis saat AI Session Ingest (*Zero-Click Auto-Provisioning*)
+* Saat menjalankan `devbrain ingest` biasa untuk memanen sesi AI, sistem membaca metadata path kerja (*workspace path*) sesi tersebut (misal: `E:/_PROJECT/_Central AI Brain Hub`).
+* Jika folder `10_Projects/_Central AI Brain Hub/` **belum ada di Obsidian**, `devbrain` secara otomatis **mendeteksi, membaca file manifest/README repo tersebut, dan langsung membuatkan kartu projeknya di `10_Projects/`**.
+* Kemudian, sesi AI tersebut langsung disambungkan dengan `[[Wikilinks]]` ke kartu projek yang baru dibuat.
+
+### 🛠️ Mode 2: Simpan Default Workspace Root di `.brainrc.json` (*Set-and-Forget*)
+Saat pertama kali menjalankan `devbrain init`, pengguna bisa menyimpan path root tempat projek biasa disimpan:
+```json
+{
+  "vault_path": "E:/_PROJECT/_Central AI Brain Hub/vault",
+  "workspace_roots": [
+    "E:/_PROJECT"
+  ]
+}
+```
+Setelah disetel:
+* Cukup ketik: `devbrain ingest projects` *(tanpa argumen)* $\rightarrow$ Sistem langsung memindai seluruh folder di dalam `E:/_PROJECT/`.
+
+### 📂 Mode 3: Manual Scan Folder Spesifik (*Ad-Hoc Scan*)
+Jika baru saja meng-clone repo di direktori luar (misal di flashdisk atau `D:/Client/`):
+```bash
+devbrain ingest projects --dir "D:/Client/EcommerceApp"
+```
+
+---
+
+## 3. Bagaimana Cara Kerja Pemindaian Repositori?
+
+### A. Indikator Deteksi Repositori Otomatis:
 1. **Keberadaan folder `.git/`** $\rightarrow$ Ekstrak URL Remote GitHub/GitLab, branch aktif, dan author.
 2. **Manifest Bahasa & Package Manager:**
    * **Python:** `pyproject.toml`, `requirements.txt`, `setup.py`, `Pipfile`
@@ -44,9 +79,9 @@ Pengguna dapat menentukan folder root projek mereka (misal: `E:/_PROJECT/`, `~/w
 
 ---
 
-## 3. Struktur Output Auto-Seeding di `10_Projects/`
+## 4. Struktur Output Auto-Seeding di `10_Projects/`
 
-Saat `devbrain ingest projects --dir "E:/_PROJECT"` dijalankan, sistem otomatis membuat satu subfolder untuk setiap repo di `10_Projects/<Nama_Projek>/README.md`:
+Saat projek di-ingest, sistem otomatis membuat satu subfolder untuk setiap repo di `10_Projects/<Nama_Projek>/README.md`:
 
 ```markdown
 ---
@@ -88,7 +123,7 @@ LIMIT 10
 
 ---
 
-## 4. Manfaat & Nilai Tambah (*Symbiosis Effect*)
+## 5. Manfaat & Nilai Tambah (*Symbiosis Effect*)
 
 1. **Graph View Terhubung Sempurna (*No More Orphan Nodes*):**
    * Setiap kali AI Agent bekerja di repo `E:/_PROJECT/MyApp`, sesi tersebut langsung menautkan diri ke `[[10_Projects/MyApp/README|MyApp]]`.
@@ -100,15 +135,18 @@ LIMIT 10
 
 ---
 
-## 5. Rencana Perintah CLI
+## 6. Rencana Perintah CLI Lengkap
 
 ```bash
-# Ingest seluruh project/repo di folder E:/_PROJECT
-devbrain ingest projects --path "E:/_PROJECT"
+# 1. Ingest sesi percakapan AI + Auto-provisioning project card jika belum ada
+devbrain ingest
 
-# Ingest project sekaligus scan session AI
+# 2. Batch ingest seluruh project/repo di workspace root (.brainrc.json)
+devbrain ingest projects
+
+# 3. Ingest repo dari direktori spesifik
+devbrain ingest projects --dir "D:/CustomProjects/MyRepo"
+
+# 4. Full scan: Ingest seluruh project fisik + seluruh sesi AI sekaligus
 devbrain ingest all
-
-# Update metadata project lokal secara periodik
-devbrain ingest projects --sync
 ```
