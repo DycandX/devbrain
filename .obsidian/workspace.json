@@ -4,21 +4,17 @@
     "type": "split",
     "children": [
       {
-        "id": "68efcfe962de486b",
+        "id": "85537f94224b95a8",
         "type": "tabs",
         "children": [
           {
-            "id": "bdb3ebb3d09b8ba6",
+            "id": "f134733e5af56feb",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "docs/brainstorming/31-penyederhanaan-ux-cli-ingest-dan-koneksi-fisik-projek-ke-vault.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "31-penyederhanaan-ux-cli-ingest-dan-koneksi-fisik-projek-ke-vault"
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
             }
           }
         ]
@@ -83,7 +79,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "8bf3da5b07077296",
@@ -99,7 +96,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "docs/brainstorming/31-penyederhanaan-ux-cli-ingest-dan-koneksi-fisik-projek-ke-vault.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -118,7 +114,6 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "docs/brainstorming/31-penyederhanaan-ux-cli-ingest-dan-koneksi-fisik-projek-ke-vault.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -161,7 +156,6 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "docs/brainstorming/31-penyederhanaan-ux-cli-ingest-dan-koneksi-fisik-projek-ke-vault.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -188,31 +182,44 @@
       "bases:Create new base": false
     }
   },
-  "active": "bdb3ebb3d09b8ba6",
+  "active": "f134733e5af56feb",
   "lastOpenFiles": [
-    "docs/changelog/v1.4.0-alpha.md",
-    "tests/__pycache__/test_unified_ingest.cpython-314-pytest-9.1.1.pyc",
-    "tests/test_unified_ingest.py",
-    "docs/sprints/level-1/sprint-08/task-04-automated-test-suite-and-release-v1-4-0.md",
-    "docs/sprints/level-1/sprint-08/task-03-self-ingestion-guard.md",
-    "docs/sprints/level-1/sprint-08/task-02-interactive-ide-deep-links.md",
-    "docs/sprints/level-1/sprint-08/task-01-unified-dwim-ingest-router.md",
-    "docs/sprints/level-1/sprint-08",
-    "docs/implementation-plan/level-1/03-implementation-plan-unified-ingest-and-ide-deeplinks.md",
-    "docs/brainstorming/30-penanganan-folder-projek-berisi-vault-obsidian.md",
-    "docs/brainstorming/31-penyederhanaan-ux-cli-ingest-dan-koneksi-fisik-projek-ke-vault.md",
-    "demo_vault/10_Projects/HowToBeAProgrammer/README.md",
-    "demo_vault/10_Projects/HowToBeAProgrammer",
-    "demo_vault/10_Projects/qdrant-local-demo/README.md",
-    "demo_vault/10_Projects/qdrant-local-demo",
-    "demo_vault/10_Projects/neo4j-express-demo/README.md",
-    "demo_vault/10_Projects/neo4j-express-demo",
-    "docs/changelog/v1.3.0-alpha.md",
-    "docs/sprints/level-1/sprint-03/task-04-cli-uninstall-and-clean-teardown.md",
-    "docs/implementation-plan/level-1/01-implementation-plan-level-1-standalone.md",
-    "demo_vault/90_Agent_Inbox/antigravity/20260801_104203_omen-15_antigravity_f50101d7-5ef.md",
-    "tests/__pycache__/test_codebase_synthesizer.cpython-314-pytest-9.1.1.pyc",
-    "src/devbrain/harvester/__pycache__/tree_analyzer.cpython-314.pyc",
-    "tests/test_codebase_synthesizer.py"
+    "demo_vault/en.md",
+    "Untitled.canvas",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Technical-Judgment/03-Choosing-Languages.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Serving-Your-Team/10-How-to-Deal-with-Managerial-Myths.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Technical-Judgment/02-How-to-Utilize-Embedded-Languages.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Technical-Judgment/01-How-to-Tell-the-Hard-From-the-Impossible.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Serving-Your-Team/11-How-to-Deal-with-Organizational-Chaos.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Serving-Your-Team/09-How-to-Tell-People-Things-They-Dont-Want-to-Hear.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Serving-Your-Team/08-How-to-Communicate-Well.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Serving-Your-Team/05-How-to-Handle-Boring-Tasks.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Serving-Your-Team/07-How-to-Grow-a-System.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Serving-Your-Team/06-How-to-Gather-Support-for-a-Project.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Serving-Your-Team/04-How-to-Divide-Problems-Up.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Compromising-Wisely/03-How-to-Get-a-Promotion.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Serving-Your-Team/03-How-to-Get-the-Most-From-Your-Teammates.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Compromising-Wisely/02-How-to-Understand-the-User.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Serving-Your-Team/02-How-to-Choose-What-to-Work-On.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Serving-Your-Team/01-How-to-Develop-Talent.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Compromising-Wisely/01-How-to-Fight-Schedule-Pressure.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Team-Skills/05-How-to-Disagree-Honestly-and-Get-Away-with-It.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Team-Skills/04-How-to-Communicate-the-Right-Amount.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Team-Skills/01-How-to-Manage-Development-Time.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Team-Skills/03-How-to-Manage-Consultants.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Team-Skills/02-How-to-Manage-Third-Party-Software-Risks.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Personal-Skills/11-How-to-analyze-data.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Personal-Skills/10-Heavy-Tools.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Personal-Skills/09-Communication-Languages.md",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Technical-Judgment",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Serving-Your-Team",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Compromising-Wisely",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Team-Skills",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Personal-Skills",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/1-Beginner/Team-Skills",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/1-Beginner/Personal-Skills",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Judgment",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced",
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate"
   ]
 }
