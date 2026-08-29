@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.3.0-alpha] - 2026-08-29
+
+### 🚀 Added
+- **Smart Codebase Tree Analyzer & Entrypoint Detector:** Generates clean ASCII directory structures ignoring binary/venv/build directories (`src/devbrain/harvester/tree_analyzer.py`), detecting entrypoints (`server.js`, `main.py`, `index.ts`) and infra specs (`docker-compose.yml`, `.env.example`).
+- **Intelligent Architecture Synthesis for README-less Projects:** Automatically synthesizes rich project cards with tech stack overview, runnable scripts (`## ⚡ Runnable Scripts`), and directory trees (`## 🌳 Project Structure`) when no `README.md` exists.
+- **Parent Workspace Container Auto-Delegation:** Auto-detects multi-project parent folders (e.g. `_fxmedia`) and seamlessly delegates to scanning and auto-seeding each sub-project into `10_Projects/`.
+- **Automated Tests:** 38 comprehensive automated tests passing 100%.
+
+For complete release details, see [docs/changelog/v1.3.0-alpha.md](docs/changelog/v1.3.0-alpha.md).
+
+---
+
 ## [1.2.0-alpha] - 2026-08-29
 
 ### 🚀 Added

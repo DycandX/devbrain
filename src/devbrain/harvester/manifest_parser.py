@@ -1,10 +1,10 @@
-"""Multi-Language Dependency and Manifest Parser."""
+"""Multi-Language Dependency, Scripts, and Manifest Parser."""
 
 from dataclasses import dataclass, field
 import json
 from pathlib import Path
 import re
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 try:
     import tomllib
@@ -21,6 +21,7 @@ class ParsedManifest:
     languages: List[str] = field(default_factory=list)
     stack_tags: List[str] = field(default_factory=list)
     dependencies: List[str] = field(default_factory=list)
+    scripts: Dict[str, str] = field(default_factory=dict)
 
 
 def parse_python_manifest(repo_path: Path) -> ParsedManifest:
@@ -53,6 +54,12 @@ def parse_python_manifest(repo_path: Path) -> ParsedManifest:
                         deps.append(k)
 
             manifest.dependencies.extend(deps)
+
+            # Extract scripts
+            py_scripts = proj.get("scripts", {}) or data.get("tool", {}).get("poetry", {}).get("scripts", {})
+            if isinstance(py_scripts, dict):
+                for k, v in py_scripts.items():
+                    manifest.scripts[k] = str(v)
         except Exception:
             pass
 
@@ -84,6 +91,7 @@ def parse_python_manifest(repo_path: Path) -> ParsedManifest:
         "langchain": "LangChain",
         "langgraph": "LangGraph",
         "qdrant-client": "Qdrant",
+        "neo4j": "Neo4j",
     }
     for k, v in known_stacks.items():
         if k in dep_lower:
@@ -116,6 +124,10 @@ def parse_node_manifest(repo_path: Path) -> ParsedManifest:
 
             manifest.dependencies = list(all_deps.keys())
 
+            # Extract npm scripts
+            if "scripts" in data and isinstance(data["scripts"], dict):
+                manifest.scripts = data["scripts"]
+
             dep_lower = {d.lower() for d in manifest.dependencies}
             known_stacks = {
                 "react": "React",
@@ -126,6 +138,8 @@ def parse_node_manifest(repo_path: Path) -> ParsedManifest:
                 "tailwindcss": "TailwindCSS",
                 "typescript": "TypeScript",
                 "vite": "Vite",
+                "neo4j-driver": "Neo4j",
+                "@qdrant/js-client-rest": "Qdrant",
             }
             for k, v in known_stacks.items():
                 if k in dep_lower and v not in manifest.stack_tags:
@@ -154,6 +168,8 @@ def parse_rust_manifest(repo_path: Path) -> ParsedManifest:
             deps = list(data.get("dependencies", {}).keys())
             manifest.dependencies = deps
             manifest.stack_tags.append("Rust")
+            manifest.scripts["cargo run"] = "cargo run"
+            manifest.scripts["cargo test"] = "cargo test"
         except Exception:
             pass
 
@@ -174,6 +190,8 @@ def parse_go_manifest(repo_path: Path) -> ParsedManifest:
                         manifest.name = line.split("module ", 1)[1].strip().split("/")[-1]
                         break
             manifest.stack_tags.append("Golang")
+            manifest.scripts["go run"] = "go run main.go"
+            manifest.scripts["go test"] = "go test ./..."
         except Exception:
             pass
 
@@ -190,6 +208,7 @@ def parse_repository_manifest(repo_path: Path) -> ParsedManifest:
         combined.languages.extend([l for l in py_man.languages if l not in combined.languages])
         combined.stack_tags.extend([s for s in py_man.stack_tags if s not in combined.stack_tags])
         combined.dependencies.extend(py_man.dependencies)
+        combined.scripts.update(py_man.scripts)
         if not combined.name:
             combined.name = py_man.name
             combined.version = py_man.version
@@ -201,6 +220,7 @@ def parse_repository_manifest(repo_path: Path) -> ParsedManifest:
         combined.languages.extend([l for l in node_man.languages if l not in combined.languages])
         combined.stack_tags.extend([s for s in node_man.stack_tags if s not in combined.stack_tags])
         combined.dependencies.extend(node_man.dependencies)
+        combined.scripts.update(node_man.scripts)
         if not combined.name:
             combined.name = node_man.name
             combined.version = node_man.version
@@ -212,6 +232,7 @@ def parse_repository_manifest(repo_path: Path) -> ParsedManifest:
         combined.languages.extend([l for l in rust_man.languages if l not in combined.languages])
         combined.stack_tags.extend([s for s in rust_man.stack_tags if s not in combined.stack_tags])
         combined.dependencies.extend(rust_man.dependencies)
+        combined.scripts.update(rust_man.scripts)
         if not combined.name:
             combined.name = rust_man.name
 
@@ -220,6 +241,7 @@ def parse_repository_manifest(repo_path: Path) -> ParsedManifest:
         go_man = parse_go_manifest(repo_path)
         combined.languages.extend([l for l in go_man.languages if l not in combined.languages])
         combined.stack_tags.extend([s for s in go_man.stack_tags if s not in combined.stack_tags])
+        combined.scripts.update(go_man.scripts)
         if not combined.name:
             combined.name = go_man.name
 

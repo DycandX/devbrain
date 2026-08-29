@@ -13,6 +13,7 @@ class RepoType(str, Enum):
     REFERENCE = "reference"        # Cloned external codebase for study (20_Knowledge/External_Repos/)
     SKILL = "skill"                # Agent skill / tool mesh (00_System/Agent_Skills/)
     KNOWLEDGE = "knowledge"        # Markdown docs / book / awesome-list (20_Knowledge/References/)
+    CONTAINER = "container"        # Multi-project parent/workspace folder containing sub-projects
     UNKNOWN = "unknown"
 
 
@@ -85,21 +86,19 @@ def inspect_repository_type(
     if (repo_path / "SKILL.md").is_file() or (repo_path / "skills").is_dir():
         return RepoType.SKILL, "Contains SKILL.md or skills/ directory."
 
-    # 2. Check for Pure Markdown Documentation / Knowledge
-    all_files = [p for p in repo_path.rglob("*") if p.is_file() and not any(part.startswith(".") for part in p.parts)]
-    if all_files:
-        md_files = [p for p in all_files if p.suffix.lower() == ".md"]
-        manifest_files = [p for p in all_files if p.name in ["package.json", "pyproject.toml", "Cargo.toml", "go.mod", "setup.py"]]
-        
-        if (len(md_files) / len(all_files) > 0.6) and not manifest_files:
-            return RepoType.KNOWLEDGE, "Predominantly Markdown documents with no code manifests."
-
-    # 3. Check for Code Manifests (Project vs Reference)
+    # 2. Check for Direct Code Manifests (Project vs Reference)
     manifest = parse_repository_manifest(repo_path)
-    has_code = bool(manifest.dependencies or manifest.languages or (repo_path / ".git").is_dir())
+    has_direct_code = bool(
+        manifest.dependencies or 
+        (repo_path / "package.json").is_file() or
+        (repo_path / "pyproject.toml").is_file() or
+        (repo_path / "Cargo.toml").is_file() or
+        (repo_path / "go.mod").is_file() or
+        (repo_path / "requirements.txt").is_file() or
+        (repo_path / ".git").is_dir()
+    )
 
-    if has_code:
-        # Check Git Author Heuristic
+    if has_direct_code:
         user_email = get_git_config_email()
         remote_url, last_author = get_repo_git_authors(repo_path)
 
@@ -111,9 +110,29 @@ def inspect_repository_type(
             return RepoType.PROJECT, f"Git author '{last_author}' matches local git user."
 
         if not last_author and not remote_url:
-            # Local new repository without git or fresh init
             return RepoType.PROJECT, "Local codebase with active code manifests."
 
         return RepoType.PROJECT, "Codebase with active build manifests."
+
+    # 3. Check for Multi-Project Container / Workspace Folder (e.g. _fxmedia)
+    subproject_dirs = []
+    for sub in repo_path.iterdir():
+        if sub.is_dir() and not sub.name.startswith(".") and sub.name not in ["node_modules", "venv", ".venv"]:
+            has_sub_code = any(
+                (sub / m).is_file() for m in ["package.json", "pyproject.toml", "Cargo.toml", "go.mod", "requirements.txt", "Dockerfile"]
+            ) or (sub / ".git").is_dir()
+            if has_sub_code:
+                subproject_dirs.append(sub)
+
+    if len(subproject_dirs) >= 1:
+        return RepoType.CONTAINER, f"Multi-project workspace containing {len(subproject_dirs)} sub-project(s)."
+
+    # 4. Check for Pure Markdown Documentation / Knowledge
+    all_files = [p for p in repo_path.rglob("*") if p.is_file() and not any(part.startswith(".") for part in p.parts)]
+    if all_files:
+        md_files = [p for p in all_files if p.suffix.lower() == ".md"]
+        manifest_files = [p for p in all_files if p.name in ["package.json", "pyproject.toml", "Cargo.toml", "go.mod", "setup.py"]]
+        if (len(md_files) / len(all_files) > 0.6) and not manifest_files:
+            return RepoType.KNOWLEDGE, "Predominantly Markdown documents with no code manifests."
 
     return RepoType.UNKNOWN, "Could not determine repository type."

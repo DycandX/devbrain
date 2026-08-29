@@ -62,3 +62,13 @@ Dokumen ini memetakan seluruh Sprint dan Task yang harus diselesaikan untuk mera
 | 📄 [Task 03](./sprint-06/task-03-auto-entity-linker-and-backlink-injector.md) | Auto-Entity Linker & Backlink Injector | `src/devbrain/harvester/entity_linker.py` | ✅ Done |
 | 📄 [Task 04](./sprint-06/task-04-cli-targeted-single-and-batch-ingestion.md) | CLI Targeted Single & Batch Ingestion (`project`, `projects`, `all`) | `src/devbrain/cli/commands/ingest_cmd.py` | ✅ Done |
 | 📄 [Task 05](./sprint-06/task-05-automated-test-suite-and-release-v1-2-0.md) | Automated Test Suite & Release `v1.2.0-alpha` | `tests/test_project_ingestion.py`, `CHANGELOG.md` | ✅ Done |
+
+---
+
+### 🧠 [Sprint 07: Smart Codebase Synthesizer & README-less Harvester Upgrade](./sprint-07/)
+| Task | Deskripsi | Target File | Status |
+| :--- | :--- | :--- | :--- |
+| 📄 [Task 01](./sprint-07/task-01-codebase-tree-and-entrypoint-analyzer.md) | Codebase Tree Generator & Entrypoint Analyzer | `src/devbrain/harvester/tree_analyzer.py` | ✅ Done |
+| 📄 [Task 02](./sprint-07/task-02-intelligent-project-card-synthesis.md) | Intelligent Project Card Synthesis for README-less Projects | `src/devbrain/harvester/project_harvester.py` | ✅ Done |
+| 📄 [Task 03](./sprint-07/task-03-parent-workspace-folder-auto-delegation.md) | Workspace Container / Multi-Project Folder Auto-Delegation | `src/devbrain/harvester/inspector.py`, `service.py` | ✅ Done |
+| 📄 [Task 04](./sprint-07/task-04-automated-test-suite-and-release-v1-3-0.md) | Automated Test Suite & Release `v1.3.0-alpha` | `tests/test_codebase_synthesizer.py`, `CHANGELOG.md` | ✅ Done |

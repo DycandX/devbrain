@@ -139,7 +139,7 @@ def ingest_single_project_cmd(
         help="Manual path to Obsidian vault",
     ),
 ):
-    """Targeted ingestion for a single project, skill, or reference repository."""
+    """Targeted ingestion for a single project, skill, reference repository, or multi-project container."""
     print_banner()
 
     repo_dir = Path(target_path).resolve()
@@ -157,12 +157,37 @@ def ingest_single_project_cmd(
     service = IngestionService(vault_path=vault_dir, config=config)
 
     with console.status(f"[bold green]Inspecting and harvesting '{repo_dir.name}'...[/bold green]"):
-        metadata, created_file = service.ingest_single_project(
+        metadata, result = service.ingest_single_project(
             repo_path=repo_dir,
             explicit_type=target_type,
             dry_run=dry_run,
         )
 
+    # 1. Multi-project container workspace handling
+    if metadata.repo_type == RepoType.CONTAINER and isinstance(result, list):
+        print_info(f"Detected multi-project container folder. Automatically scanned {len(result)} sub-project(s).\n")
+        table = Table(title=f"🗂️ Multi-Project Workspace Scan: {metadata.name} ({len(result)} Found)", border_style="cyan")
+        table.add_column("Sub-Project", style="bold white")
+        table.add_column("Classified Type", style="bold cyan")
+        table.add_column("Stack", style="magenta")
+        table.add_column("Vault Destination", style="green")
+
+        for sub_meta, sub_path in result:
+            table.add_row(
+                sub_meta.name,
+                sub_meta.repo_type.value.upper(),
+                ", ".join(sub_meta.stack_tags[:3]) or "Standard",
+                sub_path.name if sub_path else "Dry-Run",
+            )
+
+        console.print(table)
+        console.print()
+        if not dry_run and result:
+            print_success(f"Successfully auto-seeded {len(result)} sub-projects into Obsidian Vault.")
+        return
+
+    # 2. Single repository inspection table
+    created_file = result if isinstance(result, Path) else None
     table = Table(title=f"📦 Repository Inspection: {metadata.name}", border_style="cyan")
     table.add_column("Property", style="bold white")
     table.add_column("Details", style="bold cyan")
@@ -172,6 +197,7 @@ def ingest_single_project_cmd(
     table.add_row("Classification Reason", metadata.type_reason)
     table.add_row("Languages", ", ".join(metadata.languages))
     table.add_row("Tech Stack", ", ".join(metadata.stack_tags) or "Standard")
+    table.add_row("Entrypoints", ", ".join(metadata.entrypoints) or "Standard")
     table.add_row("Git Remote", metadata.git_remote or "Local Repository")
     table.add_row("Target Location", str(created_file) if created_file else "DRY-RUN (No file written)")
 
@@ -229,7 +255,7 @@ def ingest_workspace_projects_cmd(
     for meta, created_path in results:
         table.add_row(
             meta.name,
-            meta.repo_type.value,
+            meta.repo_type.value.upper(),
             ", ".join(meta.stack_tags[:3]) or "Standard",
             created_path.name if created_path else "Dry-Run",
         )

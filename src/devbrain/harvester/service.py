@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 import json
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 from devbrain.core.config import BrainConfig
 from devbrain.core.constants import BRAIN_DATA_DIR, DIR_INBOX, DIR_PROJECTS
@@ -12,6 +12,7 @@ from devbrain.harvester.discovery import discover_sessions
 from devbrain.harvester.entity_linker import inject_backlink_to_project, match_session_to_project
 from devbrain.harvester.extractor import extract_session_payload
 from devbrain.harvester.formatter import format_session_note
+from devbrain.harvester.inspector import RepoType
 from devbrain.harvester.project_harvester import (
     ScannedProjectMetadata,
     scan_project_metadata,
@@ -68,9 +69,15 @@ class IngestionService:
         repo_path: Path,
         explicit_type: Optional[str] = None,
         dry_run: bool = False,
-    ) -> Tuple[ScannedProjectMetadata, Optional[Path]]:
-        """Scan and seed a single repository into the vault."""
+    ) -> Tuple[ScannedProjectMetadata, Union[Optional[Path], List[Tuple[ScannedProjectMetadata, Optional[Path]]]]]:
+        """Scan and seed a single repository, or auto-delegate if it's a multi-project container."""
         metadata = scan_project_metadata(repo_path, explicit_type=explicit_type)
+        
+        # Auto-delegation for container workspace folders (e.g. _fxmedia)
+        if metadata.repo_type == RepoType.CONTAINER:
+            sub_results = self.ingest_workspace_projects(root_dirs=[repo_path], dry_run=dry_run)
+            return metadata, sub_results
+
         created_file = None
         if not dry_run:
             created_file = seed_project_to_vault(metadata, vault_path=self.vault_path)
@@ -102,11 +109,14 @@ class IngestionService:
 
                 # Check if it has a git directory or a known code manifest
                 has_git = (item / ".git").is_dir()
-                has_manifest = any((item / m).is_file() for m in ["pyproject.toml", "package.json", "Cargo.toml", "go.mod", "setup.py", "requirements.txt", "SKILL.md"])
+                has_manifest = any((item / m).is_file() for m in ["pyproject.toml", "package.json", "Cargo.toml", "go.mod", "setup.py", "requirements.txt", "SKILL.md", "Dockerfile"])
                 
                 if has_git or has_manifest:
                     meta, path = self.ingest_single_project(item, dry_run=dry_run)
-                    results.append((meta, path))
+                    if isinstance(path, list):
+                        results.extend(path)
+                    else:
+                        results.append((meta, path))
 
         return results
 
@@ -156,7 +166,7 @@ class IngestionService:
                 if hint_path.is_dir():
                     try:
                         p_meta, p_file = self.ingest_single_project(hint_path, dry_run=False)
-                        if p_file:
+                        if isinstance(p_file, Path):
                             matched_project = (p_meta.name, f"10_Projects/{p_meta.clean_name}/README")
                     except Exception:
                         pass
