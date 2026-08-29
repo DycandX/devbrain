@@ -53,6 +53,7 @@ def search_command(
         vault_path=vault_dir,
         embedding_model=config.embedding_model,
         ignored_patterns=config.ignored_paths,
+        linked_vaults=config.resolve_linked_vaults(),
     )
 
     # 2. Check if index exists or run initial index

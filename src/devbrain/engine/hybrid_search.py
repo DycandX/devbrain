@@ -14,16 +14,18 @@ from devbrain.engine.storage import BrainStorage
 
 
 class HybridEngine:
-    """Core orchestrator for document indexing, embeddings, BM25, and hybrid search."""
+    """Core orchestrator for document indexing, embeddings, BM25, and federated hybrid search."""
 
     def __init__(
         self,
         vault_path: Path,
         embedding_model: str = "BAAI/bge-small-en-v1.5",
         ignored_patterns: Optional[List[str]] = None,
+        linked_vaults: Optional[Dict[str, Path]] = None,
     ):
         self.vault_path = vault_path.resolve()
         self.ignored_patterns = ignored_patterns or list(DEFAULT_IGNORED_PATTERNS)
+        self.linked_vaults: Dict[str, Path] = linked_vaults or {}
         self.storage = BrainStorage(self.vault_path)
         self.embedder = EmbeddingEngine(model_name=embedding_model)
         self.bm25 = BM25Engine()
@@ -43,9 +45,13 @@ class HybridEngine:
             self.bm25.build_index([c.content for c in self.chunks])
         self._is_initialized = True
 
-    def _is_ignored(self, path: Path) -> bool:
+    def _is_ignored(self, path: Path, base_dir: Path) -> bool:
         """Check if a file or directory matches ignore rules."""
-        rel = path.relative_to(self.vault_path).as_posix()
+        try:
+            rel = path.relative_to(base_dir).as_posix()
+        except ValueError:
+            rel = path.name
+
         for part in path.parts:
             if part.startswith(".brain_data") or part == ".obsidian" or part == ".git":
                 return True
@@ -56,20 +62,36 @@ class HybridEngine:
                 return True
         return False
 
-    def get_vault_markdown_files(self) -> List[Path]:
-        """Discover all non-ignored Markdown files in the vault."""
-        md_files: List[Path] = []
+    def get_vault_markdown_files(self) -> Dict[str, Path]:
+        """Discover all non-ignored Markdown files across Central Vault and Linked Vaults.
+
+        Returns mapping of unique doc_id -> absolute file Path.
+        """
+        doc_map: Dict[str, Path] = {}
+
+        # 1. Central Vault files
         for file_path in self.vault_path.rglob("*.md"):
-            if not self._is_ignored(file_path):
-                md_files.append(file_path)
-        return md_files
+            if not self._is_ignored(file_path, self.vault_path):
+                rel_id = file_path.relative_to(self.vault_path).as_posix()
+                doc_map[rel_id] = file_path
+
+        # 2. Linked External Vaults
+        for alias, linked_path in self.linked_vaults.items():
+            if not linked_path.is_dir():
+                continue
+            for file_path in linked_path.rglob("*.md"):
+                if not self._is_ignored(file_path, linked_path):
+                    rel_id = f"linked:{alias}:{file_path.relative_to(linked_path).as_posix()}"
+                    doc_map[rel_id] = file_path
+
+        return doc_map
 
     def index_vault(
         self,
         force_reindex: bool = False,
         on_progress: Optional[Callable[[str, int, int], None]] = None,
     ) -> Dict[str, int]:
-        """Index all vault files incrementally or from scratch."""
+        """Index all Central Vault and Linked Vault files incrementally or from scratch."""
         self.initialize()
 
         if force_reindex:
@@ -78,31 +100,26 @@ class HybridEngine:
             self.vectors = np.array([], dtype=np.float32).reshape(0, 0)
             self.doc_mtimes = {}
 
-        current_files = self.get_vault_markdown_files()
-        current_rel_paths = {
-            f.relative_to(self.vault_path).as_posix(): f for f in current_files
-        }
+        current_docs = self.get_vault_markdown_files()
 
         # 1. Identify deleted documents
         existing_doc_ids = set(self.doc_mtimes.keys())
-        deleted_doc_ids = existing_doc_ids - set(current_rel_paths.keys())
+        deleted_doc_ids = existing_doc_ids - set(current_docs.keys())
 
         # 2. Identify new or modified files
-        files_to_process: List[Path] = []
-        for rel_path, full_path in current_rel_paths.items():
+        files_to_process: List[tuple[str, Path]] = []
+        for doc_id, full_path in current_docs.items():
             curr_mtime = full_path.stat().st_mtime
-            prev_mtime = self.doc_mtimes.get(rel_path)
+            prev_mtime = self.doc_mtimes.get(doc_id)
             if prev_mtime is None or curr_mtime > prev_mtime:
-                files_to_process.append(full_path)
+                files_to_process.append((doc_id, full_path))
 
         total_to_process = len(files_to_process)
         if not files_to_process and not deleted_doc_ids:
             return {"processed": 0, "deleted": 0, "total_chunks": len(self.chunks)}
 
         # Filter out deleted/modified chunks from existing lists
-        doc_ids_to_remove = deleted_doc_ids.union(
-            {f.relative_to(self.vault_path).as_posix() for f in files_to_process}
-        )
+        doc_ids_to_remove = deleted_doc_ids.union({doc_id for doc_id, _ in files_to_process})
 
         if doc_ids_to_remove:
             keep_indices = [
@@ -119,11 +136,21 @@ class HybridEngine:
 
         # Process new/modified files
         new_chunks: List[DocumentChunk] = []
-        for idx, file_path in enumerate(files_to_process):
+        for idx, (doc_id, file_path) in enumerate(files_to_process):
             if on_progress:
                 on_progress(file_path.name, idx + 1, total_to_process)
 
-            doc = parse_markdown_file(file_path, self.vault_path)
+            if doc_id.startswith("linked:"):
+                # Linked external doc
+                parts = doc_id.split(":", 2)
+                alias = parts[1]
+                base_dir = self.linked_vaults[alias]
+                doc = parse_markdown_file(file_path, base_dir)
+                doc.doc_id = doc_id
+                doc.tags.append(f"vault:{alias}")
+            else:
+                doc = parse_markdown_file(file_path, self.vault_path)
+
             doc_chunks = chunk_document(doc)
             new_chunks.extend(doc_chunks)
             self.doc_mtimes[doc.doc_id] = doc.updated_at
@@ -157,7 +184,7 @@ class HybridEngine:
         mode: Literal["hybrid", "dense", "bm25"] = "hybrid",
         scope: str = "all",
     ) -> List[SearchResult]:
-        """Perform semantic, keyword, or hybrid search across indexed chunks."""
+        """Perform semantic, keyword, or federated hybrid search across indexed chunks."""
         self.initialize()
 
         if not self.chunks or not query.strip():
@@ -187,6 +214,7 @@ class HybridEngine:
         # 4. Scope Filtering & Ranking
         scored_indices = np.argsort(-final_scores)
         results: List[SearchResult] = []
+        scope_clean = scope.strip().lower()
 
         for idx in scored_indices:
             score = float(final_scores[idx])
@@ -196,12 +224,20 @@ class HybridEngine:
             chunk = self.chunks[idx]
 
             # Scope filtering
-            if scope != "all":
-                # Match scope in tags or path
-                in_tags = scope.lower() in [t.lower() for t in chunk.tags]
-                in_path = scope.lower() in chunk.file_path.lower()
-                if not (in_tags or in_path):
-                    continue
+            if scope_clean != "all":
+                if scope_clean in ("central", "local"):
+                    if chunk.doc_id.startswith("linked:"):
+                        continue
+                elif scope_clean in self.linked_vaults:
+                    linked_prefix = f"linked:{scope_clean}:"
+                    if not chunk.doc_id.startswith(linked_prefix):
+                        continue
+                else:
+                    # General tag or keyword scope filter
+                    in_tags = scope_clean in [t.lower() for t in chunk.tags]
+                    in_path = scope_clean in chunk.file_path.lower()
+                    if not (in_tags or in_path):
+                        continue
 
             # Extract clean snippet without breadcrumb line
             lines = chunk.content.splitlines()

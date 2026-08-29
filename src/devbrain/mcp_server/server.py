@@ -28,11 +28,14 @@ def create_mcp_server(vault_path: Path, config: Optional[BrainConfig] = None):
     if config is None:
         config = load_config(vault_path)
 
+    linked_vault_paths = config.resolve_linked_vaults()
+
     # Initialize Engine & Watcher
     engine = HybridEngine(
         vault_path=vault_path,
         embedding_model=config.embedding_model,
         ignored_patterns=config.ignored_paths,
+        linked_vaults=linked_vault_paths,
     )
     engine.initialize()
 

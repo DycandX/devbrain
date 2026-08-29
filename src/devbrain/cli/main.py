@@ -13,6 +13,7 @@ from devbrain.cli.commands.serve_cmd import serve_command
 from devbrain.cli.commands.skill_cmd import skill_app
 from devbrain.cli.commands.status_cmd import status_command
 from devbrain.cli.commands.uninstall_cmd import uninstall_command
+from devbrain.cli.commands.vault_cmd import vault_app
 from devbrain.cli.ui.console import console
 
 
@@ -70,6 +71,12 @@ app.add_typer(
     skill_app,
     name="skill",
     help="Manage Agent Skills in 00_System/Agent_Skills/ and configure client symlinks.",
+)
+
+app.add_typer(
+    vault_app,
+    name="vault",
+    help="Manage multi-vault federation, external vault linking, and directory mounting.",
 )
 
 app.command(

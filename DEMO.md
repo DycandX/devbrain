@@ -104,7 +104,25 @@ python -m devbrain.cli.main search "manifest parser and project harvester" --vau
 
 ---
 
-### 8. Manajemen Agent Skills
+### 8. Manajemen Multi-Vault Federation (`devbrain vault`)
+Menghubungkan dan mengelola banyak vault Obsidian terpisah ke dalam Central Brain:
+```bash
+# Menghubungkan vault eksternal (dengan mount ke sidebar Obsidian)
+python -m devbrain.cli.main vault link "E:/_PROJECT/_TEST/HowToBeAProgrammer" --alias "how-to" --mount --vault "E:/_PROJECT/_Central AI Brain Hub/demo_vault"
+
+# Melihat daftar seluruh vault yang terhubung
+python -m devbrain.cli.main vault list --vault "E:/_PROJECT/_Central AI Brain Hub/demo_vault"
+
+# Sinkronisasi indeks seluruh vault secara serempak
+python -m devbrain.cli.main vault sync --vault "E:/_PROJECT/_Central AI Brain Hub/demo_vault"
+
+# Pencarian semantik lintas seluruh vault (Federated Search)
+python -m devbrain.cli.main search "programmer judgment" --scope all --vault "E:/_PROJECT/_Central AI Brain Hub/demo_vault"
+```
+
+---
+
+### 9. Manajemen Agent Skills
 Melihat dan membuat skill agen modular di `00_System/Agent_Skills/`:
 ```bash
 # Menampilkan daftar skill yang terpasang
@@ -116,7 +134,7 @@ python -m devbrain.cli.main skill add "my-docker-skill" --description "Panduan d
 
 ---
 
-### 👁️ 9. Melihat Hasil Visual & 1-Click IDE Launch di Obsidian:
+### 👁️ 10. Melihat Hasil Visual & 1-Click IDE Launch di Obsidian:
 
 1. Buka folder `E:/_PROJECT/_Central AI Brain Hub/demo_vault` sebagai Vault di aplikasi **Obsidian**.
 2. **Buka file `10_Projects/_Central_AI_Brain_Hub/README.md`:**

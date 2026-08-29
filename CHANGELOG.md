@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.5.0-alpha] - 2026-08-29
+
+### 🚀 Added
+- **Multi-Vault Federation Management:** Connect, discover, and synchronize multiple external Obsidian vaults on the local disk via `devbrain vault [link|unlink|list|sync]`.
+- **Federated Hybrid Search & Memory:** Indexes notes across Central Vault and linked vaults into a single unified search index, supporting scoped searching (`scope="all"`, `scope="central"`, `scope="<alias>"`).
+- **Zero-Redundancy Directory Junction Mounting:** Native `--mount` flag on `devbrain vault link` creates Windows Directory Junctions into `20_Knowledge/Linked_Vaults/<alias>/`, enabling immediate browsing in Obsidian with 0 MB duplicate disk space.
+- **Automated Tests:** 46 comprehensive automated tests passing 100%.
+
+For complete release details, see [docs/changelog/v1.5.0-alpha.md](docs/changelog/v1.5.0-alpha.md).
+
+---
+
 ## [1.4.0-alpha] - 2026-08-29
 
 ### 🚀 Added

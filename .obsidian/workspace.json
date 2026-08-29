@@ -11,10 +11,14 @@
             "id": "f134733e5af56feb",
             "type": "leaf",
             "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
+              "type": "markdown",
+              "state": {
+                "file": "docs/_index.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "_index"
             }
           }
         ]
@@ -79,8 +83,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 231.89999389648438
   },
   "right": {
     "id": "8bf3da5b07077296",
@@ -184,8 +187,25 @@
   },
   "active": "f134733e5af56feb",
   "lastOpenFiles": [
-    "demo_vault/en.md",
+    "docs/changelog/v1.5.0-alpha.md",
+    "tests/__pycache__/test_vault_federation.cpython-314-pytest-9.1.1.pyc",
+    "src/devbrain/core/__pycache__/vault_federation.cpython-314.pyc",
+    "src/devbrain/cli/commands/__pycache__/vault_cmd.cpython-314.pyc",
+    "tests/test_vault_federation.py",
+    "docs/implementation-plan/_index.md",
+    "src/devbrain/cli/commands/vault_cmd.py",
+    "CHANGELOG.md",
+    "README.md",
     "Untitled.canvas",
+    "docs/brainstorming/_index.md",
+    "src/devbrain/core/vault_federation.py",
+    "docs/sprints/level-1/_index.md",
+    "docs/sprints/level-1/sprint-09/task-03-cli-vault-subapp.md",
+    "docs/sprints/level-1/sprint-09/task-04-automated-test-suite-and-release-v1-5-0.md",
+    "docs/sprints/level-1/sprint-09/task-02-federated-hybrid-search-engine.md",
+    "docs/sprints/level-1/sprint-09/task-01-multi-vault-schema-and-federation-manager.md",
+    "docs/sprints/level-1/sprint-09",
+    "demo_vault/en.md",
     "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Technical-Judgment/03-Choosing-Languages.md",
     "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Serving-Your-Team/10-How-to-Deal-with-Managerial-Myths.md",
     "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Technical-Judgment/02-How-to-Utilize-Embedded-Languages.md",
@@ -201,25 +221,8 @@
     "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Serving-Your-Team/03-How-to-Get-the-Most-From-Your-Teammates.md",
     "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Compromising-Wisely/02-How-to-Understand-the-User.md",
     "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Serving-Your-Team/02-How-to-Choose-What-to-Work-On.md",
-    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Serving-Your-Team/01-How-to-Develop-Talent.md",
-    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Compromising-Wisely/01-How-to-Fight-Schedule-Pressure.md",
-    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Team-Skills/05-How-to-Disagree-Honestly-and-Get-Away-with-It.md",
-    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Team-Skills/04-How-to-Communicate-the-Right-Amount.md",
-    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Team-Skills/01-How-to-Manage-Development-Time.md",
-    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Team-Skills/03-How-to-Manage-Consultants.md",
-    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Team-Skills/02-How-to-Manage-Third-Party-Software-Risks.md",
-    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Personal-Skills/11-How-to-analyze-data.md",
-    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Personal-Skills/10-Heavy-Tools.md",
-    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Personal-Skills/09-Communication-Languages.md",
     "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Technical-Judgment",
     "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Serving-Your-Team",
-    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Compromising-Wisely",
-    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Team-Skills",
-    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Personal-Skills",
-    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/1-Beginner/Team-Skills",
-    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/1-Beginner/Personal-Skills",
-    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate/Judgment",
-    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced",
-    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/2-Intermediate"
+    "demo_vault/20_Knowledge/References/HowToBeAProgrammer/zh-traditional/3-Advanced/Compromising-Wisely"
   ]
 }

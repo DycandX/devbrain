@@ -82,3 +82,13 @@ Dokumen ini memetakan seluruh Sprint dan Task yang harus diselesaikan untuk mera
 | 📄 [Task 02](./sprint-08/task-02-interactive-ide-deep-links.md) | Interactive IDE Deep Links & File Protocol Integration | `src/devbrain/harvester/project_harvester.py` | ✅ Done |
 | 📄 [Task 03](./sprint-08/task-03-self-ingestion-guard.md) | Self-Ingestion Guard in IngestionService | `src/devbrain/harvester/service.py` | ✅ Done |
 | 📄 [Task 04](./sprint-08/task-04-automated-test-suite-and-release-v1-4-0.md) | Automated Test Suite & Release `v1.4.0-alpha` | `tests/test_unified_ingest.py`, `CHANGELOG.md` | ✅ Done |
+
+---
+
+### ⚡ [Sprint 09: Multi-Vault Federation & Command vault link](./sprint-09/)
+| Task | Deskripsi | Target File | Status |
+| :--- | :--- | :--- | :--- |
+| 📄 [Task 01](./sprint-09/task-01-multi-vault-schema-and-federation-manager.md) | Multi-Vault Schema & Federation Manager | `src/devbrain/core/config.py`, `src/devbrain/core/vault_federation.py` | ✅ Done |
+| 📄 [Task 02](./sprint-09/task-02-federated-hybrid-search-engine.md) | Federated Hybrid Search Engine & FastMCP Gateway | `src/devbrain/engine/hybrid_search.py`, `src/devbrain/mcp_server/server.py` | ✅ Done |
+| 📄 [Task 03](./sprint-09/task-03-cli-vault-subapp.md) | CLI Sub-App `devbrain vault` | `src/devbrain/cli/commands/vault_cmd.py`, `src/devbrain/cli/main.py` | ✅ Done |
+| 📄 [Task 04](./sprint-09/task-04-automated-test-suite-and-release-v1-5-0.md) | Automated Test Suite & Release `v1.5.0-alpha` | `tests/test_vault_federation.py`, `CHANGELOG.md` | ✅ Done |

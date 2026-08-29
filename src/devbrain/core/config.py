@@ -40,6 +40,14 @@ class BrainConfig(BaseModel):
         default="all",
         description="Default partition scope (all, work, personal)",
     )
+    workspace_roots: list[str] = Field(
+        default_factory=list,
+        description="Root directories to scan for Git repositories",
+    )
+    linked_vaults: dict[str, str] = Field(
+        default_factory=dict,
+        description="Dictionary mapping alias -> absolute directory path of external linked vaults",
+    )
     created_at: str = Field(
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
         description="ISO timestamp of vault initialization",
@@ -52,6 +60,10 @@ class BrainConfig(BaseModel):
     def resolve_vault_path(self) -> Path:
         """Returns the resolved Path object for the vault."""
         return Path(self.vault_path).resolve()
+
+    def resolve_linked_vaults(self) -> dict[str, Path]:
+        """Returns dictionary of alias -> resolved Path object for each linked vault."""
+        return {alias: Path(p).resolve() for alias, p in self.linked_vaults.items()}
 
 
 def find_config(start_path: Optional[Path] = None) -> Optional[Path]:
