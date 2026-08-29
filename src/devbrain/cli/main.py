@@ -6,7 +6,7 @@ import typer
 
 from devbrain import __version__
 from devbrain.cli.commands.index_cmd import index_command
-from devbrain.cli.commands.ingest_cmd import ingest_app
+from devbrain.cli.commands.ingest_cmd import unified_ingest_command
 from devbrain.cli.commands.init_cmd import init_command
 from devbrain.cli.commands.search_cmd import search_command
 from devbrain.cli.commands.serve_cmd import serve_command
@@ -51,17 +51,15 @@ app.command(
     help="Index or re-index Obsidian Markdown files into FastEmbed & BM25 local stores.",
 )(index_command)
 
-app.add_typer(
-    ingest_app,
+app.command(
     name="ingest",
     help="Harvest and seed AI agent sessions and local repositories into Obsidian Vault.",
-)
+)(unified_ingest_command)
 
-app.add_typer(
-    ingest_app,
+app.command(
     name="pull",
     help="Alias for 'ingest' — harvest sessions & projects into vault.",
-)
+)(unified_ingest_command)
 
 app.command(
     name="serve",

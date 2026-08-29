@@ -1,6 +1,6 @@
 # 🧪 Panduan Demo & Development Mode `devbrain`
 
-Dokumen ini berisi panduan **eksekusi langsung (*copy-pasteable*)** untuk mendemokan dan menguji seluruh fitur `devbrain` (`v1.2.0-alpha`) di lingkungan lokal / development.
+Dokumen ini berisi panduan **eksekusi langsung (*copy-pasteable*)** untuk mendemokan dan menguji seluruh fitur `devbrain` (`v1.4.0-alpha`) di lingkungan lokal / development.
 
 ---
 
@@ -35,7 +35,6 @@ Jika Anda belum menjalankan `pip install -e .` atau ingin menjalankan langsung d
 ### 1. Inisialisasi Demo Vault
 Membuat struktur vault Obsidian baru lengkap dengan 7 folder standar:
 ```bash
-# Inisialisasi vault demo
 python -m devbrain.cli.main init "E:/_PROJECT/_Central AI Brain Hub/demo_vault"
 ```
 
@@ -49,32 +48,32 @@ python -m devbrain.cli.main status --vault "E:/_PROJECT/_Central AI Brain Hub/de
 
 ---
 
-### 3. Targeted Single Ingest: Ingest 1 Projek Koding Tertentu
-Menginspeksi manifest dan meng-auto-seed kartu projek ke `10_Projects/`:
-```bash
-# Opsi A: Preview hasil inspeksi (Dry-Run)
-python -m devbrain.cli.main ingest project "E:/_PROJECT/_Central AI Brain Hub" --dry-run --vault "E:/_PROJECT/_Central AI Brain Hub/demo_vault"
+### 3. Unified Ingest: Ingest 1 Projek Koding atau Repo Panduan (Otomatis & Fleksibel!)
+Format baru sangat toleran. Anda bisa memasukkan path langsung atau memakai `--dir`:
 
-# Opsi B: Tulis kartu projek langsung ke dalam vault
-python -m devbrain.cli.main ingest project "E:/_PROJECT/_Central AI Brain Hub" --vault "E:/_PROJECT/_Central AI Brain Hub/demo_vault"
+```bash
+# Ingest projek koding Python
+python -m devbrain.cli.main ingest "E:/_PROJECT/_Central AI Brain Hub" --vault "E:/_PROJECT/_Central AI Brain Hub/demo_vault"
+
+# Ingest repo panduan Markdown (menggunakan flag --dir)
+python -m devbrain.cli.main ingest --dir "E:/_PROJECT/_TEST/HowToBeAProgrammer" --vault "E:/_PROJECT/_Central AI Brain Hub/demo_vault"
 ```
 
 ---
 
-### 4. Batch Scan Seluruh Workspace: Scan Semua Repo di Folder `_PROJECT`
-Memindai seluruh repositori lokal dan mengklasifikasikan secara otomatis:
-```bash
-# Opsi A: Preview daftar repo yang terdeteksi
-python -m devbrain.cli.main ingest projects --dir "E:/_PROJECT" --dry-run --vault "E:/_PROJECT/_Central AI Brain Hub/demo_vault"
+### 4. Unified Ingest: Ingest Folder Induk (Container Workspace)
+Jika Anda memasukkan folder induk yang berisi beberapa sub-projek, sistem otomatis memindai semuanya:
 
-# Opsi B: Batch ingest seluruh repositori lokal ke vault
-python -m devbrain.cli.main ingest projects --dir "E:/_PROJECT" --vault "E:/_PROJECT/_Central AI Brain Hub/demo_vault"
+```bash
+# Otomatis memindai semua sub-projek di dalam _fxmedia
+python -m devbrain.cli.main ingest "E:/_PROJECT/_fxmedia" --vault "E:/_PROJECT/_Central AI Brain Hub/demo_vault"
 ```
 
 ---
 
 ### 5. Ingest Sesi AI & Hubungkan Graf (Auto-Entity Linker)
-Menyerap sesi koding Google Antigravity & Claude Code, menyaring secret/API key, dan menyisipkan `[[Wikilinks]]`:
+Tanpa argumen path, `devbrain ingest` otomatis memanen sesi koding Antigravity & Claude Code:
+
 ```bash
 # Opsi A: Preview sesi yang terdeteksi (Dry-Run)
 python -m devbrain.cli.main ingest --dry-run --vault "E:/_PROJECT/_Central AI Brain Hub/demo_vault"
@@ -117,10 +116,12 @@ python -m devbrain.cli.main skill add "my-docker-skill" --description "Panduan d
 
 ---
 
-### 👁️ 9. Melihat Hasil Visual di Obsidian:
+### 👁️ 9. Melihat Hasil Visual & 1-Click IDE Launch di Obsidian:
 
 1. Buka folder `E:/_PROJECT/_Central AI Brain Hub/demo_vault` sebagai Vault di aplikasi **Obsidian**.
-2. **Graph View (`Ctrl + G`):**
-   * Lihat bagaimana seluruh catatan saling terhubung (simpul projek `_Central_AI_Brain_Hub` dikelilingi oleh sesi koding AI).
-3. **Buka file `10_Projects/_Central_AI_Brain_Hub/README.md`:**
-   * Lihat tabel **Dataview dinamis** yang secara otomatis menampilkan daftar riwayat sesi AI yang baru saja di-ingest!
+2. **Buka file `10_Projects/_Central_AI_Brain_Hub/README.md`:**
+   * Klik tautan **`[🚀 Open in IDE (VS Code / Antigravity)]`** $\rightarrow$ Projek fisik langsung terbuka di editor IDE Anda!
+   * Lihat pohon direktori **ASCII Tree** yang bersih dari `node_modules` / `venv`.
+   * Lihat tabel **Dataview dinamis** yang menampilkan riwayat sesi AI.
+3. **Graph View (`Ctrl + G`):**
+   * Lihat graf pengetahuan yang padat dan saling terhubung tanpa ada simpul terisolasi (*zero orphan nodes*).

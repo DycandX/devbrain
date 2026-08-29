@@ -71,6 +71,11 @@ class IngestionService:
         dry_run: bool = False,
     ) -> Tuple[ScannedProjectMetadata, Union[Optional[Path], List[Tuple[ScannedProjectMetadata, Optional[Path]]]]]:
         """Scan and seed a single repository, or auto-delegate if it's a multi-project container."""
+        # Self-Ingestion Guard
+        if repo_path.resolve() == self.vault_path.resolve():
+            meta = scan_project_metadata(repo_path, explicit_type=explicit_type)
+            return meta, None
+
         metadata = scan_project_metadata(repo_path, explicit_type=explicit_type)
         
         # Auto-delegation for container workspace folders (e.g. _fxmedia)
@@ -88,7 +93,7 @@ class IngestionService:
         root_dirs: Optional[List[Path]] = None,
         dry_run: bool = False,
     ) -> List[Tuple[ScannedProjectMetadata, Optional[Path]]]:
-        """Batch scan workspace root folders for Git repositories and codebases."""
+        """Batch scan workspace root folders for Git repositories and codebases with Self-Ingestion Guard."""
         roots = root_dirs or [Path(p) for p in self.config.workspace_roots if Path(p).is_dir()]
         if not roots:
             # Fallback: parent of vault path or current cwd
@@ -105,6 +110,10 @@ class IngestionService:
                     continue
                 if item.resolve() in visited_dirs:
                     continue
+                # Self-Ingestion Guard: Skip if item is the Central Brain vault itself
+                if item.resolve() == self.vault_path.resolve():
+                    continue
+
                 visited_dirs.add(item.resolve())
 
                 # Check if it has a git directory or a known code manifest
@@ -115,7 +124,7 @@ class IngestionService:
                     meta, path = self.ingest_single_project(item, dry_run=dry_run)
                     if isinstance(path, list):
                         results.extend(path)
-                    else:
+                    elif path is not None:
                         results.append((meta, path))
 
         return results
@@ -163,7 +172,7 @@ class IngestionService:
             # Auto-provision project card if workspace exists on disk but not in vault
             if not matched_project and payload.workspace_hint:
                 hint_path = Path(payload.workspace_hint)
-                if hint_path.is_dir():
+                if hint_path.is_dir() and hint_path.resolve() != self.vault_path.resolve():
                     try:
                         p_meta, p_file = self.ingest_single_project(hint_path, dry_run=False)
                         if isinstance(p_file, Path):

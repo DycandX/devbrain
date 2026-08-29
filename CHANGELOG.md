@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.4.0-alpha] - 2026-08-29
+
+### 🚀 Added
+- **Unified DWIM Ingestion CLI:** Re-architected `devbrain ingest [TARGET] [OPTIONS]` to accept any target or directory flag (`--dir`, `--path`) tolerantly, auto-routing to single project, container workspace, or AI session harvesting without syntax errors.
+- **Interactive IDE Deep Links:** Injects clickable `vscode://file/...` and `file:///...` protocol links into every Obsidian project card for 1-click IDE launch from Obsidian.
+- **Self-Ingestion Guard:** Prevents circular self-processing when scanning workspaces containing the active Central Brain vault.
+- **Automated Tests:** 42 comprehensive automated tests passing 100%.
+
+For complete release details, see [docs/changelog/v1.4.0-alpha.md](docs/changelog/v1.4.0-alpha.md).
+
+---
+
 ## [1.3.0-alpha] - 2026-08-29
 
 ### 🚀 Added

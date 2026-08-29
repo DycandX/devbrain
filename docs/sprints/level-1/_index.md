@@ -72,3 +72,13 @@ Dokumen ini memetakan seluruh Sprint dan Task yang harus diselesaikan untuk mera
 | 📄 [Task 02](./sprint-07/task-02-intelligent-project-card-synthesis.md) | Intelligent Project Card Synthesis for README-less Projects | `src/devbrain/harvester/project_harvester.py` | ✅ Done |
 | 📄 [Task 03](./sprint-07/task-03-parent-workspace-folder-auto-delegation.md) | Workspace Container / Multi-Project Folder Auto-Delegation | `src/devbrain/harvester/inspector.py`, `service.py` | ✅ Done |
 | 📄 [Task 04](./sprint-07/task-04-automated-test-suite-and-release-v1-3-0.md) | Automated Test Suite & Release `v1.3.0-alpha` | `tests/test_codebase_synthesizer.py`, `CHANGELOG.md` | ✅ Done |
+
+---
+
+### ⚡ [Sprint 08: Unified Ingestion UX & 4-Layer IDE Deep Links](./sprint-08/)
+| Task | Deskripsi | Target File | Status |
+| :--- | :--- | :--- | :--- |
+| 📄 [Task 01](./sprint-08/task-01-unified-dwim-ingest-router.md) | Unified Dynamic DWIM Ingest CLI Router | `src/devbrain/cli/commands/ingest_cmd.py` | ✅ Done |
+| 📄 [Task 02](./sprint-08/task-02-interactive-ide-deep-links.md) | Interactive IDE Deep Links & File Protocol Integration | `src/devbrain/harvester/project_harvester.py` | ✅ Done |
+| 📄 [Task 03](./sprint-08/task-03-self-ingestion-guard.md) | Self-Ingestion Guard in IngestionService | `src/devbrain/harvester/service.py` | ✅ Done |
+| 📄 [Task 04](./sprint-08/task-04-automated-test-suite-and-release-v1-4-0.md) | Automated Test Suite & Release `v1.4.0-alpha` | `tests/test_unified_ingest.py`, `CHANGELOG.md` | ✅ Done |

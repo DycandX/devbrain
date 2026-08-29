@@ -8,6 +8,7 @@ Index of all product versions, feature updates, and sprint releases for **`devbr
 
 | Version | Release Date | Key Highlights | Status | Link |
 | :--- | :--- | :--- | :--- | :--- |
+| **`v1.4.0-alpha`** | 2026-08-29 | Sprint 08: Unified DWIM Ingestion CLI, Tolerant Argument Resolution, 4-Layer IDE Deep Links, & Self-Ingestion Guard | ✅ Released | [v1.4.0-alpha.md](./v1.4.0-alpha.md) |
 | **`v1.3.0-alpha`** | 2026-08-29 | Sprint 07: Smart Codebase Tree Analyzer, README-less Architecture Synthesizer, and Workspace Container Auto-Delegation | ✅ Released | [v1.3.0-alpha.md](./v1.3.0-alpha.md) |
 | **`v1.2.0-alpha`** | 2026-08-29 | Sprint 06: Auto-Inspector, Dependency Manifest Parser, Graph Density Entity Linker, and Targeted/Batch Project Ingestion | ✅ Released | [v1.2.0-alpha.md](./v1.2.0-alpha.md) |
 | **`v1.1.0-alpha`** | 2026-08-29 | Sprint 05: Multi-Agent Storage Discovery, Secret Redaction Filter, Session Extractor, `devbrain ingest` & `devbrain pull` | ✅ Released | [v1.1.0-alpha.md](./v1.1.0-alpha.md) |

@@ -1,4 +1,4 @@
-"""Project & Workspace Harvester for Auto-Seeding Repositories into Obsidian with Codebase Synthesis."""
+"""Project & Workspace Harvester for Auto-Seeding Repositories into Obsidian with Codebase Synthesis & IDE Deep Links."""
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -143,9 +143,15 @@ def seed_project_to_vault(
     metadata: ScannedProjectMetadata,
     vault_path: Path,
 ) -> Path:
-    """Seed structured Markdown notes or skills into the Obsidian Vault with smart synthesis."""
+    """Seed structured Markdown notes or skills into the Obsidian Vault with smart synthesis & IDE Deep Links."""
     vault_path = vault_path.resolve()
     now_iso = datetime.now(timezone.utc).isoformat()
+    posix_path = str(metadata.repo_path).replace("\\", "/")
+
+    # Deep links
+    ide_link = f"vscode://file/{posix_path}"
+    explorer_link = f"file:///{posix_path}"
+    quick_actions = f"> 🔗 **Quick Actions:** [🚀 Open in IDE (VS Code / Antigravity)]({ide_link}) | [📁 Open in File Explorer]({explorer_link})"
 
     # 1. Active Project Seeding -> 10_Projects/<Project_Name>/README.md
     if metadata.repo_type == RepoType.PROJECT:
@@ -179,7 +185,7 @@ status: "active"
 language: {langs_json}
 stack: {stack_json}
 git_remote: "{metadata.git_remote or ''}"
-local_path: "{str(metadata.repo_path).replace('\\', '/')}"
+local_path: "{posix_path}"
 last_scanned: "{now_iso}"
 tags: ["project", "codebase"]
 ---
@@ -189,6 +195,7 @@ tags: ["project", "codebase"]
 > **Local Path:** `{str(metadata.repo_path)}`  
 > **Git Remote:** `{metadata.git_remote or 'Local Repository'}` {f'(`branch: {metadata.git_branch}`)' if metadata.git_branch else ''}  
 > **Tech Stack:** `{'` | `'.join(metadata.stack_tags) if metadata.stack_tags else 'Standard'}`{entrypoints_line}
+{quick_actions}
 
 ## 📋 Overview
 {metadata.description}
@@ -232,7 +239,7 @@ role: "study"
 language: {langs_json}
 stack: {stack_json}
 git_remote: "{metadata.git_remote or ''}"
-local_path: "{str(metadata.repo_path).replace('\\', '/')}"
+local_path: "{posix_path}"
 last_scanned: "{now_iso}"
 tags: ["reference", "code-study", "external-repo"]
 ---
@@ -240,7 +247,8 @@ tags: ["reference", "code-study", "external-repo"]
 # 📚 Reference: {metadata.name}
 
 > **Source Repository:** `{metadata.git_remote or str(metadata.repo_path)}`  
-> **Type:** External Open-Source Study Codebase
+> **Type:** External Open-Source Study Codebase  
+{quick_actions}
 
 ## 📋 Architectural Overview:
 {metadata.description}
@@ -290,6 +298,8 @@ tags: ["knowledge", "documentation"]
 ---
 
 # 📖 {metadata.name}
+
+{quick_actions}
 
 {metadata.description}
 {tree_block}
