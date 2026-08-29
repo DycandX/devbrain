@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "docs/brainstorming/30-penanganan-folder-projek-berisi-vault-obsidian.md",
+                "file": "docs/brainstorming/31-penyederhanaan-ux-cli-ingest-dan-koneksi-fisik-projek-ke-vault.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "30-penanganan-folder-projek-berisi-vault-obsidian"
+              "title": "31-penyederhanaan-ux-cli-ingest-dan-koneksi-fisik-projek-ke-vault"
             }
           }
         ]
@@ -99,7 +99,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "docs/brainstorming/30-penanganan-folder-projek-berisi-vault-obsidian.md",
+                "file": "docs/brainstorming/31-penyederhanaan-ux-cli-ingest-dan-koneksi-fisik-projek-ke-vault.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -118,7 +118,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "docs/brainstorming/30-penanganan-folder-projek-berisi-vault-obsidian.md",
+                "file": "docs/brainstorming/31-penyederhanaan-ux-cli-ingest-dan-koneksi-fisik-projek-ke-vault.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -161,7 +161,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "docs/brainstorming/30-penanganan-folder-projek-berisi-vault-obsidian.md",
+                "file": "docs/brainstorming/31-penyederhanaan-ux-cli-ingest-dan-koneksi-fisik-projek-ke-vault.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -188,12 +188,13 @@
       "bases:Create new base": false
     }
   },
-  "active": "d26f9eff225d0598",
+  "active": "bdb3ebb3d09b8ba6",
   "lastOpenFiles": [
+    "docs/implementation-plan/level-1/03-implementation-plan-unified-ingest-and-ide-deeplinks.md",
+    "docs/brainstorming/30-penanganan-folder-projek-berisi-vault-obsidian.md",
     "docs/brainstorming/31-penyederhanaan-ux-cli-ingest-dan-koneksi-fisik-projek-ke-vault.md",
     "demo_vault/10_Projects/HowToBeAProgrammer/README.md",
     "demo_vault/10_Projects/HowToBeAProgrammer",
-    "docs/brainstorming/30-penanganan-folder-projek-berisi-vault-obsidian.md",
     "demo_vault/10_Projects/qdrant-local-demo/README.md",
     "demo_vault/10_Projects/qdrant-local-demo",
     "demo_vault/10_Projects/neo4j-express-demo/README.md",
