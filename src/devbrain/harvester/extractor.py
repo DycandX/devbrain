@@ -22,6 +22,7 @@ class ExtractedSessionPayload:
     tags: List[str]
     created_time: datetime
     num_redactions: int
+    workspace_hint: Optional[str] = None
 
 
 def clean_user_prompt(raw_text: str) -> str:
@@ -54,6 +55,45 @@ def sanitize_frontmatter_string(text: str, max_length: int = 120) -> str:
     return single_line or "Untitled Session"
 
 
+def extract_workspace_hint_from_transcript(transcript_path: Path) -> Optional[str]:
+    """Scan transcript.jsonl for workspace directory or Cwd parameter."""
+    if not transcript_path.is_file():
+        return None
+    try:
+        with open(transcript_path, "r", encoding="utf-8", errors="replace") as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                # Try JSON parse first
+                try:
+                    record = json.loads(line)
+                    content = str(record.get("content", ""))
+                    match = re.search(r"([A-Za-z]:[/\\][^\s\"'\r\n>]+)", content)
+                    if match:
+                        candidate = match.group(1).replace("\\", "/")
+                        return candidate.split("/src/")[0]
+                    for call in record.get("tool_calls", []):
+                        args = call.get("args", {}) or call.get("parameters", {})
+                        if "Cwd" in args and isinstance(args["Cwd"], str):
+                            return args["Cwd"].replace("\\", "/")
+                except Exception:
+                    pass
+
+                # Regex fallback on raw line for Cwd or file URIs
+                cwd_match = re.search(r'["\']Cwd["\']\s*:\s*["\']([^"\']+)["\']', line, re.IGNORECASE)
+                if cwd_match:
+                    return cwd_match.group(1).replace("\\", "/")
+
+                path_match = re.search(r'([A-Za-z]:[/\\][^\s"\'\r\n>]+)', line)
+                if path_match:
+                    candidate = path_match.group(1).replace("\\", "/")
+                    if any(kw in candidate.lower() for kw in ["project", "workspace", "repo", "app"]):
+                        return candidate.split("/src/")[0]
+    except Exception:
+        pass
+    return None
+
+
 def extract_antigravity_session(session: HarvestableSession) -> Optional[ExtractedSessionPayload]:
     """Extract structured walkthrough and reasoning from an Antigravity IDE brain session."""
     walkthrough_file = session.root_path / "walkthrough.md"
@@ -64,6 +104,7 @@ def extract_antigravity_session(session: HarvestableSession) -> Optional[Extract
     title = f"Antigravity Session {session.session_id[:8]}"
     summary = "Completed coding session in Google Antigravity IDE."
     tags = ["agent-inbox", session.source_name]
+    workspace_hint = extract_workspace_hint_from_transcript(transcript_file)
 
     # 1. Prioritize Walkthrough
     if walkthrough_file.is_file():
@@ -134,6 +175,7 @@ def extract_antigravity_session(session: HarvestableSession) -> Optional[Extract
         tags=tags,
         created_time=created_dt,
         num_redactions=num_redactions,
+        workspace_hint=workspace_hint,
     )
 
 
@@ -169,6 +211,7 @@ def extract_claude_session(session: HarvestableSession) -> Optional[ExtractedSes
         tags=tags,
         created_time=created_dt,
         num_redactions=num_redactions,
+        workspace_hint=session.session_id,
     )
 
 

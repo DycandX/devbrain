@@ -6,7 +6,7 @@ import typer
 
 from devbrain import __version__
 from devbrain.cli.commands.index_cmd import index_command
-from devbrain.cli.commands.ingest_cmd import ingest_command
+from devbrain.cli.commands.ingest_cmd import ingest_app
 from devbrain.cli.commands.init_cmd import init_command
 from devbrain.cli.commands.search_cmd import search_command
 from devbrain.cli.commands.serve_cmd import serve_command
@@ -14,6 +14,14 @@ from devbrain.cli.commands.skill_cmd import skill_app
 from devbrain.cli.commands.status_cmd import status_command
 from devbrain.cli.commands.uninstall_cmd import uninstall_command
 from devbrain.cli.ui.console import console
+
+
+def version_callback(value: bool):
+    """Callback for --version option."""
+    if value:
+        console.print(f"[bold cyan]devbrain[/bold cyan] version [bold green]{__version__}[/bold green]")
+        raise typer.Exit()
+
 
 app = typer.Typer(
     name="devbrain",
@@ -43,50 +51,54 @@ app.command(
     help="Index or re-index Obsidian Markdown files into FastEmbed & BM25 local stores.",
 )(index_command)
 
-app.command(
+app.add_typer(
+    ingest_app,
     name="ingest",
-    help="Harvest and seed external AI Agent sessions into Obsidian 90_Agent_Inbox/.",
-)(ingest_command)
+    help="Harvest and seed AI agent sessions and local repositories into Obsidian Vault.",
+)
 
-app.command(
+app.add_typer(
+    ingest_app,
     name="pull",
-    help="Alias for 'ingest' — pull AI sessions from Antigravity/Claude into vault.",
-)(ingest_command)
+    help="Alias for 'ingest' — harvest sessions & projects into vault.",
+)
 
 app.command(
     name="serve",
     help="Launch the FastMCP Protocol Server for Antigravity IDE and Claude Code.",
 )(serve_command)
 
+app.add_typer(
+    skill_app,
+    name="skill",
+    help="Manage Agent Skills in 00_System/Agent_Skills/ and configure client symlinks.",
+)
+
 app.command(
     name="uninstall",
-    help="Safely unregister FastMCP servers from IDEs and clean up local caches.",
+    help="Cleanly teardown devbrain configurations from Antigravity IDE and Claude Code.",
 )(uninstall_command)
-
-# Register Sub-Apps
-app.add_typer(skill_app, name="skill")
-
-
-def version_callback(value: bool):
-    if value:
-        console.print(f"[bold cyan]devbrain[/bold cyan] version [bold white]{__version__}[/bold white]")
-        raise typer.Exit()
 
 
 @app.callback()
-def main(
+def main_callback(
     version: Optional[bool] = typer.Option(
         None,
         "--version",
         "-V",
-        help="Show devbrain version and exit.",
+        help="Show devbrain version number and exit.",
         callback=version_callback,
         is_eager=True,
     ),
 ):
-    """devbrain: Central AI Second Brain Hub CLI."""
+    """Entry callback for handling global options like --version."""
     pass
 
 
-if __name__ == "__main__":
+def main():
+    """CLI application entry point."""
     app()
+
+
+if __name__ == "__main__":
+    main()

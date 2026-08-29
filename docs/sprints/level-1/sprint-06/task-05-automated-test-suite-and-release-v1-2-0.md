@@ -3,7 +3,7 @@
 | Attribute | Detail |
 | :--- | :--- |
 | **Sprint** | Level 1 / Sprint 06 (Graph Mesh, Workspace Harvester & Targeted Ingestion) |
-| **Status** | ⏳ Todo |
+| **Status** | ✅ Done |
 | **Target Files** | `tests/test_project_ingestion.py`, `tests/test_entity_linker.py`, `CHANGELOG.md`, `docs/changelog/v1.2.0-alpha.md` |
 
 ---

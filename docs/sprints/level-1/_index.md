@@ -57,8 +57,8 @@ Dokumen ini memetakan seluruh Sprint dan Task yang harus diselesaikan untuk mera
 ### 🕸️ [Sprint 06: Graph Mesh, Workspace Harvester & Targeted Ingestion](./sprint-06/)
 | Task | Deskripsi | Target File | Status |
 | :--- | :--- | :--- | :--- |
-| 📄 [Task 01](./sprint-06/task-01-auto-inspector-repo-scanner-and-manifest-parser.md) | Auto-Inspector, Repo Scanner & Manifest Parser | `src/devbrain/harvester/inspector.py`, `manifest_parser.py` | ⏳ Todo |
-| 📄 [Task 02](./sprint-06/task-02-auto-seeding-multi-type-cards.md) | Auto-Seeding Multi-Type Cards (Projects, Knowledge, Skills) | `src/devbrain/harvester/project_harvester.py` | ⏳ Todo |
-| 📄 [Task 03](./sprint-06/task-03-auto-entity-linker-and-backlink-injector.md) | Auto-Entity Linker & Backlink Injector | `src/devbrain/harvester/entity_linker.py` | ⏳ Todo |
-| 📄 [Task 04](./sprint-06/task-04-cli-targeted-single-and-batch-ingestion.md) | CLI Targeted Single & Batch Ingestion (`project`, `projects`, `all`) | `src/devbrain/cli/commands/ingest_cmd.py` | ⏳ Todo |
-| 📄 [Task 05](./sprint-06/task-05-automated-test-suite-and-release-v1-2-0.md) | Automated Test Suite & Release `v1.2.0-alpha` | `tests/test_project_ingestion.py`, `CHANGELOG.md` | ⏳ Todo |
+| 📄 [Task 01](./sprint-06/task-01-auto-inspector-repo-scanner-and-manifest-parser.md) | Auto-Inspector, Repo Scanner & Manifest Parser | `src/devbrain/harvester/inspector.py`, `manifest_parser.py` | ✅ Done |
+| 📄 [Task 02](./sprint-06/task-02-auto-seeding-multi-type-cards.md) | Auto-Seeding Multi-Type Cards (Projects, Knowledge, Skills) | `src/devbrain/harvester/project_harvester.py` | ✅ Done |
+| 📄 [Task 03](./sprint-06/task-03-auto-entity-linker-and-backlink-injector.md) | Auto-Entity Linker & Backlink Injector | `src/devbrain/harvester/entity_linker.py` | ✅ Done |
+| 📄 [Task 04](./sprint-06/task-04-cli-targeted-single-and-batch-ingestion.md) | CLI Targeted Single & Batch Ingestion (`project`, `projects`, `all`) | `src/devbrain/cli/commands/ingest_cmd.py` | ✅ Done |
+| 📄 [Task 05](./sprint-06/task-05-automated-test-suite-and-release-v1-2-0.md) | Automated Test Suite & Release `v1.2.0-alpha` | `tests/test_project_ingestion.py`, `CHANGELOG.md` | ✅ Done |

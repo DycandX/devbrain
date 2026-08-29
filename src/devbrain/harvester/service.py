@@ -1,16 +1,22 @@
-"""Ingestion Orchestrator Service managing session harvesting and deduplication."""
+"""Ingestion Orchestrator Service managing session harvesting, project seeding, and entity linking."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import json
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 from devbrain.core.config import BrainConfig
-from devbrain.core.constants import BRAIN_DATA_DIR, DIR_INBOX
+from devbrain.core.constants import BRAIN_DATA_DIR, DIR_INBOX, DIR_PROJECTS
 from devbrain.engine.hybrid_search import HybridEngine
 from devbrain.harvester.discovery import discover_sessions
+from devbrain.harvester.entity_linker import inject_backlink_to_project, match_session_to_project
 from devbrain.harvester.extractor import extract_session_payload
 from devbrain.harvester.formatter import format_session_note
+from devbrain.harvester.project_harvester import (
+    ScannedProjectMetadata,
+    scan_project_metadata,
+    seed_project_to_vault,
+)
 
 INGESTED_REGISTRY_FILE = "ingested_sessions.json"
 
@@ -22,11 +28,12 @@ class IngestionResult:
     ingested: int
     skipped: int
     total_redactions: int
-    created_files: List[Path]
+    created_files: List[Path] = field(default_factory=list)
+    linked_projects: int = 0
 
 
 class IngestionService:
-    """Orchestrator for discovering, sanitizing, and seeding AI agent sessions into Obsidian."""
+    """Orchestrator for discovering, sanitizing, linking, and seeding AI agent sessions & repositories."""
 
     def __init__(self, vault_path: Path, config: Optional[BrainConfig] = None):
         self.vault_path = vault_path.resolve()
@@ -56,6 +63,53 @@ class IngestionService:
         except Exception:
             pass
 
+    def ingest_single_project(
+        self,
+        repo_path: Path,
+        explicit_type: Optional[str] = None,
+        dry_run: bool = False,
+    ) -> Tuple[ScannedProjectMetadata, Optional[Path]]:
+        """Scan and seed a single repository into the vault."""
+        metadata = scan_project_metadata(repo_path, explicit_type=explicit_type)
+        created_file = None
+        if not dry_run:
+            created_file = seed_project_to_vault(metadata, vault_path=self.vault_path)
+        return metadata, created_file
+
+    def ingest_workspace_projects(
+        self,
+        root_dirs: Optional[List[Path]] = None,
+        dry_run: bool = False,
+    ) -> List[Tuple[ScannedProjectMetadata, Optional[Path]]]:
+        """Batch scan workspace root folders for Git repositories and codebases."""
+        roots = root_dirs or [Path(p) for p in self.config.workspace_roots if Path(p).is_dir()]
+        if not roots:
+            # Fallback: parent of vault path or current cwd
+            roots = [self.vault_path.parent]
+
+        results = []
+        visited_dirs = set()
+
+        for root in roots:
+            if not root.is_dir():
+                continue
+            for item in root.iterdir():
+                if not item.is_dir() or item.name.startswith("."):
+                    continue
+                if item.resolve() in visited_dirs:
+                    continue
+                visited_dirs.add(item.resolve())
+
+                # Check if it has a git directory or a known code manifest
+                has_git = (item / ".git").is_dir()
+                has_manifest = any((item / m).is_file() for m in ["pyproject.toml", "package.json", "Cargo.toml", "go.mod", "setup.py", "requirements.txt", "SKILL.md"])
+                
+                if has_git or has_manifest:
+                    meta, path = self.ingest_single_project(item, dry_run=dry_run)
+                    results.append((meta, path))
+
+        return results
+
     def run_ingestion(
         self,
         sources: Optional[List[str]] = None,
@@ -63,7 +117,7 @@ class IngestionService:
         dry_run: bool = False,
         custom_paths: Optional[Dict[str, Path]] = None,
     ) -> IngestionResult:
-        """Execute full ingestion pipeline."""
+        """Execute full AI agent session ingestion pipeline with auto-entity linking."""
         discovered = discover_sessions(sources=sources, custom_paths=custom_paths)
         if limit and limit > 0:
             discovered = discovered[:limit]
@@ -71,6 +125,7 @@ class IngestionService:
         ingested_count = 0
         skipped_count = 0
         total_redactions = 0
+        linked_projects = 0
         created_files: List[Path] = []
 
         for session in discovered:
@@ -92,15 +147,52 @@ class IngestionService:
                 ingested_count += 1
                 continue
 
+            # Match or auto-provision project node
+            matched_project = match_session_to_project(payload.workspace_hint, self.vault_path)
+            
+            # Auto-provision project card if workspace exists on disk but not in vault
+            if not matched_project and payload.workspace_hint:
+                hint_path = Path(payload.workspace_hint)
+                if hint_path.is_dir():
+                    try:
+                        p_meta, p_file = self.ingest_single_project(hint_path, dry_run=False)
+                        if p_file:
+                            matched_project = (p_meta.name, f"10_Projects/{p_meta.clean_name}/README")
+                    except Exception:
+                        pass
+
+            if matched_project:
+                linked_projects += 1
+
             # Format and write to 90_Agent_Inbox/<source>/
             target_folder = self.inbox_dir / session.source_name
             target_folder.mkdir(parents=True, exist_ok=True)
 
-            filename, content = format_session_note(payload, device_name=self.config.device_name)
+            filename, content = format_session_note(
+                payload,
+                device_name=self.config.device_name,
+                matched_project=matched_project,
+            )
             target_file = target_folder / filename
 
             with open(target_file, "w", encoding="utf-8") as f:
                 f.write(content)
+
+            # Bidirectional backlink injection
+            if matched_project:
+                try:
+                    _, proj_rel = matched_project
+                    proj_readme = self.vault_path / f"{proj_rel}.md"
+                    rel_session = f"90_Agent_Inbox/{session.source_name}/{filename}"
+                    date_str = payload.created_time.strftime("%Y-%m-%d")
+                    inject_backlink_to_project(
+                        project_readme=proj_readme,
+                        session_title=payload.title,
+                        session_rel_path=rel_session,
+                        created_date=date_str,
+                    )
+                except Exception:
+                    pass
 
             self._ingested_ids[unique_key] = target_file.name
             created_files.append(target_file)
@@ -123,4 +215,5 @@ class IngestionService:
             skipped=skipped_count,
             total_redactions=total_redactions,
             created_files=created_files,
+            linked_projects=linked_projects,
         )

@@ -3,7 +3,7 @@
 | Attribute | Detail |
 | :--- | :--- |
 | **Sprint** | Level 1 / Sprint 06 (Graph Mesh, Workspace Harvester & Targeted Ingestion) |
-| **Status** | ⏳ Todo |
+| **Status** | ✅ Done |
 | **Target Files** | `src/devbrain/harvester/inspector.py`, `src/devbrain/harvester/manifest_parser.py`, `src/devbrain/harvester/project_harvester.py` |
 
 ---

@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.2.0-alpha] - 2026-08-29
+
+### 🚀 Added
+- **Auto-Inspector & Ownership Classifier:** Automatically categorizes repositories into Active Projects (`10_Projects/`), External Cloned Study References (`20_Knowledge/External_Repos/`), Agent Skill Mesh (`00_System/Agent_Skills/`), and Knowledge Documentation (`20_Knowledge/References/`).
+- **Multi-Language Manifest Parser:** Dependency and stack parsing for Python (`pyproject.toml`, `requirements.txt`), Node/TypeScript (`package.json`), Rust (`Cargo.toml`), Go (`go.mod`), and Docker.
+- **Auto-Entity Linker Engine:** Eliminates orphan nodes by automatically resolving `workspace_path` to Project Hubs (`[[10_Projects/...]]`) and chronological links (`[[99_Daily/...]]`).
+- **Zero-Click Project Auto-Provisioning:** Automatically scans and provisions project cards in `10_Projects/` during session ingestion if the project card is missing.
+- **Bidirectional Backlink Injector:** Automatically adds session links to the project's README file.
+- **Targeted & Batch Ingestion CLI:** Added `devbrain ingest project <path> [--type ...]`, `devbrain ingest projects [--dir ...]`, and `devbrain ingest all`.
+- **Automated Tests:** 35 comprehensive automated tests passing 100%.
+
+For complete release details, see [docs/changelog/v1.2.0-alpha.md](docs/changelog/v1.2.0-alpha.md).
+
+---
+
 ## [1.1.0-alpha] - 2026-08-29
 
 ### 🚀 Added
