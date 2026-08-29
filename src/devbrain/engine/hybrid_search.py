@@ -53,7 +53,7 @@ class HybridEngine:
             rel = path.name
 
         for part in path.parts:
-            if part.startswith(".brain_data") or part == ".obsidian" or part == ".git":
+            if part.startswith(".brain_data") or part == ".obsidian" or part == ".git" or part == "Linked_Vaults":
                 return True
         for pattern in self.ignored_patterns:
             if pattern.startswith("*.") and path.name.endswith(pattern[1:]):

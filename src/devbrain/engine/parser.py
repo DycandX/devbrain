@@ -90,7 +90,10 @@ def extract_title(frontmatter: Dict[str, Any], body: str, file_path: Path) -> st
 
 def parse_markdown_file(file_path: Path, vault_root: Path) -> Document:
     """Parse a Markdown file from disk into a structured Document model."""
-    rel_path = file_path.resolve().relative_to(vault_root.resolve()).as_posix()
+    try:
+        rel_path = file_path.resolve().relative_to(vault_root.resolve()).as_posix()
+    except ValueError:
+        rel_path = file_path.name
     mtime = file_path.stat().st_mtime if file_path.exists() else 0.0
 
     with open(file_path, "r", encoding="utf-8", errors="replace") as f:
