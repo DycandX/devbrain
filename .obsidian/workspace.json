@@ -183,6 +183,11 @@
   },
   "active": "bdb3ebb3d09b8ba6",
   "lastOpenFiles": [
+    "docs/brainstorming/30-penanganan-folder-projek-berisi-vault-obsidian.md",
+    "demo_vault/10_Projects/qdrant-local-demo/README.md",
+    "demo_vault/10_Projects/qdrant-local-demo",
+    "demo_vault/10_Projects/neo4j-express-demo/README.md",
+    "demo_vault/10_Projects/neo4j-express-demo",
     "docs/changelog/v1.3.0-alpha.md",
     "docs/sprints/level-1/sprint-03/task-04-cli-uninstall-and-clean-teardown.md",
     "docs/implementation-plan/level-1/01-implementation-plan-level-1-standalone.md",
