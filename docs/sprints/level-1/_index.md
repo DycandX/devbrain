@@ -1,6 +1,6 @@
 # 🏃‍♂️ Sprints Index - Level 1: Standalone Local
 
-Dokumen ini memetakan seluruh Sprint dan Task yang harus diselesaikan untuk merampungkan **Level 1: Standalone Local (Zero-Friction Core)**.
+Dokumen ini memetakan seluruh Sprint dan Task yang harus diselesaikan untuk merampungkan **Level 1: Standalone Local (Zero-Friction Core & Extensions)**.
 
 ---
 
@@ -51,3 +51,14 @@ Dokumen ini memetakan seluruh Sprint dan Task yang harus diselesaikan untuk mera
 | 📄 [Task 02](./sprint-05/task-02-session-artifact-extractor-and-formatter.md) | Session Artifact Extractor & Markdown Formatter | `src/devbrain/harvester/extractor.py`, `formatter.py` | ✅ Done |
 | 📄 [Task 03](./sprint-05/task-03-cli-ingest-command-and-continuous-watcher.md) | CLI `devbrain ingest` & Continuous Service | `src/devbrain/cli/commands/ingest_cmd.py`, `service.py` | ✅ Done |
 | 📄 [Task 04](./sprint-05/task-04-integration-testing-and-benchmarking.md) | Automated Tests & Documentation | `tests/test_ingestion.py`, `docs/changelog/` | ✅ Done |
+
+---
+
+### 🕸️ [Sprint 06: Graph Mesh, Workspace Harvester & Targeted Ingestion](./sprint-06/)
+| Task | Deskripsi | Target File | Status |
+| :--- | :--- | :--- | :--- |
+| 📄 [Task 01](./sprint-06/task-01-auto-inspector-repo-scanner-and-manifest-parser.md) | Auto-Inspector, Repo Scanner & Manifest Parser | `src/devbrain/harvester/inspector.py`, `manifest_parser.py` | ⏳ Todo |
+| 📄 [Task 02](./sprint-06/task-02-auto-seeding-multi-type-cards.md) | Auto-Seeding Multi-Type Cards (Projects, Knowledge, Skills) | `src/devbrain/harvester/project_harvester.py` | ⏳ Todo |
+| 📄 [Task 03](./sprint-06/task-03-auto-entity-linker-and-backlink-injector.md) | Auto-Entity Linker & Backlink Injector | `src/devbrain/harvester/entity_linker.py` | ⏳ Todo |
+| 📄 [Task 04](./sprint-06/task-04-cli-targeted-single-and-batch-ingestion.md) | CLI Targeted Single & Batch Ingestion (`project`, `projects`, `all`) | `src/devbrain/cli/commands/ingest_cmd.py` | ⏳ Todo |
+| 📄 [Task 05](./sprint-06/task-05-automated-test-suite-and-release-v1-2-0.md) | Automated Test Suite & Release `v1.2.0-alpha` | `tests/test_project_ingestion.py`, `CHANGELOG.md` | ⏳ Todo |
