@@ -1,47 +1,55 @@
-# 43. Katalog Lengkap Ekosistem AI Coding Tools, Agents & Peta Lokasi Storage OS
+# 43. Katalog Lengkap Ekosistem AI Coding Tools, Agentic Frameworks & Peta Lokasi Storage OS
 
 | Metadata | Nilai |
 | :--- | :--- |
-| **Topik** | Katalog Komprehensif AI Tools & Agents (Antigravity, Claude Code, Codex, Cursor, Windsurf, Cline, Aider, OpenCode, Continue), Peta Path Storage OS & Spesifikasi Data Ingesti |
+| **Topik** | Katalog Komprehensif AI Tools, Coding Agents & Agentic Frameworks (Antigravity, Claude Code, Cursor, Hermes Agent, CrewAI, AutoGen, LangGraph, MetaGPT, Cline, Aider, OpenCode), Peta Path Storage OS & Spesifikasi Ingesti |
 | **Status** | 💡 Brainstorming & Complete Reference Map |
 | **Referensi** | [04-peta-penyimpanan-multi-agent-cli.md](./04-peta-penyimpanan-multi-agent-cli.md), [24-lokasi-storage-harvester-dan-katalog-data-ingesti.md](./24-lokasi-storage-harvester-dan-katalog-data-ingesti.md), [36-katalog-ingesti-mekanisme-harvester-dan-efisiensi-resource.md](./36-katalog-ingesti-mekanisme-harvester-dan-efisiensi-resource.md) |
 | **Tanggal** | 2026-08-30 |
 
 ---
 
-## 1. Tabel Ringkasan Ekosistem AI Tools & Coding Agents
+## 1. Peta Taksonomi Ekosistem AI Developer
 
 ```mermaid
 graph TD
     DevBrain["🧠 DevBrain Central Ingestion Engine"]
     
-    subgraph Category_IDE["💻 1. AI-First IDEs"]
-        I1["Antigravity IDE"]
+    subgraph Cat1["💻 1. AI-First IDEs"]
+        I1["Google Antigravity IDE"]
         I2["Cursor IDE"]
         I3["Windsurf IDE"]
     end
     
-    subgraph Category_CLI["⚡ 2. Terminal Coding Agents"]
+    subgraph Cat2["⚡ 2. Terminal Coding Agents"]
         C1["Claude Code CLI"]
-        C2["Codex / ChatGPT CLI"]
+        C2["OpenAI Codex / OpenCode"]
         C3["Aider CLI"]
-        C4["OpenCode CLI"]
-        C5["GitHub Copilot CLI"]
+        C4["GitHub Copilot CLI"]
     end
     
-    subgraph Category_Ext["🔌 3. VS Code / JetBrains Extensions"]
+    subgraph Cat3["🔌 3. Editor Extensions"]
         E1["Cline / Roo-Code"]
         E2["Continue.dev"]
     end
 
-    Category_IDE --> DevBrain
-    Category_CLI --> DevBrain
-    Category_Ext --> DevBrain
+    subgraph Cat4["🤖 4. Autonomous Agentic AI Frameworks"]
+        A1["Hermes Agent (NousResearch)"]
+        A2["CrewAI Framework"]
+        A3["Microsoft AutoGen & Studio"]
+        A4["LangGraph / LangChain Agents"]
+        A5["MetaGPT & ChatDev"]
+    end
+
+    Cat1 --> DevBrain
+    Cat2 --> DevBrain
+    Cat3 --> DevBrain
+    Cat4 --> DevBrain
 ```
 
 ---
 
-## 2. Peta Detail Lokasi File, Folder & Spesifikasi Data Ingesti
+## 2. Peta Detail Lokasi Storage AI Tools & Coding Agents
 
 ---
 
@@ -68,14 +76,8 @@ graph TD
 ### 🌟 2. Anthropic Claude Code CLI (`claude`)
 * **Kategori:** Autonomous Terminal Coding Agent.
 * **Lokasi Folder di OS:**
-  * **Windows:**
-    * `C:\Users\<User>\.claude\`
-    * `C:\Users\<User>\.claude\projects\<project-hash>\`
-    * Global Config: `C:\Users\<User>\.claude.json`
-  * **Linux / macOS:**
-    * `~/.claude/`
-    * `~/.claude/projects/`
-    * `~/.claude.json`
+  * **Windows:** `C:\Users\<User>\.claude\projects\<project-hash>\`, `C:\Users\<User>\.claude.json`
+  * **Linux / macOS:** `~/.claude/projects/`, `~/.claude.json`
   * **Workspace Lokal:** `CLAUDE.md`, `.claude/`
 * **File & Data yang Di-ingest ke Vault:**
   * Session transcript log (`.json` / `.jsonl`): Riwayat chat, command bash yang dijalankan.
@@ -88,13 +90,9 @@ graph TD
 ### 🌟 3. Cursor IDE
 * **Kategori:** AI-Powered Fork of VS Code.
 * **Lokasi Folder di OS:**
-  * **Windows:**
-    * `C:\Users\<User>\AppData\Roaming\Cursor\User\workspaceStorage\<workspace-id>\`
-    * Global Rules: `C:\Users\<User>\.cursor\`
-  * **Linux / macOS:**
-    * `~/.config/Cursor/User/workspaceStorage/<workspace-id>/`
-    * `~/.cursor/`
-  * **Workspace Lokal:** `.cursorrules`, `.cursor/rules/`, `.cursor/prompts/`
+  * **Windows:** `AppData\Roaming\Cursor\User\workspaceStorage\<workspace-id>\`, `C:\Users\<User>\.cursor\`
+  * **Linux / macOS:** `~/.config/Cursor/User/workspaceStorage/<workspace-id>/`, `~/.cursor/`
+  * **Workspace Lokal:** `.cursorrules`, `.cursor/rules/*.mdc`, `.cursor/prompts/`
 * **File & Data yang Di-ingest ke Vault:**
   * `.cursorrules` & `.cursor/rules/*.mdc`: Aturan koding spesifik projek.
   * Composer & Chat History di SQLite workspace storage (`state.vscdb`).
@@ -105,11 +103,8 @@ graph TD
 ### 🌟 4. Windsurf IDE (Codeium Cascade)
 * **Kategori:** Agentic IDE by Codeium.
 * **Lokasi Folder di OS:**
-  * **Windows:**
-    * `C:\Users\<User>\.codeium\windsurf\`
-    * `C:\Users\<User>\AppData\Roaming\Windsurf\User\workspaceStorage\`
-  * **Linux / macOS:**
-    * `~/.codeium/windsurf/`
+  * **Windows:** `C:\Users\<User>\.codeium\windsurf\`, `AppData\Roaming\Windsurf\User\workspaceStorage\`
+  * **Linux / macOS:** `~/.codeium/windsurf/`
   * **Workspace Lokal:** `.windsurfrules`, `.windsurf/`
 * **File & Data yang Di-ingest ke Vault:**
   * Cascade chat logs & task summaries.
@@ -118,15 +113,11 @@ graph TD
 
 ---
 
-### 🌟 5. Cline & Roo-Code (VS Code AI Autonomous Extension)
+### 🌟 5. Cline & Roo-Code (VS Code Extension)
 * **Kategori:** Open-Source Autonomous Extension for VS Code.
 * **Lokasi Folder di OS:**
-  * **Windows:**
-    * `C:\Users\<User>\AppData\Roaming\Code\User\globalStorage\saoudrizwan.claude-dev\`
-    * `C:\Users\<User>\AppData\Roaming\Code\User\globalStorage\rooveterinaryinc.roo-cline\`
-  * **Linux / macOS:**
-    * `~/.config/Code/User/globalStorage/saoudrizwan.claude-dev/tasks/`
-    * `~/.config/Code/User/globalStorage/rooveterinaryinc.roo-cline/tasks/`
+  * **Windows:** `AppData\Roaming\Code\User\globalStorage\saoudrizwan.claude-dev\tasks\`
+  * **Linux / macOS:** `~/.config/Code/User/globalStorage/saoudrizwan.claude-dev/tasks/`
   * **Workspace Lokal:** `.clinerules`, `.roomodes`
 * **File & Data yang Di-ingest ke Vault:**
   * `tasks/<task-id>/api_conversation_history.json`: Log lengkap eksekusi task.
@@ -139,74 +130,112 @@ graph TD
 ### 🌟 6. Aider CLI (`aider`)
 * **Kategori:** Git-Integrated AI Pair Programming CLI.
 * **Lokasi Folder di OS:**
-  * **Windows / Linux / macOS (Workspace Level):**
-    * Riwayat Chat: `.aider.chat.history.md` (di root setiap git repo yang memakai Aider).
-    * Input History: `.aider.input.history`
-    * Tags Cache: `.aider.tags.cache.v3`
-    * Global Config: `~/.aider.conf.yml`
+  * **Workspace Level:** `.aider.chat.history.md`, `.aider.input.history`
+  * **Global Config:** `~/.aider.conf.yml`
 * **File & Data yang Di-ingest ke Vault:**
-  * `.aider.chat.history.md`: Catatan lengkap diskusi pair programming & commit git yang dihasilkan.
+  * `.aider.chat.history.md`: Catatan lengkap diskusi pair programming & commit git.
 * **Folder Tujuan di Vault:** `90_Agent_Inbox/Aider/`.
 
 ---
 
-### 🌟 7. OpenAI Codex / ChatGPT CLI / OpenCode
-* **Kategori:** Terminal & Web-linked AI Coding Agents.
+### 🌟 7. OpenAI Codex / OpenCode / Continue.dev / GitHub Copilot
 * **Lokasi Folder di OS:**
-  * **Windows:**
-    * `C:\Users\<User>\.opencode\`
-    * `C:\Users\<User>\.openai\`
-  * **Linux / macOS:**
-    * `~/.opencode/`
-    * `~/.openai/`
-* **File & Data yang Di-ingest ke Vault:**
-  * Session logs (`session.json`), prompt histories, dan tool calls execution.
-* **Folder Tujuan di Vault:** `90_Agent_Inbox/OpenCode/`.
+  * OpenCode: `~/.opencode/sessions/`
+  * Continue: `~/.continue/sessions/*.json`, `~/.continue/config.json`
+  * Copilot CLI: `AppData\Local\github-copilot\`
+* **File & Data yang Di-ingest:** Session histories, tool executions, dan custom prompt configurations.
+* **Folder Tujuan di Vault:** `90_Agent_Inbox/OpenCode/` & `90_Agent_Inbox/Continue/`.
 
 ---
 
-### 🌟 8. Continue.dev
-* **Kategori:** Open-source AI code assistant for VS Code & JetBrains.
-* **Lokasi Folder di OS:**
-  * **Windows:** `C:\Users\<User>\.continue\`
-  * **Linux / macOS:** `~/.continue/`
-  * **File:** `~/.continue/config.json`, `~/.continue/sessions/*.json`, `~/.continue/index/`
-* **File & Data yang Di-ingest ke Vault:**
-  * Riwayat sesi chat koding (`sessions/*.json`).
-  * Custom Prompts & Slash Commands (`config.json` / `prompts/`).
-* **Folder Tujuan di Vault:** `90_Agent_Inbox/Continue/`.
+## 3. Peta Detail Autonomous Agentic AI Frameworks
+
+Framework multi-agent otonom menghasilkan trajektori penalaran (*reasoning trajectories*), pembagian tugas (*task decomposition*), dan state checkpoints yang sangat bernilai untuk disimpan ke Central Brain:
 
 ---
 
-### 🌟 9. GitHub Copilot CLI & Workspace
-* **Kategori:** AI developer assistant CLI by GitHub.
+### 🤖 8. Hermes Agent (NousResearch Autonomous Agent)
+* **Kategori:** Open-Source Autonomous Agent & Tool-Use Engine (Hermes-3 / Function Calling).
 * **Lokasi Folder di OS:**
-  * **Windows:** `C:\Users\<User>\AppData\Local\github-copilot\`
-  * **Linux / macOS:** `~/.config/github-copilot/`
+  * **Windows:** `C:\Users\<User>\.hermes\`, `C:\Users\<User>\AppData\Roaming\Hermes\`
+  * **Linux / macOS:** `~/.hermes/sessions/`, `~/.hermes/memories/`
+  * **Workspace Lokal:** `.hermes/`, `hermes_config.yaml`
 * **File & Data yang Di-ingest ke Vault:**
-  * Explanation history & command generation logs.
-* **Folder Tujuan di Vault:** `90_Agent_Inbox/GitHub_Copilot/`.
+  * `sessions/<session-id>/cot_trace.jsonl`: *Chain-of-Thought (CoT)* jejak penalaran agen saat mengeksekusi tools.
+  * `memories/long_term_memory.json`: Fakta-fakta yang dipelajari Hermes dari percakapan pengguna.
+  * `scratchpad.md`: Catatan sementara agen saat menganalisis bug atau merancang script.
+* **Folder Tujuan di Vault:** `90_Agent_Inbox/Hermes_Agent/` & `20_Knowledge/Agent_Reasoning/`.
 
 ---
 
-## 3. Matriks Data: Apa yang WAJIB Di-ingest vs DILARANG (Ignored)
+### 🤖 9. CrewAI Framework (Multi-Agent Role-Playing)
+* **Kategori:** Framework orkestrasi tim multi-agent dengan pembagian peran (Researcher, Writer, Coder, QA).
+* **Lokasi Folder di OS:**
+  * **Workspace Lokal:** `.crewai/`, `db/crewai.db`, `output/`
+  * **Global Storage:** `~/.crewai/cache/`
+* **File & Data yang Di-ingest ke Vault:**
+  * `crewai_task_output.md`: Laporan hasil akhir pengerjaan tugas dari seluruh kru agen.
+  * `crewai_state.json`: State memory antar-agen (misal temuan Researcher yang diserahkan ke Coder).
+  * `crew_definitions.yaml`: Definisi peran agen, tools yang diberikan, dan tujuan (*goals*).
+* **Folder Tujuan di Vault:** `90_Agent_Inbox/CrewAI/` & `10_Projects/<Project>/Agents/`.
+
+---
+
+### 🤖 10. Microsoft AutoGen & AutoGen Studio
+* **Kategori:** Multi-Agent Conversation Framework & Studio UI.
+* **Lokasi Folder di OS:**
+  * **Windows:** `C:\Users\<User>\.autogenstudio\`, `C:\Users\<User>\.autogen\`
+  * **Linux / macOS:** `~/.autogenstudio/`
+  * **File:** `database.sqlite` (berisi sessions, agents, workflows, skills), `skills/*.py`
+* **File & Data yang Di-ingest ke Vault:**
+  * Group Chat History (`sessions` di SQLite): Transkrip diskusi antar-agen AutoGen.
+  * Generated Python Skills (`skills/*.py`): Fungsi Python yang berhasil ditulis dan divalidasi oleh agen.
+* **Folder Tujuan di Vault:** `90_Agent_Inbox/AutoGen/` & `00_System/Agent_Skills/AutoGen/`.
+
+---
+
+### 🤖 11. LangGraph & LangChain Local Agents
+* **Kategori:** Graph-Based State Machine Autonomous Agents.
+* **Lokasi Folder di OS:**
+  * **Workspace Lokal:** `.langgraph/`, `checkpoints.sqlite`, `langgraph_state.json`
+* **File & Data yang Di-ingest ke Vault:**
+  * `checkpoints.sqlite`: Snapshot graf state (node eksekusi, human-in-the-loop approvals).
+  * Agent run summaries & tool call payloads.
+* **Folder Tujuan di Vault:** `90_Agent_Inbox/LangGraph/`.
+
+---
+
+### 🤖 12. MetaGPT & ChatDev (Simulasi Perusahaan Software Multi-Agent)
+* **Kategori:** Multi-Agent Software Development Simulation (Product Manager $\rightarrow$ Architect $\rightarrow$ Engineer $\rightarrow$ QA).
+* **Lokasi Folder di OS:**
+  * **Workspace Lokal:** `workspace/docs/`, `workspace/resources/`
+* **File & Data yang Di-ingest ke Vault:**
+  * `prd.md`: Dokumen Product Requirements yang dirumuskan oleh AI Product Manager.
+  * `system_design.md` & `architecture.md`: Diagram arsitektur & sequence diagram buatan AI Architect.
+  * `task.md` & `code_summary.md`: Pembagian modul koding dan implementasi.
+* **Folder Tujuan di Vault:** `10_Projects/<Project>/Architecture/` & `30_Decisions/`.
+
+---
+
+## 4. Matriks Data: Apa yang WAJIB Di-ingest vs DILARANG (Ignored)
 
 ```text
-┌───────────────────────────────────────────────┬───────────────────────────────────────────────┐
-│          ✅ WAJIB DI-INGEST KE VAULT          │          ❌ DILARANG / DI-IGNORE              │
-├───────────────────────────────────────────────┼───────────────────────────────────────────────┤
-│ • Task checklists & milestones (task.md)      │ • Binaries, node_modules/, venv/, .git/       │
-│ • Technical plans (implementation_plan.md)    │ • Raw browser cache & Chromium session dumps  │
-│ • Architecture decisions (ADRs & .cursorrules)│ • Token otentikasi login / API Keys mentah    │
-│ • Code diffs & modification summaries         │ • Telemetry / log debugging internal aplikasi │
-│ • Reusable Agent Skills (SKILL.md)            │ • Socket IPC / temporary lock files           │
-│ • Prompt-response summaries (transcript.jsonl)│ • Temporary test artifacts > 10 MB            │
-└───────────────────────────────────────────────┴───────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────┬───────────────────────────────────────────────────┐
+│            ✅ WAJIB DI-INGEST KE VAULT            │              ❌ DILARANG / DI-IGNORE              │
+├───────────────────────────────────────────────────┼───────────────────────────────────────────────────┤
+│ • Task checklists & milestones (task.md)          │ • Binaries, node_modules/, venv/, .git/           │
+│ • Technical plans (implementation_plan.md)        │ • Raw browser cache & Chromium session dumps      │
+│ • Architecture decisions (ADRs & .cursorrules)    │ • Token otentikasi login / API Keys mentah        │
+│ • CoT Reasoning Traces (Hermes cot_trace.jsonl)   │ • Telemetry / log debugging internal aplikasi     │
+│ • Generated Multi-Agent PRD & System Designs      │ • Socket IPC / temporary lock files               │
+│ • Reusable Agent Skills (SKILL.md & AutoGen .py)  │ • Model weight checkpoints (.bin / .onnx > 50MB)  │
+│ • Prompt-response summaries (transcript.jsonl)    │ • Temporary test artifacts > 10 MB                │
+└───────────────────────────────────────────────────┴───────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 4. Keamanan Otomatis: Pipeline Sanitasi Rahasia (*Secret Redaction*)
+## 5. Keamanan Otomatis: Pipeline Sanitasi Rahasia (*Secret Redaction*)
 
 Sebelum file apa pun dari lokasi di atas disimpan ke Vault Obsidian, DevBrain menjalankan **Regex Sanitizer**:
 * `sk-ant-...` $\rightarrow$ `[REDACTED_ANTHROPIC_KEY]`
@@ -217,8 +246,8 @@ Sebelum file apa pun dari lokasi di atas disimpan ke Vault Obsidian, DevBrain me
 
 ---
 
-## 5. Kesimpulan
+## 6. Kesimpulan
 
-Dengan memetakan seluruh lokasi fisik dari 9 ekosistem AI tools terbesar ini, **DevBrain memiliki kemampuan pemanenan menyeluruh (*Universal Harvester*)**:
-1. Tidak peduli Anda coding menggunakan **Antigravity IDE**, **Claude Code**, **Cursor**, **Cline**, atau **Aider CLI**, seluruh riwayat berharga dan keputusan arsitektur akan otomatis terkumpul ke satu tempat: **Central Brain Hub**.
-2. Semua AI di laptop Anda langsung mewarisi memori bersama tanpa perlu di-briefing ulang dari nol.
+Dengan memetakan seluruh ekosistem **AI IDEs**, **Terminal Agents**, dan **Autonomous Agentic Frameworks (Hermes, CrewAI, AutoGen, LangGraph, MetaGPT)**:
+1. **DevBrain menjadi Universal Knowledge Hub** yang dapat memanen tidak hanya sesi tanya-jawab koding biasa, melainkan juga **alur penalaran tingkat tinggi (*Reasoning Traces*)**, **desain sistem multi-agent**, dan **skill Python baru** yang dihasilkan oleh agen otonom.
+2. Semua AI di laptop Anda langsung mewarisi memori bersama tanpa batas platform.
