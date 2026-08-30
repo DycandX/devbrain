@@ -92,3 +92,16 @@ Dokumen ini memetakan seluruh Sprint dan Task yang harus diselesaikan untuk mera
 | 📄 [Task 02](./sprint-09/task-02-federated-hybrid-search-engine.md) | Federated Hybrid Search Engine & FastMCP Gateway | `src/devbrain/engine/hybrid_search.py`, `src/devbrain/mcp_server/server.py` | ✅ Done |
 | 📄 [Task 03](./sprint-09/task-03-cli-vault-subapp.md) | CLI Sub-App `devbrain vault` | `src/devbrain/cli/commands/vault_cmd.py`, `src/devbrain/cli/main.py` | ✅ Done |
 | 📄 [Task 04](./sprint-09/task-04-automated-test-suite-and-release-v1-5-0.md) | Automated Test Suite & Release `v1.5.0-alpha` | `tests/test_vault_federation.py`, `CHANGELOG.md` | ✅ Done |
+
+---
+
+### 🧠 [Sprint 10: PAIOS Layer, ADR Framework, Context Assembly & SQLite State Cache](./10-sprint-10-paios-context-and-adr.md)
+| Task | Deskripsi | Target File | Status |
+| :--- | :--- | :--- | :--- |
+| 📄 Task 01 | Embedded SQLite Storage Schema (`memories`, `decisions`, `file_cache`) | `src/devbrain/core/sqlite_db.py` | ✅ Done |
+| 📄 Task 02 | Extended Skills Mesh (`custom_skill_roots`, `skill link`, `skill attach`) | `src/devbrain/core/config.py`, `src/devbrain/cli/commands/skill_cmd.py` | ✅ Done |
+| 📄 Task 03 | Architecture Decision Records (ADR Framework) | `src/devbrain/adr/manager.py`, `src/devbrain/cli/commands/adr_cmd.py` | ✅ Done |
+| 📄 Task 04 | Context Assembly Engine (`context_build` & `devbrain context`) | `src/devbrain/context/builder.py`, `src/devbrain/cli/commands/context_cmd.py` | ✅ Done |
+| 📄 Task 05 | Workspace Rules Generator (`devbrain rules init` & Hierarchy of Truth) | `src/devbrain/rules/generator.py`, `src/devbrain/cli/commands/rules_cmd.py` | ✅ Done |
+| 📄 Task 06 | FastMCP Protocol Gateway Upgrade (8 Tools) | `src/devbrain/mcp_server/server.py` | ✅ Done |
+| 📄 Task 07 | Automated Test Suite & Release `v1.6.0-alpha` | `tests/test_paios_engine.py`, `CHANGELOG.md` | ✅ Done |

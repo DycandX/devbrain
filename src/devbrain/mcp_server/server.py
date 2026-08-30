@@ -1,4 +1,4 @@
-"""Model Context Protocol (MCP) Server for Central AI Brain Hub."""
+"""Model Context Protocol (MCP) Server for Central AI Brain Hub (PAIOS Layer)."""
 
 from datetime import datetime, timezone
 import json
@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Literal, Optional
 import uuid
 
+from devbrain.adr.manager import ADRManager
+from devbrain.context.builder import ContextAssemblyEngine
 from devbrain.core.config import BrainConfig, load_config
 from devbrain.core.constants import (
     DIR_AGENT_SKILLS,
@@ -13,12 +15,12 @@ from devbrain.core.constants import (
     DIR_PROJECTS,
     DIR_SYSTEM,
 )
+from devbrain.core.sqlite_db import BrainSQLiteStorage
 from devbrain.engine.hybrid_search import HybridEngine
-from devbrain.watcher.vault_watcher import VaultWatcher
 
 
 def create_mcp_server(vault_path: Path, config: Optional[BrainConfig] = None):
-    """Factory creating and configuring the MCP Server with 4 core memory tools."""
+    """Factory creating and configuring the MCP Server with comprehensive PAIOS memory tools."""
     try:
         from mcp.server.mcpserver import MCPServer
     except ImportError:
@@ -29,6 +31,9 @@ def create_mcp_server(vault_path: Path, config: Optional[BrainConfig] = None):
         config = load_config(vault_path)
 
     linked_vault_paths = config.resolve_linked_vaults()
+    sqlite_storage = BrainSQLiteStorage(vault_path)
+    adr_manager = ADRManager(vault_path, sqlite_storage)
+    context_engine = ContextAssemblyEngine(vault_path, sqlite_storage)
 
     # Initialize Engine & Watcher
     engine = HybridEngine(
@@ -108,13 +113,11 @@ def create_mcp_server(vault_path: Path, config: Optional[BrainConfig] = None):
                 break
 
         if not found_file:
-            # Search by glob
             matched = list(projects_dir.rglob(f"*{clean_name}*.md"))
             if matched:
                 found_file = matched[0]
 
         if not found_file:
-            # Fallback to hybrid search
             fallback_results = engine.search(query=f"project {project_name}", limit=2, scope="all")
             if fallback_results:
                 return (
@@ -130,7 +133,90 @@ def create_mcp_server(vault_path: Path, config: Optional[BrainConfig] = None):
         return f"# Project Context: `{rel_path}`\n\n{content}"
 
     # =========================================================================
-    # TOOL 3: write_agent_log
+    # TOOL 3: build_task_context (Context Assembly Engine)
+    # =========================================================================
+    @server.tool(
+        name="build_task_context",
+        description="Assemble instant situational awareness card combining User Preferences, Project State, ADRs, and Knowledge.",
+    )
+    def build_task_context(task: str, project: str) -> str:
+        """Assemble complete task briefing card."""
+        relevant_chunks = []
+        search_hits = engine.search(query=f"{project} {task}", limit=3, scope="all")
+        for hit in search_hits:
+            relevant_chunks.append({
+                "title": hit.title,
+                "path": hit.file_path,
+                "snippet": hit.snippet,
+            })
+
+        card = context_engine.build_task_context(task=task, project=project, relevant_chunks=relevant_chunks)
+        return card.to_markdown()
+
+    # =========================================================================
+    # TOOL 4: get_user_context
+    # =========================================================================
+    @server.tool(
+        name="get_user_context",
+        description="Retrieve global user preferences, coding persona, styling rules, and constraints.",
+    )
+    def get_user_context() -> str:
+        """Retrieve user coding persona."""
+        return context_engine.get_user_preferences()
+
+    # =========================================================================
+    # TOOL 5: get_decisions
+    # =========================================================================
+    @server.tool(
+        name="get_decisions",
+        description="Retrieve active Architecture Decision Records (ADRs) for a project or globally.",
+    )
+    def get_decisions(project: Optional[str] = None, status: str = "accepted") -> str:
+        """Fetch architecture decisions."""
+        decisions = adr_manager.list_decisions(project=project, status=status)
+        if not decisions:
+            proj_str = f" for project '{project}'" if project else ""
+            return f"No {status} architecture decisions found{proj_str}."
+
+        lines = [f"# Architecture Decision Records ({status.upper()})\n"]
+        for d in decisions:
+            proj = d.get("project") or "Global"
+            lines.append(f"### [{d.get('id', 'ADR')}] {d.get('title', '')}")
+            lines.append(f"- **Project:** `{proj}` | **Date:** `{d.get('date', '')}`")
+            if d.get("summary"):
+                lines.append(f"- **Summary:** {d.get('summary')}")
+            lines.append("")
+        return "\n".join(lines)
+
+    # =========================================================================
+    # TOOL 6: record_decision
+    # =========================================================================
+    @server.tool(
+        name="record_decision",
+        description="Create a new Architecture Decision Record (ADR) in 30_Decisions/.",
+    )
+    def record_decision(
+        title: str,
+        context: str,
+        decision: str,
+        project: Optional[str] = None,
+        consequences: str = "",
+        alternatives: str = "",
+    ) -> str:
+        """Create a new ADR note."""
+        result = adr_manager.create_decision(
+            title=title,
+            project=project,
+            context=context,
+            decision=decision,
+            consequences=consequences,
+            alternatives=alternatives,
+        )
+        engine.index_vault(force_reindex=False)
+        return f"Successfully created Architecture Decision Record `{result['id']}`: '{title}' at `{result['file_path']}`."
+
+    # =========================================================================
+    # TOOL 7: write_agent_log
     # =========================================================================
     @server.tool(
         name="write_agent_log",
@@ -185,41 +271,51 @@ tags: {tags_yaml}
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(note_content)
 
-        # Trigger incremental re-index
         engine.index_vault(force_reindex=False)
-
         rel_path = file_path.relative_to(vault_path).as_posix()
         return f"Successfully recorded agent log into `{rel_path}` and indexed into Central Brain memory."
 
     # =========================================================================
-    # TOOL 4: load_skill
+    # TOOL 8: load_skill
     # =========================================================================
     @server.tool(
         name="load_skill",
-        description="Load instructions and workflow procedures for an Agent Skill stored in 00_System/Agent_Skills/.",
+        description="Load instructions and workflow procedures for an Agent Skill stored in 00_System/Agent_Skills/ or custom skill roots.",
     )
     def load_skill(skill_name: str) -> str:
-        """Read SKILL.md for a requested skill name."""
+        """Read SKILL.md for a requested skill name from vault or external roots."""
         skills_dir = vault_path / DIR_AGENT_SKILLS
         clean_name = skill_name.strip().replace(" ", "-").lower()
 
-        skill_file = skills_dir / clean_name / "SKILL.md"
-        if not skill_file.is_file():
-            # Try fuzzy search in skills folder
-            all_skills = [
-                d.name for d in skills_dir.glob("*")
-                if d.is_dir() and (d / "SKILL.md").is_file()
-            ]
-            if all_skills:
-                return (
-                    f"Skill '{skill_name}' not found at `{skill_file}`.\n"
-                    f"Available active skills in vault: {', '.join(all_skills)}"
-                )
-            return f"Skill '{skill_name}' not found and no skills are currently created in `{DIR_AGENT_SKILLS}/`."
+        search_locations = [skills_dir / clean_name / "SKILL.md"]
+        for ext_root in config.custom_skill_roots:
+            p = Path(ext_root).resolve()
+            search_locations.append(p / clean_name / "SKILL.md")
+            search_locations.append(p / "skills" / clean_name / "SKILL.md")
 
-        with open(skill_file, "r", encoding="utf-8", errors="replace") as f:
-            skill_content = f.read()
+        for skill_file in search_locations:
+            if skill_file.is_file():
+                with open(skill_file, "r", encoding="utf-8", errors="replace") as f:
+                    skill_content = f.read()
+                return f"# Active Skill Instructions: `{clean_name}` (from `{skill_file}`)\n\n{skill_content}"
 
-        return f"# Active Skill Instructions: `{clean_name}`\n\n{skill_content}"
+        all_skills: list[str] = [
+            d.name for d in skills_dir.glob("*")
+            if d.is_dir() and (d / "SKILL.md").is_file()
+        ]
+        for ext_root in config.custom_skill_roots:
+            p = Path(ext_root).resolve()
+            if p.is_dir():
+                all_skills.extend([
+                    d.name for d in p.glob("*")
+                    if d.is_dir() and (d / "SKILL.md").is_file()
+                ])
+
+        if all_skills:
+            return (
+                f"Skill '{skill_name}' not found.\n"
+                f"Available active skills in vault & external roots: {', '.join(sorted(set(all_skills)))}"
+            )
+        return f"Skill '{skill_name}' not found and no skills are currently available."
 
     return server

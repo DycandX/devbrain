@@ -48,6 +48,10 @@ class BrainConfig(BaseModel):
         default_factory=dict,
         description="Dictionary mapping alias -> absolute directory path of external linked vaults",
     )
+    custom_skill_roots: list[str] = Field(
+        default_factory=list,
+        description="Custom external skill root directories",
+    )
     created_at: str = Field(
         default_factory=lambda: datetime.now(timezone.utc).isoformat(),
         description="ISO timestamp of vault initialization",

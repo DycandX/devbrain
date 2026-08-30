@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.6.0-alpha] - 2026-08-30
+
+### 🚀 Added
+- **Architecture Decision Records (ADR Framework):** Dedicated `30_Decisions/` directory for architectural decisions with CLI `devbrain adr [new|list]` and automatic wikilink injection into project cards (`10_Projects/`).
+- **Context Assembly Engine (`context_build` & `devbrain context`):** Rapidly primes AI agents (<0.2s) by assembling 5 context tiers: User Preferences, Project State, Active ADRs, Relevant Knowledge Base Chunks, and Recent Session Work.
+- **Workspace Rules & Hierarchy of Truth Generator:** Auto-generates `AGENTS.md` and `CLAUDE.md` in client repositories (`devbrain rules init`) enforcing the strict 4-level Hierarchy of Truth.
+- **Embedded SQLite Machine State & Cache:** SQLite database `.brain_data/brain.db` with WAL mode for memory scope tracking (`GLOBAL`, `PROJECT`, `TASK`, `SESSION`), confidence scoring, superseded memory handling, and file hash caching.
+- **Extended Skills Mesh:** Support for external skill directories (e.g. `E:/_PROJECT/_agent-skill`) via `devbrain skill link` and project-level mounting via `devbrain skill attach`.
+- **FastMCP Protocol Gateway Expansion:** Added `build_task_context`, `get_user_context`, `get_decisions`, and `record_decision` tools.
+- **Automated Tests:** 55 comprehensive automated tests passing 100%.
+
+For complete release details, see [docs/changelog/v1.6.0-alpha.md](docs/changelog/v1.6.0-alpha.md).
+
+---
+
 ## [1.5.0-alpha] - 2026-08-29
 
 ### 🚀 Added

@@ -5,9 +5,12 @@ from typing import Optional
 import typer
 
 from devbrain import __version__
+from devbrain.cli.commands.adr_cmd import adr_app
+from devbrain.cli.commands.context_cmd import context_command
 from devbrain.cli.commands.index_cmd import index_command
 from devbrain.cli.commands.ingest_cmd import unified_ingest_command
 from devbrain.cli.commands.init_cmd import init_command
+from devbrain.cli.commands.rules_cmd import rules_app
 from devbrain.cli.commands.search_cmd import search_command
 from devbrain.cli.commands.serve_cmd import serve_command
 from devbrain.cli.commands.skill_cmd import skill_app
@@ -66,6 +69,23 @@ app.command(
     name="serve",
     help="Launch the FastMCP Protocol Server for Antigravity IDE and Claude Code.",
 )(serve_command)
+
+app.add_typer(
+    adr_app,
+    name="adr",
+    help="Manage Architecture Decision Records (ADRs) to preserve architectural consistency.",
+)
+
+app.command(
+    name="context",
+    help="Assemble situational awareness briefing cards for AI Agents.",
+)(context_command)
+
+app.add_typer(
+    rules_app,
+    name="rules",
+    help="Generate standardized AGENTS.md and CLAUDE.md workspace rules.",
+)
 
 app.add_typer(
     skill_app,
