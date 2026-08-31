@@ -95,7 +95,7 @@ Dokumen ini memetakan seluruh Sprint dan Task yang harus diselesaikan untuk mera
 
 ---
 
-### 🧠 [Sprint 10: PAIOS Layer, ADR Framework, Context Assembly & SQLite State Cache](./10-sprint-10-paios-context-and-adr.md)
+### 🧠 [Sprint 10: PAIOS Layer, ADR Framework, Context Assembly & SQLite State Cache](./sprint-10/10-sprint-10-paios-context-and-adr.md)
 | Task | Deskripsi | Target File | Status |
 | :--- | :--- | :--- | :--- |
 | 📄 Task 01 | Embedded SQLite Storage Schema (`memories`, `decisions`, `file_cache`) | `src/devbrain/core/sqlite_db.py` | ✅ Done |
