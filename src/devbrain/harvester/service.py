@@ -6,7 +6,8 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
 from devbrain.core.config import BrainConfig
-from devbrain.core.constants import BRAIN_DATA_DIR, DIR_INBOX, DIR_PROJECTS
+from devbrain.core.constants import BRAIN_DATA_DIR, DIR_INBOX
+from devbrain.core.fsutil import atomic_write_json, atomic_write_text
 from devbrain.engine.hybrid_search import HybridEngine
 from devbrain.harvester.discovery import discover_sessions
 from devbrain.harvester.entity_linker import inject_backlink_to_project, match_session_to_project
@@ -20,6 +21,21 @@ from devbrain.harvester.project_harvester import (
 )
 
 INGESTED_REGISTRY_FILE = "ingested_sessions.json"
+
+# Registry value per ingested session. Entries written before v1.7 are a bare
+# note filename; newer ones also record the transcript mtime.
+RegistryEntry = Union[str, Dict[str, Union[str, float]]]
+
+
+def _registry_filename(entry: RegistryEntry) -> str:
+    return entry if isinstance(entry, str) else str(entry["file"])
+
+
+def _session_changed(entry: RegistryEntry, last_modified: float) -> bool:
+    """True when the session was modified after it was last ingested."""
+    if isinstance(entry, str):
+        return False
+    return last_modified > float(entry.get("mtime", 0.0))
 
 
 @dataclass
@@ -45,7 +61,7 @@ class IngestionService:
 
         self._ingested_ids = self._load_registry()
 
-    def _load_registry(self) -> Dict[str, str]:
+    def _load_registry(self) -> Dict[str, RegistryEntry]:
         """Load history of previously ingested session IDs."""
         if not self.registry_file.is_file():
             return {}
@@ -57,11 +73,9 @@ class IngestionService:
 
     def _save_registry(self):
         """Save ingested session registry to .brain_data/."""
-        self.data_dir.mkdir(parents=True, exist_ok=True)
         try:
-            with open(self.registry_file, "w", encoding="utf-8") as f:
-                json.dump(self._ingested_ids, f, indent=2)
-        except Exception:
+            atomic_write_json(self.registry_file, self._ingested_ids)
+        except OSError:
             pass
 
     def ingest_single_project(
@@ -148,9 +162,10 @@ class IngestionService:
         created_files: List[Path] = []
 
         for session in discovered:
-            # Deduplication check
+            # Deduplication check: skip unless the session changed since it was ingested
             unique_key = f"{session.source_name}:{session.session_id}"
-            if unique_key in self._ingested_ids and not dry_run:
+            previous = self._ingested_ids.get(unique_key)
+            if previous is not None and not dry_run and not _session_changed(previous, session.last_modified):
                 skipped_count += 1
                 continue
 
@@ -192,10 +207,12 @@ class IngestionService:
                 device_name=self.config.device_name,
                 matched_project=matched_project,
             )
+            # A re-ingested session overwrites its existing note instead of adding a new one
+            if previous is not None:
+                filename = _registry_filename(previous)
             target_file = target_folder / filename
 
-            with open(target_file, "w", encoding="utf-8") as f:
-                f.write(content)
+            atomic_write_text(target_file, content)
 
             # Bidirectional backlink injection
             if matched_project:
@@ -213,7 +230,7 @@ class IngestionService:
                 except Exception:
                     pass
 
-            self._ingested_ids[unique_key] = target_file.name
+            self._ingested_ids[unique_key] = {"file": target_file.name, "mtime": session.last_modified}
             created_files.append(target_file)
             ingested_count += 1
 
@@ -222,7 +239,7 @@ class IngestionService:
             # Trigger incremental vault indexing if new files were created
             if created_files:
                 try:
-                    engine = HybridEngine(vault_path=self.vault_path)
+                    engine = HybridEngine.from_config(self.vault_path, self.config)
                     engine.initialize()
                     engine.index_vault(force_reindex=False)
                 except Exception:

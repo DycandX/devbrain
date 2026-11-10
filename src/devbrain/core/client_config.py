@@ -5,6 +5,10 @@ from pathlib import Path
 import sys
 from typing import Dict, List, Optional
 
+from devbrain.core.fsutil import atomic_write_json
+
+MCP_SERVER_NAME = "central-brain"
+
 
 def get_antigravity_config_paths() -> List[Path]:
     """Find potential Antigravity IDE configuration files."""
@@ -38,56 +42,58 @@ def get_server_command_block(vault_path: Path) -> Dict:
     }
 
 
+def _read_config(cfg_path: Path) -> Optional[dict]:
+    """Load an IDE config file.
+
+    Returns {} when the file does not exist, and None when it exists but cannot
+    be parsed, so callers never overwrite a config they failed to read.
+    """
+    if not cfg_path.is_file():
+        return {}
+    try:
+        with open(cfg_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def _register_server(cfg_path: Path, server_block: Dict) -> bool:
+    """Add or update the central-brain entry in one config file, keeping other entries."""
+    data = _read_config(cfg_path)
+    if data is None:
+        return False
+
+    if not isinstance(data.get("mcpServers"), dict):
+        data["mcpServers"] = {}
+    data["mcpServers"][MCP_SERVER_NAME] = server_block
+
+    atomic_write_json(cfg_path, data)
+    return True
+
+
 def configure_antigravity(vault_path: Path) -> List[Path]:
-    """Register central-brain server into Antigravity IDE configuration files."""
-    updated_files: List[Path] = []
+    """Register central-brain server into Antigravity IDE configuration files.
+
+    Only config locations whose directory already exists are touched. When none
+    exists, the primary location is created.
+    """
     server_block = get_server_command_block(vault_path)
+    candidates = get_antigravity_config_paths()
+    targets = [p for p in candidates if p.parent.is_dir()] or candidates[:1]
 
-    for cfg_path in get_antigravity_config_paths():
-        cfg_path.parent.mkdir(parents=True, exist_ok=True)
-        data = {}
-        if cfg_path.is_file():
-            try:
-                with open(cfg_path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-            except Exception:
-                data = {}
-
-        if "mcpServers" not in data or not isinstance(data["mcpServers"], dict):
-            data["mcpServers"] = {}
-
-        data["mcpServers"]["central-brain"] = server_block
-
-        with open(cfg_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
-
-        updated_files.append(cfg_path)
-
-    return updated_files
+    return [cfg_path for cfg_path in targets if _register_server(cfg_path, server_block)]
 
 
 def configure_claude(vault_path: Path) -> Optional[Path]:
-    """Register central-brain server into Claude Code configuration file."""
+    """Register central-brain server into Claude Code configuration file.
+
+    Returns None when the existing file could not be parsed and was left untouched.
+    """
     cfg_path = get_claude_config_path()
-    server_block = get_server_command_block(vault_path)
-
-    data = {}
-    if cfg_path.is_file():
-        try:
-            with open(cfg_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-        except Exception:
-            data = {}
-
-    if "mcpServers" not in data or not isinstance(data["mcpServers"], dict):
-        data["mcpServers"] = {}
-
-    data["mcpServers"]["central-brain"] = server_block
-
-    with open(cfg_path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-
-    return cfg_path
+    if _register_server(cfg_path, get_server_command_block(vault_path)):
+        return cfg_path
+    return None
 
 
 def remove_all_mcp_configs() -> List[Path]:
@@ -96,20 +102,14 @@ def remove_all_mcp_configs() -> List[Path]:
     all_paths = [*get_antigravity_config_paths(), get_claude_config_path()]
 
     for cfg_path in all_paths:
-        if not cfg_path.is_file():
+        data = _read_config(cfg_path)
+        if not data:
             continue
 
-        try:
-            with open(cfg_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-
-            if isinstance(data, dict) and "mcpServers" in data and isinstance(data["mcpServers"], dict):
-                if "central-brain" in data["mcpServers"]:
-                    del data["mcpServers"]["central-brain"]
-                    with open(cfg_path, "w", encoding="utf-8") as f:
-                        json.dump(data, f, indent=2, ensure_ascii=False)
-                    cleaned_files.append(cfg_path)
-        except Exception:
-            pass
+        servers = data.get("mcpServers")
+        if isinstance(servers, dict) and MCP_SERVER_NAME in servers:
+            del servers[MCP_SERVER_NAME]
+            atomic_write_json(cfg_path, data)
+            cleaned_files.append(cfg_path)
 
     return cleaned_files

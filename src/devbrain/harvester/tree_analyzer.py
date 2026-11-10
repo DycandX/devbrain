@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional, Set
+from typing import List, Set
 
 IGNORED_DIRECTORIES: Set[str] = {
     ".git",

@@ -3,24 +3,27 @@
 from datetime import datetime, timezone
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional
+from typing import List, Literal, Optional
 import uuid
 
 from devbrain.adr.manager import ADRManager
 from devbrain.context.builder import ContextAssemblyEngine
 from devbrain.core.config import BrainConfig, load_config
-from devbrain.core.constants import (
-    DIR_AGENT_SKILLS,
-    DIR_INBOX,
-    DIR_PROJECTS,
-    DIR_SYSTEM,
-)
+from devbrain.core.constants import DIR_AGENT_SKILLS, DIR_INBOX, DIR_PROJECTS
+from devbrain.core.fsutil import atomic_write_text
 from devbrain.core.sqlite_db import BrainSQLiteStorage
 from devbrain.engine.hybrid_search import HybridEngine
 
 
-def create_mcp_server(vault_path: Path, config: Optional[BrainConfig] = None):
-    """Factory creating and configuring the MCP Server with comprehensive PAIOS memory tools."""
+def create_mcp_server(
+    vault_path: Path,
+    config: Optional[BrainConfig] = None,
+    engine: Optional[HybridEngine] = None,
+):
+    """Factory creating and configuring the MCP Server with comprehensive PAIOS memory tools.
+
+    Pass a prebuilt engine to share it with other components such as the vault watcher.
+    """
     try:
         from mcp.server.mcpserver import MCPServer
     except ImportError:
@@ -30,18 +33,12 @@ def create_mcp_server(vault_path: Path, config: Optional[BrainConfig] = None):
     if config is None:
         config = load_config(vault_path)
 
-    linked_vault_paths = config.resolve_linked_vaults()
     sqlite_storage = BrainSQLiteStorage(vault_path)
     adr_manager = ADRManager(vault_path, sqlite_storage)
     context_engine = ContextAssemblyEngine(vault_path, sqlite_storage)
 
-    # Initialize Engine & Watcher
-    engine = HybridEngine(
-        vault_path=vault_path,
-        embedding_model=config.embedding_model,
-        ignored_patterns=config.ignored_paths,
-        linked_vaults=linked_vault_paths,
-    )
+    if engine is None:
+        engine = HybridEngine.from_config(vault_path, config)
     engine.initialize()
 
     # Initial scan if needed
@@ -247,16 +244,15 @@ def create_mcp_server(vault_path: Path, config: Optional[BrainConfig] = None):
                 if clean_tag not in all_tags:
                     all_tags.append(clean_tag)
 
-        tags_yaml = json.dumps(all_tags)
-
+        # json.dumps yields a double-quoted scalar, which is valid YAML for any input
         note_content = f"""---
 id: "LOG-{timestamp_str}-{log_id}"
-title: "{summary}"
+title: {json.dumps(summary, ensure_ascii=False)}
 type: agent-log
-author: "{author}"
-device: "{config.device_name}"
+author: {json.dumps(author, ensure_ascii=False)}
+device: {json.dumps(config.device_name, ensure_ascii=False)}
 created: "{now.isoformat()}"
-tags: {tags_yaml}
+tags: {json.dumps(all_tags, ensure_ascii=False)}
 ---
 
 # 📝 {summary}
@@ -268,8 +264,7 @@ tags: {tags_yaml}
 *Logged automatically by Central Brain Agent Protocol at {now.strftime('%Y-%m-%d %H:%M:%S UTC')}*
 """
 
-        with open(file_path, "w", encoding="utf-8") as f:
-            f.write(note_content)
+        atomic_write_text(file_path, note_content)
 
         engine.index_vault(force_reindex=False)
         rel_path = file_path.relative_to(vault_path).as_posix()

@@ -1,6 +1,5 @@
 """Core constants for devbrain matching docs/brainstorming/07 taxonomy."""
 
-from pathlib import Path
 
 # File & Directory Names
 CONFIG_FILENAME = ".brainrc.json"
@@ -53,7 +52,9 @@ STANDARD_DIRS = [
 
 # Default Embedding Models
 DEFAULT_EMBEDDING_PROVIDER = "fastembed"
-DEFAULT_EMBEDDING_MODEL = "BAAI/bge-small-en-v1.5"
+# Multilingual (about 50 languages, 384 dimensions) so Indonesian and English notes
+# and queries land in the same vector space.
+DEFAULT_EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
 # Ignored Patterns by Default
 DEFAULT_IGNORED_PATTERNS = [
@@ -67,3 +68,9 @@ DEFAULT_IGNORED_PATTERNS = [
     ".DS_Store",
     "Thumbs.db",
 ]
+
+# Minimum cosine similarity for a chunk to count as a semantic match, per embedding
+# model. Measured with benchmarks/eval_retrieval.py; models not listed get no floor.
+EMBEDDING_MODEL_MIN_SIMILARITY = {
+    "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2": 0.38,
+}

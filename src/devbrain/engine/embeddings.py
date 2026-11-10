@@ -1,13 +1,16 @@
 """Embedding service wrapping FastEmbed CPU ONNX models."""
 
-from typing import List, Optional
+from typing import List
+
 import numpy as np
+
+from devbrain.core.constants import DEFAULT_EMBEDDING_MODEL
 
 
 class EmbeddingEngine:
     """CPU-optimized local embedding generator using FastEmbed ONNX."""
 
-    def __init__(self, model_name: str = "BAAI/bge-small-en-v1.5", threads: int = 1):
+    def __init__(self, model_name: str = DEFAULT_EMBEDDING_MODEL, threads: int = 1):
         self.model_name = model_name
         self.threads = threads
         self._model = None
@@ -43,7 +46,7 @@ class EmbeddingEngine:
 
     @staticmethod
     def cosine_similarity_matrix(query_vec: List[float], matrix: np.ndarray) -> np.ndarray:
-        """Compute cosine similarity between 1 query vector and an N-dimensional matrix."""
+        """Compute raw cosine similarity (-1.0 to 1.0) between a query vector and each matrix row."""
         if matrix.shape[0] == 0:
             return np.array([], dtype=np.float32)
 
@@ -56,6 +59,4 @@ class EmbeddingEngine:
         m_norms[m_norms == 0] = 1e-10
 
         dots = np.dot(matrix, q)
-        similarities = dots / (m_norms * q_norm)
-        # Normalize from [-1, 1] to [0, 1]
-        return np.clip((similarities + 1.0) / 2.0, 0.0, 1.0)
+        return np.clip(dots / (m_norms * q_norm), -1.0, 1.0).astype(np.float32)

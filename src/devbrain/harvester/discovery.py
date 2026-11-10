@@ -100,22 +100,21 @@ def discover_sessions(
                                     )
                                 )
 
-                # 2. Claude Code structure
+                # 2. Claude Code structure: one transcript file per session
                 elif src == "claude-code":
                     for project_dir in root.iterdir():
-                        if project_dir.is_dir():
-                            logs = list(project_dir.glob("*.jsonl")) + list(project_dir.glob("*.json"))
-                            if logs:
-                                mtime = max(p.stat().st_mtime for p in logs)
-                                discovered.append(
-                                    HarvestableSession(
-                                        session_id=project_dir.name,
-                                        source_name="claude-code",
-                                        root_path=project_dir,
-                                        artifact_files=logs,
-                                        last_modified=mtime,
-                                    )
+                        if not project_dir.is_dir():
+                            continue
+                        for transcript in project_dir.glob("*.jsonl"):
+                            discovered.append(
+                                HarvestableSession(
+                                    session_id=transcript.stem,
+                                    source_name="claude-code",
+                                    root_path=project_dir,
+                                    artifact_files=[transcript],
+                                    last_modified=transcript.stat().st_mtime,
                                 )
+                            )
 
                 # 3. Cline / Roo Code structure
                 elif src == "cline":

@@ -12,7 +12,7 @@ from typing import Dict, List, Optional
 from devbrain.core.constants import DIR_AGENT_SKILLS, DIR_KNOWLEDGE, DIR_PROJECTS
 from devbrain.engine.hybrid_search import HybridEngine
 from devbrain.harvester.inspector import RepoType, inspect_repository_type
-from devbrain.harvester.manifest_parser import ParsedManifest, parse_repository_manifest
+from devbrain.harvester.manifest_parser import parse_repository_manifest
 from devbrain.harvester.tree_analyzer import analyze_codebase_structure
 
 
@@ -310,7 +310,7 @@ tags: ["knowledge", "documentation"]
 
     # Trigger FastEmbed & BM25 re-indexing
     try:
-        engine = HybridEngine(vault_path=vault_path)
+        engine = HybridEngine.from_config(vault_path)
         engine.initialize()
         engine.index_vault(force_reindex=False)
     except Exception:

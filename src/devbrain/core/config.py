@@ -13,6 +13,7 @@ from devbrain.core.constants import (
     DEFAULT_EMBEDDING_PROVIDER,
     DEFAULT_IGNORED_PATTERNS,
 )
+from devbrain.core.fsutil import atomic_write_json
 
 
 class BrainConfig(BaseModel):
@@ -106,9 +107,6 @@ def save_config(config: BrainConfig, path_or_dir: Path) -> Path:
         config_file = path
 
     config.updated_at = datetime.now(timezone.utc).isoformat()
-    config_file.parent.mkdir(parents=True, exist_ok=True)
-
-    with open(config_file, "w", encoding="utf-8") as f:
-        json.dump(config.model_dump(), f, indent=2, ensure_ascii=False)
+    atomic_write_json(config_file, config.model_dump())
 
     return config_file

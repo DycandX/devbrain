@@ -10,7 +10,6 @@ from devbrain.cli.ui.console import (
     console,
     print_banner,
     print_error,
-    print_info,
     print_success,
     print_warning,
 )
@@ -188,12 +187,7 @@ def sync_vaults_cmd(
     manager, config, vault_dir = _get_manager(vault)
 
     linked_paths = config.resolve_linked_vaults()
-    engine = HybridEngine(
-        vault_path=vault_dir,
-        embedding_model=config.embedding_model,
-        ignored_patterns=config.ignored_paths,
-        linked_vaults=linked_paths,
-    )
+    engine = HybridEngine.from_config(vault_dir, config)
 
     with console.status("[bold cyan]Re-indexing Central Vault & all linked vaults...[/bold cyan]"):
         res = engine.index_vault(force_reindex=False)

@@ -3,7 +3,6 @@
 import sys
 from rich.console import Console
 from rich.panel import Panel
-from rich.table import Table
 
 # Ensure standard streams use UTF-8 on Windows
 if sys.platform == "win32":

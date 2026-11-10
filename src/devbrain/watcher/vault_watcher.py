@@ -5,7 +5,6 @@ from typing import Callable, Optional
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
-from devbrain.core.constants import DEFAULT_IGNORED_PATTERNS
 from devbrain.engine.hybrid_search import HybridEngine
 from devbrain.watcher.debounce import DebounceManager
 
@@ -26,19 +25,9 @@ class VaultEventHandler(FileSystemEventHandler):
 
     def _should_process(self, path_str: str) -> bool:
         path = Path(path_str)
-        if path.is_dir() or not path_str.endswith(".md"):
+        if path.suffix.lower() != ".md" or path.is_dir():
             return False
-
-        # Ignore patterns
-        for part in path.parts:
-            if part.startswith(".brain_data") or part == ".obsidian" or part == ".git":
-                return False
-        for pattern in self.engine.ignored_patterns:
-            if pattern.startswith("*.") and path.name.endswith(pattern[1:]):
-                return False
-            if pattern in path_str or pattern in path.name:
-                return False
-        return True
+        return not self.engine.is_ignored(path, self.engine.vault_path)
 
     def on_created(self, event: FileSystemEvent):
         if self._should_process(event.src_path):
@@ -62,8 +51,11 @@ class VaultEventHandler(FileSystemEventHandler):
             )
 
     def _handle_event(self, event_type: str, src_path: str):
-        # Trigger incremental re-indexing
-        self.engine.index_vault(force_reindex=False)
+        # Runs on a timer thread: a failed re-index must not kill the watcher.
+        try:
+            self.engine.index_vault(force_reindex=False)
+        except Exception:
+            return
         if self.on_change:
             self.on_change(event_type, src_path)
 

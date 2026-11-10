@@ -1,8 +1,6 @@
 """Obsidian Markdown Formatter and Frontmatter Enricher."""
 
-from datetime import datetime
 import json
-from pathlib import Path
 from typing import Optional, Tuple
 
 from devbrain.harvester.entity_linker import generate_graph_links_block

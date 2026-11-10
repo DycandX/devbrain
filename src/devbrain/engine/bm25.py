@@ -17,18 +17,21 @@ class BM25Engine:
 
     def __init__(self):
         self.corpus_tokens: List[List[str]] = []
+        self._token_sets: List[set] = []
         self._bm25 = None
 
     def build_index(self, corpus_texts: List[str]):
         """Build BM25Okapi index from a list of chunk texts."""
         if not corpus_texts:
             self.corpus_tokens = []
+            self._token_sets = []
             self._bm25 = None
             return
 
         from rank_bm25 import BM25Okapi
 
         self.corpus_tokens = [tokenize_text(text) for text in corpus_texts]
+        self._token_sets = [set(tokens) for tokens in self.corpus_tokens]
         self._bm25 = BM25Okapi(self.corpus_tokens)
 
     def search(self, query: str) -> np.ndarray:
@@ -47,3 +50,17 @@ class BM25Engine:
             # Normalize to [0.0, 1.0] range
             return raw_scores / max_score
         return np.zeros(len(self.corpus_tokens), dtype=np.float32)
+
+    def coverage(self, query: str) -> np.ndarray:
+        """Share of distinct query tokens present in each document, between 0.0 and 1.0."""
+        if not self._token_sets:
+            return np.array([], dtype=np.float32)
+
+        query_tokens = set(tokenize_text(query))
+        if not query_tokens:
+            return np.zeros(len(self._token_sets), dtype=np.float32)
+
+        return np.array(
+            [len(query_tokens & doc_tokens) / len(query_tokens) for doc_tokens in self._token_sets],
+            dtype=np.float32,
+        )

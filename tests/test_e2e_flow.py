@@ -46,8 +46,9 @@ def test_full_level1_lifecycle_flow(tmp_path: Path, monkeypatch):
     assert any("Architecture" in r.title or "Knowledge" in r.file_path for r in results)
 
     # 6. Test FastMCP Server Tools
-    server = create_mcp_server(vault_dir, config=loaded_config)
-    
+    # Share the engine so the test observes what the server indexes
+    server = create_mcp_server(vault_dir, config=loaded_config, engine=engine)
+
     # Tool: get_project_context
     proj_res = asyncio.run(server.call_tool("get_project_context", {"project_name": "example_project"}))
     proj_text = proj_res[0].text if isinstance(proj_res, list) else str(proj_res)
@@ -66,6 +67,7 @@ def test_full_level1_lifecycle_flow(tmp_path: Path, monkeypatch):
     # Verify search finds the newly written log
     search_new_log = engine.search("E2E Test Session Verified", limit=2)
     assert len(search_new_log) > 0
+    assert search_new_log[0].file_path.startswith("90_Agent_Inbox/")
 
     # 7. Test IDE Config Registration
     ag_cfgs = configure_antigravity(vault_dir)

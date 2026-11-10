@@ -1,0 +1,256 @@
+[
+  {
+    "query": "kenapa halaman daftar pesanan lambat",
+    "lang": "id",
+    "expected": [
+      "20_Knowledge/optimasi-query-postgres.md"
+    ]
+  },
+  {
+    "query": "cara memasang sertifikat https gratis di server",
+    "lang": "id",
+    "expected": [
+      "20_Knowledge/panduan-deploy-vps-nginx.md"
+    ]
+  },
+  {
+    "query": "alasan tidak memakai stripe",
+    "lang": "id",
+    "expected": [
+      "30_Decisions/ADR-002-midtrans-bukan-stripe.md"
+    ]
+  },
+  {
+    "query": "projek jualan kerajinan sudah sampai mana",
+    "lang": "id",
+    "expected": [
+      "10_Projects/toko-online/README.md"
+    ]
+  },
+  {
+    "query": "frontend ditolak browser padahal postman bisa",
+    "lang": "id",
+    "expected": [
+      "20_Knowledge/solusi-bug-cors-fastapi.md"
+    ]
+  },
+  {
+    "query": "permintaan klien soal grafik laporan",
+    "lang": "id",
+    "expected": [
+      "99_Daily/2026-10-01.md"
+    ]
+  },
+  {
+    "query": "jadwal pencadangan basis data tiap malam",
+    "lang": "id",
+    "expected": [
+      "20_Knowledge/cara-backup-database-otomatis.md"
+    ]
+  },
+  {
+    "query": "notifikasi pembayaran terkirim dua kali stok berkurang",
+    "lang": "id",
+    "expected": [
+      "20_Knowledge/penanganan-webhook-idempoten.md"
+    ]
+  },
+  {
+    "query": "metode pembayaran qris dan dompet digital",
+    "lang": "id",
+    "expected": [
+      "30_Decisions/ADR-002-midtrans-bukan-stripe.md"
+    ]
+  },
+  {
+    "query": "aplikasi otomatis menyala setelah server restart",
+    "lang": "id",
+    "expected": [
+      "20_Knowledge/panduan-deploy-vps-nginx.md"
+    ]
+  },
+  {
+    "query": "pengguna ter-logout saat dua tab memperbarui token",
+    "lang": "id",
+    "expected": [
+      "20_Knowledge/jwt-refresh-rotation.md"
+    ]
+  },
+  {
+    "query": "cara mengecilkan ukuran image docker",
+    "lang": "id",
+    "expected": [
+      "20_Knowledge/docker-multi-stage-build.md"
+    ]
+  },
+  {
+    "query": "kenapa memilih sqlite daripada server vektor",
+    "lang": "id",
+    "expected": [
+      "30_Decisions/ADR-001-sqlite-over-qdrant.md"
+    ]
+  },
+  {
+    "query": "chatbot layanan pelanggan",
+    "lang": "id",
+    "expected": [
+      "10_Projects/synapse-cs/README.md"
+    ]
+  },
+  {
+    "query": "memulihkan riwayat git setelah rebase gagal",
+    "lang": "id",
+    "expected": [
+      "20_Knowledge/git-rebase-workflow.md"
+    ]
+  },
+  {
+    "query": "sinkronisasi folder catatan antara laptop dan server rumah",
+    "lang": "id",
+    "expected": [
+      "20_Knowledge/tailscale-syncthing-setup.md"
+    ]
+  },
+  {
+    "query": "aturan gaya penulisan kode dan pesan commit",
+    "lang": "id",
+    "expected": [
+      "00_System/coding-preferences.md"
+    ]
+  },
+  {
+    "query": "komponen react render ulang semua",
+    "lang": "id",
+    "expected": [
+      "20_Knowledge/react-state-management-zustand.md"
+    ]
+  },
+  {
+    "query": "users logged out when two tabs refresh at once",
+    "lang": "en",
+    "expected": [
+      "20_Knowledge/jwt-refresh-rotation.md"
+    ]
+  },
+  {
+    "query": "reduce production container image size",
+    "lang": "en",
+    "expected": [
+      "20_Knowledge/docker-multi-stage-build.md"
+    ]
+  },
+  {
+    "query": "why not run a dedicated vector database",
+    "lang": "en",
+    "expected": [
+      "30_Decisions/ADR-001-sqlite-over-qdrant.md"
+    ]
+  },
+  {
+    "query": "help center support bot project status",
+    "lang": "en",
+    "expected": [
+      "10_Projects/synapse-cs/README.md"
+    ]
+  },
+  {
+    "query": "undo a bad rebase",
+    "lang": "en",
+    "expected": [
+      "20_Knowledge/git-rebase-workflow.md"
+    ]
+  },
+  {
+    "query": "reach home server without port forwarding",
+    "lang": "en",
+    "expected": [
+      "20_Knowledge/tailscale-syncthing-setup.md"
+    ]
+  },
+  {
+    "query": "typescript strictness and commit message convention",
+    "lang": "en",
+    "expected": [
+      "00_System/coding-preferences.md"
+    ]
+  },
+  {
+    "query": "avoid re-rendering the whole component tree",
+    "lang": "en",
+    "expected": [
+      "20_Knowledge/react-state-management-zustand.md"
+    ]
+  },
+  {
+    "query": "slow order list page n+1 query",
+    "lang": "en",
+    "expected": [
+      "20_Knowledge/optimasi-query-postgres.md"
+    ]
+  },
+  {
+    "query": "which payment gateway did we choose and why",
+    "lang": "en",
+    "expected": [
+      "30_Decisions/ADR-002-midtrans-bukan-stripe.md"
+    ]
+  },
+  {
+    "query": "duplicate payment notification handling",
+    "lang": "en",
+    "expected": [
+      "20_Knowledge/penanganan-webhook-idempoten.md"
+    ]
+  },
+  {
+    "query": "nightly database dump uploaded to cloud storage",
+    "lang": "en",
+    "expected": [
+      "20_Knowledge/cara-backup-database-otomatis.md"
+    ]
+  },
+  {
+    "query": "browser blocks request origin not allowed",
+    "lang": "en",
+    "expected": [
+      "20_Knowledge/solusi-bug-cors-fastapi.md"
+    ]
+  },
+  {
+    "query": "e-commerce project tech stack",
+    "lang": "en",
+    "expected": [
+      "10_Projects/toko-online/README.md"
+    ]
+  },
+  {
+    "query": "resep rendang daging sapi",
+    "lang": "id",
+    "expected": []
+  },
+  {
+    "query": "jadwal pertandingan sepak bola akhir pekan",
+    "lang": "id",
+    "expected": []
+  },
+  {
+    "query": "cara merawat tanaman anggrek",
+    "lang": "id",
+    "expected": []
+  },
+  {
+    "query": "kubernetes horizontal pod autoscaler tuning",
+    "lang": "en",
+    "expected": []
+  },
+  {
+    "query": "best hiking trails in the alps",
+    "lang": "en",
+    "expected": []
+  },
+  {
+    "query": "quarterly tax filing deadline",
+    "lang": "en",
+    "expected": []
+  }
+]

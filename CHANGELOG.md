@@ -6,6 +6,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.7.0-alpha] - 2026-11-10 (Unreleased)
+
+### 🐛 Fixed
+- **Test suite overwrote real IDE configs:** every `pytest` run rewrote `~/.claude.json` and the Antigravity `mcp_config.json` files to point `central-brain` at a temporary vault. Tests now run against an isolated home directory.
+- **IDE config writes:** now atomic; an unparseable config is left untouched instead of being replaced; only existing Antigravity locations are written.
+- **Dependencies:** `mcp>=2.0.0` (the code uses the 2.x `MCPServer` API), `numpy` declared, unused `pydantic-settings` removed, package version aligned with `__version__`.
+- **`write_agent_log`:** titles containing quotes no longer produce invalid YAML frontmatter.
+- **Rules template:** documents the real `write_agent_log(summary, details, tags)` signature.
+- **Engine construction:** harvesters built the search engine without the vault config, which could mix vectors from two embedding models in one index.
+
+### 🚀 Added
+- **Retrieval evaluation harness** (`benchmarks/eval_retrieval.py`): 16 notes and 38 Indonesian and English queries, reporting hit@1, hit@3, MRR, and abstain rate.
+- **Reciprocal Rank Fusion with a relevance gate:** hybrid search fuses ranks instead of mismatched scores and returns nothing when no chunk is relevant.
+- **Multilingual embedding model by default** (`paraphrase-multilingual-MiniLM-L12-v2`); the index records its model and rebuilds when it changes.
+- **Vault watcher in `devbrain serve`** (`--watch/--no-watch`): notes edited in Obsidian are re-indexed automatically.
+- **Per-session Claude Code harvester:** one note per session with goal, follow-ups, outcome, files changed, and token usage; sessions that grow are re-ingested in place.
+
+### 📊 Measured
+- Hybrid hit@1 on the eval set: 0.906 to 0.969. Abstain rate on unanswerable queries: 0.000 to 1.000.
+- **Automated Tests:** 66 passing.
+
+### ⚠️ Upgrade Notes
+- Re-run `devbrain init <vault>` to repair the MCP server entry, and `devbrain index` after switching an existing vault to the multilingual model.
+
+For complete details, see [docs/changelog/v1.7.0-alpha.md](docs/changelog/v1.7.0-alpha.md).
+
+---
+
 ## [1.6.0-alpha] - 2026-08-30
 
 ### 🚀 Added

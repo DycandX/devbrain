@@ -20,15 +20,21 @@ def test_cli_status_no_config(tmp_path: Path):
     assert "not found" in result.output or "Error" in result.output
 
 
-def test_cli_init_and_status(tmp_path: Path):
+def test_cli_init_and_status(tmp_path: Path, isolated_home: Path):
     vault_dir = tmp_path / "MyCliVault"
-    
+
+
     # Run init with inputs: choice 1 (FastEmbed), device name "test-device"
     init_input = "1\ntest-device\n"
     result = runner.invoke(app, ["init", str(vault_dir)], input=init_input)
     assert result.exit_code == 0
     assert (vault_dir / CONFIG_FILENAME).is_file()
-    
+
+    # IDE registration must land in the isolated home, never the real one
+    assert Path.home() == isolated_home
+    assert (isolated_home / ".claude.json").is_file()
+
+
     # Run status
     status_result = runner.invoke(app, ["status", "--vault", str(vault_dir)])
     assert status_result.exit_code == 0

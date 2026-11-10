@@ -7,7 +7,7 @@ from typing import Optional
 import typer
 from rich.prompt import Confirm
 
-from devbrain.cli.ui.console import console, print_banner, print_error, print_info, print_success, print_warning
+from devbrain.cli.ui.console import console, print_banner, print_error, print_info, print_success
 from devbrain.core.client_config import remove_all_mcp_configs
 from devbrain.core.config import find_config, load_config
 from devbrain.core.constants import BRAIN_DATA_DIR, CONFIG_FILENAME

@@ -7,6 +7,7 @@ from pathlib import Path
 import re
 from typing import List, Optional
 
+from devbrain.harvester.claude_code import parse_claude_transcript, render_claude_session
 from devbrain.harvester.discovery import HarvestableSession
 from devbrain.harvester.sanitizer import sanitize_text
 
@@ -180,38 +181,28 @@ def extract_antigravity_session(session: HarvestableSession) -> Optional[Extract
 
 
 def extract_claude_session(session: HarvestableSession) -> Optional[ExtractedSessionPayload]:
-    """Extract session logs from Claude Code projects."""
-    content_parts = []
-    title = f"Claude Code Project {session.session_id}"
-    summary = f"Claude Code interaction in project {session.session_id}"
-    tags = ["agent-inbox", "claude-code"]
-
-    for file_path in session.artifact_files:
-        if file_path.suffix in [".jsonl", ".json"]:
-            try:
-                with open(file_path, "r", encoding="utf-8", errors="replace") as f:
-                    raw_text = f.read(50000)
-                content_parts.append(f"### Log: `{file_path.name}`\n```json\n{raw_text[:2000]}\n```")
-            except Exception:
-                continue
-
-    if not content_parts:
+    """Summarize one Claude Code session transcript into goal, outcome, files, and stats."""
+    transcript = next((p for p in session.artifact_files if p.suffix == ".jsonl"), None)
+    if transcript is None:
         return None
 
-    full_body = f"# {title}\n\n" + "\n\n".join(content_parts)
-    sanitized_body, num_redactions = sanitize_text(full_body)
-    created_dt = datetime.fromtimestamp(session.last_modified, timezone.utc)
+    parsed = parse_claude_transcript(transcript)
+    if parsed is None:
+        return None
+
+    sanitized_body, num_redactions = sanitize_text(render_claude_session(parsed))
+    first_prompt, _ = sanitize_text(parsed.user_prompts[0])
 
     return ExtractedSessionPayload(
         session_id=session.session_id,
         source_name="claude-code",
-        title=sanitize_frontmatter_string(title),
-        summary=sanitize_frontmatter_string(summary),
+        title=sanitize_frontmatter_string(first_prompt, max_length=100),
+        summary=sanitize_frontmatter_string(first_prompt, max_length=200),
         body_markdown=sanitized_body,
-        tags=tags,
-        created_time=created_dt,
+        tags=["agent-inbox", "claude-code"],
+        created_time=datetime.fromtimestamp(session.last_modified, timezone.utc),
         num_redactions=num_redactions,
-        workspace_hint=session.session_id,
+        workspace_hint=parsed.cwd.replace("\\", "/") if parsed.cwd else None,
     )
 
 

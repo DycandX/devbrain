@@ -101,7 +101,10 @@ def init_command(
         claude_config = configure_claude(vault_path)
 
     print_success(f"Registered FastMCP server in Antigravity IDE ({len(ag_configs)} configs updated).")
-    print_success(f"Registered FastMCP server in Claude Code ({claude_config}).")
+    if claude_config:
+        print_success(f"Registered FastMCP server in Claude Code ({claude_config}).")
+    else:
+        print_info("Claude Code config could not be parsed and was left untouched; register the server manually.")
 
     # 8. Completion Summary
     console.print("\n" + "─" * 60)

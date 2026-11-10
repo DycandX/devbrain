@@ -1,10 +1,17 @@
 """Hybrid search engine combining FastEmbed dense vectors and Rank-BM25 sparse search."""
 
 from pathlib import Path
-from typing import Callable, Dict, List, Literal, Optional
+import threading
+from typing import Callable, Dict, List, Literal, Optional, Tuple
 import numpy as np
 
-from devbrain.core.constants import DEFAULT_IGNORED_PATTERNS
+from devbrain.core.config import BrainConfig, load_config
+from devbrain.core.constants import (
+    CONFIG_FILENAME,
+    DEFAULT_EMBEDDING_MODEL,
+    DEFAULT_IGNORED_PATTERNS,
+    EMBEDDING_MODEL_MIN_SIMILARITY,
+)
 from devbrain.engine.bm25 import BM25Engine
 from devbrain.engine.chunker import chunk_document
 from devbrain.engine.embeddings import EmbeddingEngine
@@ -13,17 +20,52 @@ from devbrain.engine.parser import parse_markdown_file
 from devbrain.engine.storage import BrainStorage
 
 
+# Reciprocal Rank Fusion constant from Cormack et al. (2009); 60 is the usual default.
+RRF_K = 60
+# Share of distinct query terms a chunk must contain to count as a keyword candidate.
+DEFAULT_MIN_KEYWORD_COVERAGE = 0.5
+
+
+def _reciprocal_rank_fusion(rankers: List[Tuple[np.ndarray, np.ndarray]]) -> np.ndarray:
+    """Fuse several (scores, eligible_mask) rankings into one score per chunk in [0, 1].
+
+    Each ranker contributes 1 / (RRF_K + rank) for the chunks it considers eligible.
+    Only rank positions are used, so rankers with different score scales combine
+    fairly. A chunk ranked first by every ranker scores 1.0; a chunk no ranker
+    considers eligible scores 0.0.
+    """
+    num_chunks = len(rankers[0][0])
+    fused = np.zeros(num_chunks, dtype=np.float64)
+    for scores, eligible in rankers:
+        candidates = np.flatnonzero(eligible)
+        if candidates.size == 0:
+            continue
+        order = candidates[np.argsort(-scores[candidates], kind="stable")]
+        fused[order] += 1.0 / (RRF_K + np.arange(1, order.size + 1))
+    return (fused * (RRF_K + 1) / len(rankers)).astype(np.float32)
+
+
 class HybridEngine:
     """Core orchestrator for document indexing, embeddings, BM25, and federated hybrid search."""
 
     def __init__(
         self,
         vault_path: Path,
-        embedding_model: str = "BAAI/bge-small-en-v1.5",
+        embedding_model: str = DEFAULT_EMBEDDING_MODEL,
         ignored_patterns: Optional[List[str]] = None,
         linked_vaults: Optional[Dict[str, Path]] = None,
+        min_dense_similarity: Optional[float] = None,
+        min_keyword_coverage: float = DEFAULT_MIN_KEYWORD_COVERAGE,
     ):
         self.vault_path = vault_path.resolve()
+        self.embedding_model = embedding_model
+        # Cosine floor for a chunk to count as a semantic candidate; model dependent.
+        self.min_dense_similarity = (
+            min_dense_similarity
+            if min_dense_similarity is not None
+            else EMBEDDING_MODEL_MIN_SIMILARITY.get(embedding_model, 0.0)
+        )
+        self.min_keyword_coverage = min_keyword_coverage
         self.ignored_patterns = ignored_patterns or list(DEFAULT_IGNORED_PATTERNS)
         self.linked_vaults: Dict[str, Path] = linked_vaults or {}
         self.storage = BrainStorage(self.vault_path)
@@ -34,18 +76,38 @@ class HybridEngine:
         self.vectors: np.ndarray = np.array([], dtype=np.float32).reshape(0, 0)
         self.doc_mtimes: Dict[str, float] = {}
         self._is_initialized = False
+        # The MCP server and the vault watcher share one engine across threads.
+        self._lock = threading.RLock()
+
+    @classmethod
+    def from_config(cls, vault_path: Path, config: Optional[BrainConfig] = None) -> "HybridEngine":
+        """Build an engine from the vault's .brainrc.json (or the given config).
+
+        Falls back to defaults when the vault has no configuration file.
+        """
+        vault_path = Path(vault_path).resolve()
+        if config is None and (vault_path / CONFIG_FILENAME).is_file():
+            config = load_config(vault_path)
+        if config is None:
+            return cls(vault_path=vault_path)
+        return cls(
+            vault_path=vault_path,
+            embedding_model=config.embedding_model,
+            ignored_patterns=config.ignored_paths,
+            linked_vaults=config.resolve_linked_vaults(),
+        )
 
     def initialize(self):
         """Load stored index from disk and build BM25 in-memory structure."""
         if self._is_initialized:
             return
 
-        self.chunks, self.vectors, self.doc_mtimes = self.storage.load()
+        self.chunks, self.vectors, self.doc_mtimes = self.storage.load(self.embedding_model)
         if self.chunks:
             self.bm25.build_index([c.content for c in self.chunks])
         self._is_initialized = True
 
-    def _is_ignored(self, path: Path, base_dir: Path) -> bool:
+    def is_ignored(self, path: Path, base_dir: Path) -> bool:
         """Check if a file or directory matches ignore rules."""
         try:
             rel = path.relative_to(base_dir).as_posix()
@@ -71,7 +133,7 @@ class HybridEngine:
 
         # 1. Central Vault files
         for file_path in self.vault_path.rglob("*.md"):
-            if not self._is_ignored(file_path, self.vault_path):
+            if not self.is_ignored(file_path, self.vault_path):
                 rel_id = file_path.relative_to(self.vault_path).as_posix()
                 doc_map[rel_id] = file_path
 
@@ -80,7 +142,7 @@ class HybridEngine:
             if not linked_path.is_dir():
                 continue
             for file_path in linked_path.rglob("*.md"):
-                if not self._is_ignored(file_path, linked_path):
+                if not self.is_ignored(file_path, linked_path):
                     rel_id = f"linked:{alias}:{file_path.relative_to(linked_path).as_posix()}"
                     doc_map[rel_id] = file_path
 
@@ -92,6 +154,14 @@ class HybridEngine:
         on_progress: Optional[Callable[[str, int, int], None]] = None,
     ) -> Dict[str, int]:
         """Index all Central Vault and Linked Vault files incrementally or from scratch."""
+        with self._lock:
+            return self._index_vault(force_reindex, on_progress)
+
+    def _index_vault(
+        self,
+        force_reindex: bool,
+        on_progress: Optional[Callable[[str, int, int], None]],
+    ) -> Dict[str, int]:
         self.initialize()
 
         if force_reindex:
@@ -169,7 +239,7 @@ class HybridEngine:
 
         # Rebuild BM25 & persist
         self.bm25.build_index([c.content for c in self.chunks])
-        self.storage.save(self.chunks, self.vectors, self.doc_mtimes)
+        self.storage.save(self.chunks, self.vectors, self.doc_mtimes, self.embedding_model)
 
         return {
             "processed": len(files_to_process),
@@ -185,6 +255,16 @@ class HybridEngine:
         scope: str = "all",
     ) -> List[SearchResult]:
         """Perform semantic, keyword, or federated hybrid search across indexed chunks."""
+        with self._lock:
+            return self._search(query, limit, mode, scope)
+
+    def _search(
+        self,
+        query: str,
+        limit: int,
+        mode: Literal["hybrid", "dense", "bm25"],
+        scope: str,
+    ) -> List[SearchResult]:
         self.initialize()
 
         if not self.chunks or not query.strip():
@@ -192,24 +272,32 @@ class HybridEngine:
 
         num_chunks = len(self.chunks)
 
-        # 1. Compute Dense Scores
+        # 1. Dense: raw cosine similarity. Chunks below the floor are not candidates.
         dense_scores = np.zeros(num_chunks, dtype=np.float32)
+        dense_ok = np.zeros(num_chunks, dtype=bool)
         if mode in ("hybrid", "dense") and self.vectors.size > 0:
             query_vec = self.embedder.embed_query(query)
             dense_scores = self.embedder.cosine_similarity_matrix(query_vec, self.vectors)
+            dense_ok = dense_scores >= self.min_dense_similarity
 
-        # 2. Compute BM25 Scores
+        # 2. Keyword: BM25 normalized to the best match. In hybrid mode a chunk must
+        #    also contain a minimum share of the query terms, so one common word
+        #    is not enough to surface it.
         bm25_scores = np.zeros(num_chunks, dtype=np.float32)
+        bm25_ok = np.zeros(num_chunks, dtype=bool)
         if mode in ("hybrid", "bm25"):
             bm25_scores = self.bm25.search(query)
+            bm25_ok = bm25_scores > 0
+            if mode == "hybrid":
+                bm25_ok &= self.bm25.coverage(query) >= self.min_keyword_coverage
 
-        # 3. Fuse Scores
+        # 3. Fuse
         if mode == "dense":
-            final_scores = dense_scores
+            final_scores = np.where(dense_ok, np.clip(dense_scores, 0.0, 1.0), 0.0)
         elif mode == "bm25":
             final_scores = bm25_scores
-        else:  # hybrid
-            final_scores = (0.6 * dense_scores) + (0.4 * bm25_scores)
+        else:
+            final_scores = _reciprocal_rank_fusion([(dense_scores, dense_ok), (bm25_scores, bm25_ok)])
 
         # 4. Scope Filtering & Ranking
         scored_indices = np.argsort(-final_scores)
@@ -218,8 +306,8 @@ class HybridEngine:
 
         for idx in scored_indices:
             score = float(final_scores[idx])
-            if score <= 0.001:
-                continue
+            if score <= 0.0:
+                break
 
             chunk = self.chunks[idx]
 

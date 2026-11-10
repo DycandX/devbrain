@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 import numpy as np
 
 from devbrain.core.constants import BRAIN_DATA_DIR
@@ -21,14 +21,26 @@ class BrainStorage:
     def _ensure_dir(self):
         self.data_dir.mkdir(parents=True, exist_ok=True)
 
-    def load(self) -> Tuple[List[DocumentChunk], np.ndarray, Dict[str, float]]:
-        """Load stored chunks, vector matrix, and file modification timestamps."""
+    def load(
+        self, embedding_model: Optional[str] = None
+    ) -> Tuple[List[DocumentChunk], np.ndarray, Dict[str, float]]:
+        """Load stored chunks, vector matrix, and file modification timestamps.
+
+        When embedding_model is given and the stored index was built with a
+        different model, the index is treated as empty so it gets rebuilt:
+        vectors from two models are not comparable.
+        """
+        empty = ([], np.array([], dtype=np.float32).reshape(0, 0), {})
         if not self.metadata_file.is_file():
-            return [], np.array([], dtype=np.float32).reshape(0, 0), {}
+            return empty
 
         try:
             with open(self.metadata_file, "r", encoding="utf-8") as f:
                 data = json.load(f)
+
+            stored_model = data.get("embedding_model")
+            if embedding_model and stored_model and stored_model != embedding_model:
+                return empty
 
             raw_chunks = data.get("chunks", [])
             chunks = [DocumentChunk(**c) for c in raw_chunks]
@@ -44,19 +56,21 @@ class BrainStorage:
 
             return chunks, vectors, doc_mtimes
         except Exception:
-            return [], np.array([], dtype=np.float32).reshape(0, 0), {}
+            return empty
 
     def save(
         self,
         chunks: List[DocumentChunk],
         vectors: np.ndarray,
         doc_mtimes: Dict[str, float],
+        embedding_model: Optional[str] = None,
     ):
         """Atomically persist chunks, embeddings matrix, and mtimes to disk."""
         self._ensure_dir()
 
         payload = {
-            "version": "1.0",
+            "version": "1.1",
+            "embedding_model": embedding_model,
             "total_chunks": len(chunks),
             "doc_mtimes": doc_mtimes,
             "chunks": [c.model_dump() for c in chunks],
@@ -65,7 +79,7 @@ class BrainStorage:
         # Save metadata JSON
         temp_meta = self.metadata_file.with_suffix(".tmp")
         with open(temp_meta, "w", encoding="utf-8") as f:
-            json.dump(payload, f, ensure_ascii=False, indent=2)
+            json.dump(payload, f, ensure_ascii=False)
         temp_meta.replace(self.metadata_file)
 
         # Save vectors .npy

@@ -2,10 +2,9 @@
 
 from datetime import datetime
 from pathlib import Path
-import re
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
-from devbrain.core.constants import DIR_DAILY, DIR_KNOWLEDGE, DIR_PROJECTS
+from devbrain.core.constants import DIR_PROJECTS
 from devbrain.engine.parser import parse_frontmatter
 
 

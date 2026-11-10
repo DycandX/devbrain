@@ -110,7 +110,9 @@ MyObsidianVault/
 
 ## 📊 Performance & Benchmarks (Level 1 Core)
 
-* **Semantic Search Engine:** FastEmbed CPU ONNX (`BAAI/bge-small-en-v1.5`, 384 dimensions, 100% offline, 0 GPU).
+* **Semantic Search Engine:** FastEmbed CPU ONNX (`paraphrase-multilingual-MiniLM-L12-v2`, 384 dimensions, ~50 languages, offline after the first model download, 0 GPU).
+* **Fusion:** Reciprocal Rank Fusion with a relevance gate, so unrelated queries return no results.
+* **Retrieval Quality:** measured with `python benchmarks/eval_retrieval.py` (see [v1.7.0-alpha notes](docs/changelog/v1.7.0-alpha.md)).
 * **Keyword Search Engine:** Rank-BM25 with token normalization.
 * **Search Latency (p50 / Median):** **< 10.0 ms**
 * **Search Latency (p95):** **< 20.0 ms**

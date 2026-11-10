@@ -42,3 +42,26 @@ def test_ide_configuration_and_removal(tmp_path: Path, monkeypatch):
         with open(cfg, "r", encoding="utf-8") as f:
             data = json.load(f)
         assert "central-brain" not in data.get("mcpServers", {})
+
+
+def test_unparseable_config_is_left_untouched(tmp_path: Path, isolated_home: Path):
+    vault_dir = tmp_path / "TestVault"
+    vault_dir.mkdir()
+
+    claude_cfg = isolated_home / ".claude.json"
+    claude_cfg.write_text("{ not valid json", encoding="utf-8")
+
+    assert configure_claude(vault_dir) is None
+    assert claude_cfg.read_text(encoding="utf-8") == "{ not valid json"
+
+
+def test_antigravity_only_touches_existing_locations(tmp_path: Path, isolated_home: Path):
+    vault_dir = tmp_path / "TestVault"
+    vault_dir.mkdir()
+    existing = isolated_home / ".gemini" / "antigravity-ide"
+    existing.mkdir(parents=True)
+
+    updated = configure_antigravity(vault_dir)
+
+    assert updated == [existing / "mcp_config.json"]
+    assert not (isolated_home / ".gemini" / "config").exists()

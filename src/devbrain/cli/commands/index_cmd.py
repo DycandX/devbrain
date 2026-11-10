@@ -46,12 +46,7 @@ def index_command(
         raise typer.Exit(code=1)
 
     vault_dir = config.resolve_vault_path()
-    engine = HybridEngine(
-        vault_path=vault_dir,
-        embedding_model=config.embedding_model,
-        ignored_patterns=config.ignored_paths,
-        linked_vaults=config.resolve_linked_vaults(),
-    )
+    engine = HybridEngine.from_config(vault_dir, config)
 
     console.print(f"\n[bold yellow]🔍 Scanning vault at: [underline]{vault_dir}[/underline][/bold yellow]")
     if reindex:

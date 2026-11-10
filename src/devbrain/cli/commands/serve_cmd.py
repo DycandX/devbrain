@@ -1,15 +1,15 @@
 """Serve command launching Model Context Protocol (MCP) server for IDE agents."""
 
-import os
 from pathlib import Path
-import sys
 from typing import Optional
 
 import typer
 
 from devbrain.cli.ui.console import error_console
 from devbrain.core.config import find_config, load_config
+from devbrain.engine.hybrid_search import HybridEngine
 from devbrain.mcp_server.server import create_mcp_server
+from devbrain.watcher.vault_watcher import VaultWatcher
 
 
 def serve_command(
@@ -23,6 +23,11 @@ def serve_command(
         "--vault",
         "-v",
         help="Manual path to Obsidian vault (default: search .brainrc.json automatically)",
+    ),
+    watch: bool = typer.Option(
+        True,
+        "--watch/--no-watch",
+        help="Re-index notes automatically when they change on disk (e.g. edited in Obsidian)",
     ),
 ):
     """Launch the Central Brain FastMCP Server for AI Agent pair-programming."""
@@ -52,10 +57,20 @@ def serve_command(
     # Inform on stderr so stdout remains pure JSON-RPC
     error_console.print(f"[Central Brain MCP] Initializing server for vault: {vault_dir}")
 
-    server = create_mcp_server(vault_dir, config=config)
+    engine = HybridEngine.from_config(vault_dir, config)
+    server = create_mcp_server(vault_dir, config=config, engine=engine)
 
-    # 2. Run MCP Stdio Transport
+    watcher = VaultWatcher(engine) if watch else None
+    if watcher:
+        watcher.start()
+        error_console.print("[Central Brain MCP] Watching vault for changes.")
+
+    # 2. Run MCP Transport
     transport = "stdio" if stdio else "sse"
     error_console.print(f"[Central Brain MCP] Running with {transport} transport...")
-    
-    server.run(transport=transport)
+
+    try:
+        server.run(transport=transport)
+    finally:
+        if watcher:
+            watcher.stop()
