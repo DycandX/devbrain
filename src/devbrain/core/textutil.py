@@ -48,3 +48,33 @@ def extract_section(markdown: str, heading: str) -> Optional[str]:
         elif len(match.group(1)) <= level:
             return "\n".join(lines[start:i]).strip()
     return "\n".join(lines[start:]).strip() if start is not None else None
+
+
+# Line starts that are structure or decoration rather than prose.
+_NON_PROSE_PREFIXES = ("#", ">", "---", "===", "|", "[![", "![", "<", "- ", "* ", "+ ")
+
+
+def first_prose_paragraph(markdown: str) -> str:
+    """First paragraph of running text in a Markdown document.
+
+    Skips headings, quotes, rules, tables, lists, badges, images, HTML, and
+    fenced code, so a README that opens with badges still yields a sentence.
+    Returns an empty string when the document has no prose.
+    """
+    lines: list[str] = []
+    in_fence = False
+    for line in markdown.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("```"):
+            in_fence = not in_fence
+            if lines:
+                break
+            continue
+        if in_fence:
+            continue
+        if not stripped or stripped.startswith(_NON_PROSE_PREFIXES) or re.match(r"^\d+[.)]\s", stripped):
+            if lines:
+                break
+            continue
+        lines.append(stripped)
+    return " ".join(lines)

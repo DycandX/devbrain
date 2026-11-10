@@ -51,11 +51,10 @@ def create_mcp_server(
 
     sqlite_storage = BrainSQLiteStorage(vault_path)
     adr_manager = ADRManager(vault_path, sqlite_storage)
-    context_engine = ContextAssemblyEngine(vault_path, sqlite_storage)
-
     if engine is None:
         engine = HybridEngine.from_config(vault_path, config)
     engine.initialize()
+    context_engine = ContextAssemblyEngine(vault_path, sqlite_storage, engine)
 
     # Initial scan if needed
     if not engine.chunks:
@@ -218,16 +217,8 @@ def create_mcp_server(
     )
     def build_task_context(task: str, project: str) -> str:
         """Assemble complete task briefing card."""
-        query = f"{project} {task}"
-        relevant_chunks = [
-            {"title": hit.title, "path": hit.doc_id, "snippet": hit.snippet}
-            for hit in engine.search(query=query, limit=3, scope="all", one_per_note=True)
-        ]
-        memories = [m["content"] for m in memory.recall(query, project=project, limit=5)]
-
-        card = context_engine.build_task_context(
-            task=task, project=project, relevant_chunks=relevant_chunks, memories=memories
-        )
+        memories = [m["content"] for m in memory.recall_for_briefing(task, project)]
+        card = context_engine.build_task_context(task=task, project=project, memories=memories)
         return card.to_markdown()
 
     # =========================================================================

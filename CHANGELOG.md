@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.8.1-alpha] - 2026-11-10 (Unreleased)
+
+### 🐛 Fixed
+Found by running `build_task_context` against a real vault for the first time.
+- **Project summary** no longer starts with raw YAML frontmatter cut mid-sentence; it now gives path, status, the first prose sentence of the overview, and runnable scripts.
+- **Project descriptions** skip README badges and images (`first_prose_paragraph`), in both the harvester and the briefing.
+- **Relevant notes** are selected instead of taking the top three search hits: the project's own notes first, notes from elsewhere only when the semantic and keyword rankers agree (fused score of at least 0.6), and never session logs linked to another project.
+- **Recent sessions** are matched through their Project Hub link and sorted by creation date; the section was always empty before.
+
+### 📊 Measured
+- On the real vault, cosine similarity separates relevant from irrelevant top hits by only about 0.05, so a similarity floor alone cannot gate a briefing; ranker agreement can.
+- **Automated Tests:** 83 passing.
+
+For complete details, see [docs/changelog/v1.8.1-alpha.md](docs/changelog/v1.8.1-alpha.md).
+
+---
+
 ## [1.8.0-alpha] - 2026-11-10 (Unreleased)
 
 ### 🚀 Added

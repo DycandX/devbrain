@@ -2,20 +2,41 @@
 
 Merges User Preferences, Project State, Architecture Decisions (ADRs),
 Relevant Knowledge Base Chunks, and Recent Work Summaries into a compact situational briefing card.
+
+A briefing is context pushed at an agent before it asks for anything, so it
+favors precision: a note enters only when it belongs to the project or when
+both the semantic and the keyword ranker agree it matches the task.
 """
 
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Optional
+import re
+from typing import TYPE_CHECKING, Any, Optional
 
 from devbrain.adr.manager import ADRManager
 from devbrain.core.constants import DIR_INBOX, DIR_PROJECTS, DIR_SYSTEM
 from devbrain.core.sqlite_db import BrainSQLiteStorage
-from devbrain.core.textutil import truncate_to_budget
+from devbrain.core.textutil import extract_section, first_prose_paragraph, one_line, truncate_to_budget
+from devbrain.engine.parser import parse_frontmatter
+
+if TYPE_CHECKING:
+    from devbrain.engine.hybrid_search import HybridEngine
 
 # The preferences file is loaded into every briefing, so it is capped.
 USER_PREFERENCES_MAX_CHARS = 3000
+GLOBAL_MEMORIES_AS_PREFERENCES = 10
+PROJECT_OVERVIEW_MAX_CHARS = 600
+PROJECT_SCRIPTS_MAX_CHARS = 300
+KNOWLEDGE_SNIPPET_CHARS = 160
+# Fused score a note from outside the project needs to enter a briefing. A note
+# ranked near the top by only one ranker scores about 0.5; clearing 0.6 takes
+# agreement between the semantic and the keyword ranker.
+BRIEFING_MIN_AGREEMENT_SCORE = 0.6
+# How much of a session note is read to find its title, date, and project link.
+SESSION_HEAD_CHARS = 2000
+
+_PROJECT_LINK = re.compile(r"\[\[10_Projects/([^/|\]]+)[/|\]]", re.IGNORECASE)
 
 
 @dataclass
@@ -45,7 +66,10 @@ class TaskContextCard:
         kb_text = ""
         if self.relevant_knowledge:
             for item in self.relevant_knowledge:
-                kb_text += f"- **{item.get('title', item.get('path', 'Knowledge'))}**: {item.get('snippet', '')[:160]}...\n"
+                title = item.get("title") or item.get("path", "Knowledge")
+                path = f" (`{item['path']}`)" if item.get("path") else ""
+                snippet = one_line(item.get("snippet", ""), KNOWLEDGE_SNIPPET_CHARS)
+                kb_text += f"- **{title}**{path}: {snippet}\n"
         else:
             kb_text = "- Tidak ada catatan knowledge khusus yang terpicu untuk task ini.\n"
 
@@ -116,13 +140,54 @@ class TaskContextCard:
         }
 
 
+@dataclass
+class ProjectSession:
+    """A session note in the inbox and the projects its Project Hub links point at."""
+
+    path: str
+    title: str
+    created: str
+    projects: frozenset = frozenset()
+
+    def describe(self) -> str:
+        date = self.created[:10] or "undated"
+        return f"{date}: {self.title} (`{self.path}`)"
+
+
+def _project_keys(project_name: str) -> set[str]:
+    """Spellings under which a project may appear as a folder or wikilink target."""
+    name = project_name.strip().lower()
+    return {name, name.replace(" ", "_"), name.replace(" ", "-")}
+
+
+def _detect_stack(content: str) -> list[str]:
+    """Guess the stack from keywords, for project cards without stack metadata."""
+    lowered = content.lower()
+    markers = [
+        ("Python", ("python", "pyproject.toml")),
+        ("TypeScript", ("typescript", "tsconfig.json")),
+        ("Next.js/React", ("react", "next.js")),
+        ("Laravel/PHP", ("laravel", "php")),
+        ("FastAPI", ("fastapi",)),
+        ("Docker", ("docker",)),
+    ]
+    return [label for label, words in markers if any(word in lowered for word in words)]
+
+
 class ContextAssemblyEngine:
     """Orchestrates multi-source context assembly for fast AI agent priming."""
 
-    def __init__(self, vault_path: Path, sqlite_storage: Optional[BrainSQLiteStorage] = None):
+    def __init__(
+        self,
+        vault_path: Path,
+        sqlite_storage: Optional[BrainSQLiteStorage] = None,
+        engine: Optional["HybridEngine"] = None,
+    ):
         self.vault_path = Path(vault_path).resolve()
         self.sqlite = sqlite_storage or BrainSQLiteStorage(self.vault_path)
         self.adr_manager = ADRManager(self.vault_path, self.sqlite)
+        # Optional: without a search engine the briefing has no knowledge section.
+        self.engine = engine
 
     def get_user_preferences(self) -> str:
         """Fetch user preferences from 00_System/User_Preferences.md or SQLite memories."""
@@ -138,71 +203,163 @@ class ContextAssemblyEngine:
             except Exception:
                 pass
 
-        # Check SQLite global memories
-        mems = self.sqlite.get_memories(scope="GLOBAL", status="active")
+        # Without a preferences file, the most recent global memories stand in for it
+        mems = self.sqlite.get_memories(scope="GLOBAL", status="active")[:GLOBAL_MEMORIES_AS_PREFERENCES]
         if mems:
             lines = [f"- {m['content']}" for m in mems]
-            return "### User Preferences (Stored in DevBrain):\n" + "\n".join(lines)
+            return truncate_to_budget(
+                "### User Preferences (Stored in DevBrain):\n" + "\n".join(lines),
+                USER_PREFERENCES_MAX_CHARS,
+                "Call recall for more.",
+            )
 
         return "- Language: TypeScript / Python (Strict Mode)\n- Architecture: Modular, Clean Code, DRY\n- Testing: Comprehensive Unit & Integration Tests\n- Documentation: Clear docstrings and updated CHANGELOG.md"
 
-    def get_project_summary(self, project_name: str) -> tuple[str, list[str]]:
-        """Extract project summary and detected tech stack from 10_Projects/."""
-        proj_dir = self.vault_path / DIR_PROJECTS / project_name
-        proj_file = proj_dir / "README.md"
-        if not proj_file.is_file():
-            proj_file = self.vault_path / DIR_PROJECTS / f"{project_name}.md"
+    # --- Project card ------------------------------------------------------
 
-        if not proj_file.is_file():
+    def find_project_file(self, project_name: str) -> Optional[Path]:
+        """Locate the project card, tolerating case and space/underscore/dash differences."""
+        projects_dir = self.vault_path / DIR_PROJECTS
+        if not projects_dir.is_dir():
+            return None
+
+        keys = _project_keys(project_name)
+        for entry in projects_dir.iterdir():
+            if entry.is_dir() and entry.name.lower() in keys and (entry / "README.md").is_file():
+                return entry / "README.md"
+        for entry in projects_dir.glob("*.md"):
+            if entry.stem.lower() in keys:
+                return entry
+        return None
+
+    def get_project_summary(self, project_name: str) -> tuple[str, list[str]]:
+        """Summarize the project card: location, status, overview, and how to run it."""
+        proj_file = self.find_project_file(project_name)
+        if proj_file is None:
             return f"Project [[{project_name}]] registered in DevBrain.", []
 
         try:
-            with open(proj_file, "r", encoding="utf-8") as f:
-                content = f.read()
-
-            summary = content[:500]
-            stack: list[str] = []
-            if "python" in content.lower() or "pyproject.toml" in content.lower():
-                stack.append("Python")
-            if "typescript" in content.lower() or "tsconfig.json" in content.lower():
-                stack.append("TypeScript")
-            if "react" in content.lower() or "next.js" in content.lower():
-                stack.append("Next.js/React")
-            if "laravel" in content.lower() or "php" in content.lower():
-                stack.append("Laravel/PHP")
-            if "fastapi" in content.lower():
-                stack.append("FastAPI")
-            if "docker" in content.lower():
-                stack.append("Docker")
-
-            return summary, stack
-        except Exception:
+            content = proj_file.read_text(encoding="utf-8")
+        except OSError:
             return f"Project [[{project_name}]]", []
 
-    def get_recent_inbox_work(self, project_name: str, limit: int = 3) -> list[str]:
-        """Fetch latest session work notes related to the project."""
+        meta, body = parse_frontmatter(content)
+
+        stack = [
+            str(item)
+            for key in ("language", "stack")
+            for item in (meta.get(key) if isinstance(meta.get(key), list) else [])
+        ]
+        stack = list(dict.fromkeys(stack)) or _detect_stack(content)
+
+        facts = []
+        if meta.get("local_path"):
+            facts.append(f"**Path:** `{meta['local_path']}`")
+        if meta.get("status"):
+            facts.append(f"**Status:** {meta['status']}")
+        rel_path = proj_file.relative_to(self.vault_path).as_posix()
+        facts.append(f"**Card:** `{rel_path}`")
+        lines = ["- " + " | ".join(facts)]
+
+        overview = extract_section(body, "Overview")
+        overview = overview.split("\n", 1)[1] if overview and "\n" in overview else ""
+        overview = first_prose_paragraph(overview) or first_prose_paragraph(body)
+        if overview:
+            lines.append(one_line(overview, PROJECT_OVERVIEW_MAX_CHARS))
+
+        scripts = extract_section(body, "Runnable Scripts")
+        if scripts and "\n" in scripts:
+            script_lines = [s.strip("- ").strip() for s in scripts.split("\n")[1:] if s.strip().startswith("- ")]
+            script_lines = [s for s in script_lines if s]
+            if script_lines:
+                lines.append("**Run:** " + one_line("; ".join(script_lines), PROJECT_SCRIPTS_MAX_CHARS))
+
+        return "\n".join(lines), stack
+
+    # --- Sessions ----------------------------------------------------------
+
+    def scan_sessions(self) -> list[ProjectSession]:
+        """Read the head of every session note in the inbox, newest first."""
         inbox_dir = self.vault_path / DIR_INBOX
         if not inbox_dir.is_dir():
             return []
 
-        recent_files = sorted(
-            inbox_dir.rglob("*.md"),
-            key=lambda p: p.stat().st_mtime if p.is_file() else 0,
-            reverse=True,
-        )
-
-        results: list[str] = []
-        for file in recent_files:
-            if len(results) >= limit:
-                break
+        sessions: list[ProjectSession] = []
+        for file in inbox_dir.rglob("*.md"):
             try:
-                name = file.stem
-                if project_name.lower() in file.name.lower() or project_name.lower() in file.read_text(encoding="utf-8")[:300].lower():
-                    results.append(f"Recent session: [[{name}]] ({file.parent.name})")
-            except Exception:
+                with open(file, "r", encoding="utf-8", errors="replace") as f:
+                    head = f.read(SESSION_HEAD_CHARS)
+            except OSError:
                 continue
 
-        return results
+            meta, _ = parse_frontmatter(head)
+            sessions.append(
+                ProjectSession(
+                    path=file.relative_to(self.vault_path).as_posix(),
+                    title=one_line(str(meta.get("title") or file.stem), 100),
+                    created=str(meta.get("created") or ""),
+                    projects=frozenset(link.lower() for link in _PROJECT_LINK.findall(head)),
+                )
+            )
+
+        sessions.sort(key=lambda s: s.created, reverse=True)
+        return sessions
+
+    def get_project_sessions(self, project_name: str) -> list[ProjectSession]:
+        """Session notes whose Project Hub link points at this project, newest first."""
+        keys = _project_keys(project_name)
+        return [s for s in self.scan_sessions() if s.projects & keys]
+
+    def get_recent_inbox_work(self, project_name: str, limit: int = 3) -> list[str]:
+        """Fetch latest session work notes related to the project."""
+        return [s.describe() for s in self.get_project_sessions(project_name)[:limit]]
+
+    # --- Knowledge ---------------------------------------------------------
+
+    def select_relevant_notes(
+        self,
+        task: str,
+        project: str,
+        limit: int = 3,
+        exclude_paths: Optional[set[str]] = None,
+    ) -> list[dict[str, Any]]:
+        """Pick notes worth pushing into a briefing for this task.
+
+        Notes that belong to the project are taken on a normal search match.
+        Notes from elsewhere must clear BRIEFING_MIN_AGREEMENT_SCORE, and
+        session logs linked to a different project are never included.
+        Project notes come first.
+        """
+        if self.engine is None or not task.strip():
+            return []
+
+        exclude_paths = exclude_paths or set()
+        keys = _project_keys(project)
+        sessions = self.scan_sessions()
+        project_paths = {s.path for s in sessions if s.projects & keys}
+        foreign_paths = {s.path for s in sessions if s.projects and not s.projects & keys}
+        card = self.find_project_file(project)
+        card_path = card.relative_to(self.vault_path).as_posix() if card else None
+        project_prefixes = tuple(f"{DIR_PROJECTS}/{key}/".lower() for key in keys)
+
+        own: list[dict[str, Any]] = []
+        other: list[dict[str, Any]] = []
+        for hit in self.engine.search(query=task, limit=limit * 5, scope="all", one_per_note=True):
+            # The card is already summarized in its own section
+            if hit.doc_id == card_path or hit.doc_id in exclude_paths:
+                continue
+
+            item = {"title": hit.title, "path": hit.doc_id, "snippet": hit.snippet, "score": hit.score}
+            if hit.doc_id in project_paths or hit.doc_id.lower().startswith(project_prefixes):
+                own.append(item)
+            elif hit.doc_id in foreign_paths:
+                continue
+            elif hit.score >= BRIEFING_MIN_AGREEMENT_SCORE:
+                other.append(item)
+
+        return (own + other)[:limit]
+
+    # --- Assembly ----------------------------------------------------------
 
     def build_task_context(
         self,
@@ -211,11 +368,20 @@ class ContextAssemblyEngine:
         relevant_chunks: Optional[list[dict[str, Any]]] = None,
         memories: Optional[list[str]] = None,
     ) -> TaskContextCard:
-        """Assemble all 5 context tiers into a coherent TaskContextCard."""
+        """Assemble all 5 context tiers into a coherent TaskContextCard.
+
+        Relevant notes are selected here unless the caller supplies them.
+        """
         user_prefs = self.get_user_preferences()
         proj_summary, stack = self.get_project_summary(project)
         active_adrs = self.adr_manager.list_decisions(project=project, status="accepted")
-        recent_work = self.get_recent_inbox_work(project, limit=3)
+        recent_sessions = self.get_project_sessions(project)[:3]
+
+        if relevant_chunks is None:
+            # Sessions already listed under recent work are not repeated as knowledge
+            relevant_chunks = self.select_relevant_notes(
+                task, project, exclude_paths={s.path for s in recent_sessions}
+            )
 
         return TaskContextCard(
             task=task,
@@ -224,7 +390,7 @@ class ContextAssemblyEngine:
             project_summary=proj_summary,
             tech_stack=stack,
             active_decisions=active_adrs,
-            relevant_knowledge=relevant_chunks or [],
-            recent_session_work=recent_work,
+            relevant_knowledge=relevant_chunks,
+            recent_session_work=[s.describe() for s in recent_sessions],
             memories=memories or [],
         )

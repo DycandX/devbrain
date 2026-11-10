@@ -131,6 +131,18 @@ def test_mcp_memory_tools_and_briefing(vault: Path):
     briefing = _call(server, "build_task_context", {"task": "deploy ke produksi", "project": "example_project"})
     assert "Remembered Facts" in briefing and "GitHub Actions" in briefing
 
+    # A project's own memories reach its briefing even when the task wording does not
+    # match them; another project's memories never do. Global memories stand in for
+    # the preferences file, and join the remembered facts only on a match.
+    _call(server, "remember", {"content": "Warna merek toko adalah hijau tua", "scope": "PROJECT", "project": "toko"})
+    _call(server, "remember", {"content": "Pengguna tinggal di Semarang"})
+    unrelated = _call(server, "build_task_context", {"task": "tulis ulang parser tanggal", "project": "example_project"})
+    remembered = unrelated.split("## 🧠 Remembered Facts")[1].split("---")[0]
+    assert "GitHub Actions" in remembered
+    assert "hijau tua" not in unrelated
+    assert "Semarang" not in remembered
+    assert "Semarang" in unrelated.split("## 👤")[1].split("---")[0]
+
     assert "Forgot" in _call(server, "forget", {"memory_id": memory_id})
     assert _call(server, "recall", {"query": "cara deploy", "project": "example_project"}) == "No matching memories."
 

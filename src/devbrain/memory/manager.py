@@ -133,6 +133,23 @@ class MemoryManager:
                 break
         return results
 
+    def recall_for_briefing(self, task: str, project: str, limit: int = 5) -> list[dict[str, Any]]:
+        """Memories to show when work on a project starts.
+
+        Matches for the task come first. Remaining slots go to the project's own
+        most recent memories even when they do not match the task wording: they
+        are few, were saved on purpose, and are the facts an agent most needs
+        before touching the project. Global memories appear only on a match.
+        """
+        found = self.recall(f"{project} {task}", project=project, limit=limit)
+        seen = {m["id"] for m in found}
+        for memory in self.sqlite.get_memories(scope="PROJECT", project=project):
+            if len(found) >= limit:
+                break
+            if memory["id"] not in seen and memory["project"] == project:
+                found.append(memory)
+        return found
+
     # --- Markdown mirror ---------------------------------------------------
 
     def _note_path(self, memory_id: str) -> Path:

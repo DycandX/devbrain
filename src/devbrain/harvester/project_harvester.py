@@ -10,6 +10,7 @@ import subprocess
 from typing import Dict, List, Optional
 
 from devbrain.core.constants import DIR_AGENT_SKILLS, DIR_KNOWLEDGE, DIR_PROJECTS
+from devbrain.core.textutil import first_prose_paragraph
 from devbrain.engine.hybrid_search import HybridEngine
 from devbrain.harvester.inspector import RepoType, inspect_repository_type
 from devbrain.harvester.manifest_parser import parse_repository_manifest
@@ -102,8 +103,8 @@ def scan_project_metadata(
     # Smart Overview Synthesis if no README is present
     if manifest.description:
         raw_desc = manifest.description
-    elif readme_text:
-        raw_desc = readme_text[:250]
+    elif readme_text and first_prose_paragraph(readme_text):
+        raw_desc = first_prose_paragraph(readme_text)[:250]
     else:
         # Synthesize from codebase structure
         lang_str = ", ".join(manifest.languages) or "Software"
