@@ -157,6 +157,8 @@ Korpus evaluasi kecil (16 catatan, 38 pertanyaan) dan ditulis sendiri. Angkanya 
 5. **Satukan indeks ke SQLite** (FTS5 + vektor). Belum mendesak di ukuran vault sekarang.
 6. **Mode homeserver**: transport HTTP dan autentikasi.
 
+Audit vault dan rekomendasi perapian ada di [dokumen 48](docs/brainstorming/48-peran-llm-audit-vault-dan-arah-rag.md); langkah perapian vault di sana diusulkan dikerjakan sebelum hook.
+
 Rencana lengkap ada di [dokumen 45](docs/brainstorming/45-roadmap-devbrain-menuju-jarvis.md), dengan revisi Fase 4 sampai 6 di [dokumen 47](docs/brainstorming/47-hermes-agent-sebagai-badan-jarvis-jev-dan-strategi-ui.md).
 
 ---
