@@ -9,6 +9,8 @@
 
 > **Catatan keandalan.** Detail konfigurasi Hermes di bawah berasal dari dokumentasi resmi dan mirror pihak ketiga. Cek ke dokumentasi versi yang terpasang sebelum dipakai. Informasi tentang Jev seluruhnya dari hasil pencarian.
 
+> **Koreksi (2026-11-11):** lokasi data Hermes yang benar adalah `%LOCALAPPDATA%\hermes` (`C:\Users\zulvikar\AppData\Local\hermes`). Programnya ada di subfolder `hermes-agent`. `~/.hermes` hanyalah sisa instalasi lama. Lihat [dokumen 49](./49-siklus-belajar-hermes-dan-adopsinya-di-devbrain.md).
+
 > **Dampak ke roadmap.** Dokumen ini merevisi Fase 4 sampai 6 di [dokumen 45](./45-roadmap-devbrain-menuju-jarvis.md). Fase 0 sampai 3 tidak berubah.
 
 ---
@@ -42,7 +44,7 @@ Kesimpulan: runtime, kanal chat, scheduler, dan suara tidak perlu dibangun dari 
 
 | Jalur | Cara | Kapan |
 | :--- | :--- | :--- |
-| **MCP** | Daftarkan DevBrain di `mcp_servers` pada `~/.hermes/config.yaml` | Pilihan pertama, tanpa mengubah Hermes |
+| **MCP** | Daftarkan DevBrain di `mcp_servers` pada `%LOCALAPPDATA%\hermes\config.yaml` | Pilihan pertama, tanpa mengubah Hermes |
 | Memory provider | DevBrain sebagai provider eksternal (slot yang sama dengan Honcho, Mem0). Hanya satu provider aktif dalam satu waktu | Nanti, bila integrasi lebih dalam diperlukan |
 | Plugin + hook | Hook `on_session_start` memuat briefing, `on_session_end` menyimpan ringkasan | Pelengkap jalur MCP |
 
@@ -70,7 +72,7 @@ Hasilnya: satu memori dipakai bersama oleh Hermes, Claude Code, dan Antigravity.
 
 ## 4. Temuan di Mesin Ini
 
-- Hermes **sudah terpasang** di `~/.hermes`: satu skill (`agent-bridge`), config minimal, belum ada `mcp_servers`. Jadi belum terhubung ke DevBrain.
+- Hermes **sudah terpasang** di `%LOCALAPPDATA%\hermes` (100 skill, memori inti hampir penuh, `mcp_servers` hanya berisi `antigravity`). Belum terhubung ke DevBrain. Catatan ini semula menyebut `~/.hermes`, yang ternyata sisa instalasi lama; rincian ada di dokumen 49.
 - `gateway.pid` bertanggal 25 Agustus 2026. Belum dicek apakah prosesnya masih berjalan.
 - **Koreksi untuk [dokumen 43](./43-katalog-lengkap-ekosistem-ai-tools-agent-dan-peta-storage.md):** bagian Hermes menyebut `cot_trace.jsonl` dan `long_term_memory.json`. Dokumentasi Hermes memakai `MEMORY.md`, `USER.md`, dan database sesi SQLite. Harvester Hermes harus mengikuti struktur yang asli.
 
@@ -94,9 +96,9 @@ Lisensi MIT mengizinkan modifikasi apa pun. Rekomendasinya tetap: **jangan menge
 
 | Yang mau diubah | Caranya | Perlu fork? |
 | :--- | :--- | :--- |
-| Kepribadian dan gaya bicara | `~/.hermes/SOUL.md`, preset `/personality` | Tidak |
-| Kemampuan baru | Skill di `~/.hermes/skills/` | Tidak |
-| Tool baru dan hook | Plugin di `~/.hermes/plugins/` (`pre_tool_call`, `post_tool_call`, `on_session_start`, `on_session_end`, dan lainnya). Plugin harus diaktifkan di config | Tidak |
+| Kepribadian dan gaya bicara | `%LOCALAPPDATA%\hermes\SOUL.md`, preset `/personality` | Tidak |
+| Kemampuan baru | Skill di `%LOCALAPPDATA%\hermes\skills\` | Tidak |
+| Tool baru dan hook | Plugin di `%LOCALAPPDATA%\hermes\plugins\` (`pre_tool_call`, `post_tool_call`, `on_session_start`, `on_session_end`, dan lainnya). Plugin harus diaktifkan di config | Tidak |
 | Memori | DevBrain lewat `mcp_servers` | Tidak |
 | Aksi ke luar | MCP server lain (kalender, email, rumah) | Tidak |
 | Tampilan | Frontend sendiri di atas API server | Tidak |

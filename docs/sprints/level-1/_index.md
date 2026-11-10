@@ -105,3 +105,51 @@ Dokumen ini memetakan seluruh Sprint dan Task yang harus diselesaikan untuk mera
 | 📄 Task 05 | Workspace Rules Generator (`devbrain rules init` & Hierarchy of Truth) | `src/devbrain/rules/generator.py`, `src/devbrain/cli/commands/rules_cmd.py` | ✅ Done |
 | 📄 Task 06 | FastMCP Protocol Gateway Upgrade (8 Tools) | `src/devbrain/mcp_server/server.py` | ✅ Done |
 | 📄 Task 07 | Automated Test Suite & Release `v1.6.0-alpha` | `tests/test_paios_engine.py`, `CHANGELOG.md` | ✅ Done |
+
+---
+
+### 🧱 [Sprint 11: Fondasi — Isolasi Test, Pencarian Terukur & Harvester Claude Code](./sprint-11/11-sprint-11-foundation-v1-7.md)
+`v1.7.0-alpha` · ✅ Done · 8/8 task
+
+### 🧠 [Sprint 12: Memori Jangka Panjang, Hemat Token & Briefing](./sprint-12/12-sprint-12-memory-and-briefing-v1-8.md)
+`v1.8.0-alpha`, `v1.8.1-alpha` · ✅ Done · 8/8 task
+
+### 🗂️ [Sprint 13: Pemindaian Workspace Bertingkat, Grup & Sandbox](./sprint-13/13-sprint-13-workspace-scan-v1-9.md)
+`v1.9.0-alpha` · ✅ Done · 8/8 task
+
+---
+
+## 🗺️ Rencana Berikutnya (Sprint 14–20)
+
+Disusun dari dokumen [45](../../brainstorming/45-roadmap-devbrain-menuju-jarvis.md), [46](../../brainstorming/46-riset-projek-serupa-efisiensi-token-dan-tech-stack.md), [47](../../brainstorming/47-hermes-agent-sebagai-badan-jarvis-jev-dan-strategi-ui.md), [48](../../brainstorming/48-peran-llm-audit-vault-dan-arah-rag.md), dan [49](../../brainstorming/49-siklus-belajar-hermes-dan-adopsinya-di-devbrain.md). Urutan mengikuti ketergantungan: sprint berikutnya membutuhkan hasil sprint sebelumnya.
+
+| Sprint | Tema | Target | LLM | Syarat | Task | Status |
+| :---: | :--- | :--- | :---: | :--- | :---: | :--- |
+| [14](./sprint-14/14-sprint-14-vault-hygiene.md) | Perapian vault | `v1.10.0` | Tidak | — | 9 | ⏳ Planned |
+| [15](./sprint-15/15-sprint-15-memory-write-gate.md) | Gerbang tulis & memori inti | `v1.11.0` | Tidak | 14 | 7 | ⏳ Planned |
+| [16](./sprint-16/16-sprint-16-agent-integration-hooks-hermes.md) | Hook Claude Code & integrasi Hermes | `v1.12.0` | Tidak | 15 | 8 | ⏳ Planned |
+| [17](./sprint-17/17-sprint-17-skill-learning.md) | Skill yang dipelajari agent | `v1.13.0` | Tidak | 15, 16 | 8 | ⏳ Planned |
+| [18](./sprint-18/18-sprint-18-curator.md) | Curator tanpa LLM | `v1.14.0` | Tidak | 15, 17 | 7 | ⏳ Planned |
+| [19](./sprint-19/19-sprint-19-llm-curation-9router.md) | Penyulingan LLM lewat 9router & lapisan knowledge | `v1.15.0` | Ya | 14, 15, 18 | 8 | ⏳ Planned |
+| [20](./sprint-20/20-sprint-20-token-ab-test.md) | Uji A/B hemat token | Laporan | Tidak | 16 + pemakaian | 5 | ⏳ Planned |
+
+### Keputusan yang menunggu pemilik
+
+| ID | Pertanyaan | Dibutuhkan sebelum |
+| :--- | :--- | :--- |
+| D14-1 | Kartu projek: ganti nama berkas atau cukup `aliases`? | Sprint 14 |
+| D14-2 | Tautan harian putus: buat catatan harian atau hapus tautannya? | Sprint 14 |
+| D16-1 | Hook Claude Code global atau per projek? | Sprint 16 |
+| D16-2 | Skill Hermes langsung ditulis ke vault atau hanya dibaca? | Sprint 16 |
+| D19-1 | Kebijakan privasi LLM per grup (mis. `_fxmedia`) | Sprint 19 |
+| D19-2 | Model penyulingan | Sprint 19 |
+
+### Backlog (belum dijadwalkan)
+- Penyatuan indeks ke SQLite (FTS5 + vektor) — dokumen 46 bagian 3.
+- Mode homeserver: transport HTTP dan autentikasi — PRD Level 3.
+- UI Jarvis di atas API server Hermes — dokumen 47 bagian 7.
+- Folder dokumen non-Markdown (`DOCS`, laporan magang) dan klasifikasi folder `skills/` — changelog v1.9.0.
+
+### Cara memakai tracker ini
+- Status task diperbarui di berkas sprint masing-masing (⏳ Planned → 🚧 In progress → ✅ Done), lalu ringkasannya di tabel ini.
+- Setiap sprint selesai dengan changelog versi dan pembaruan [HANDOFF.md](../../../HANDOFF.md).

@@ -38,7 +38,7 @@ Prinsip yang dipegang:
 | Instalasi | Editable (`pip install -e .`). Perintah `devbrain` **tidak ada di PATH**, pakai `python -m devbrain.cli.main` |
 | Server MCP | `central-brain`, terdaftar di `~/.claude.json` dan tiga `~/.gemini/.../mcp_config.json`, menunjuk ke vault utama |
 | Model embedding | `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` (sekitar 220 MB, cache FastEmbed) |
-| Hermes | Terpasang di `~/.hermes`, belum disambungkan ke devbrain |
+| Hermes | Data di `%LOCALAPPDATA%\hermes` (program di subfolder `hermes-agent`, versi git `1c8dcdb`). `~/.hermes` hanya sisa lama. Belum disambungkan ke devbrain |
 
 `demo_vault/` di repo adalah vault lama untuk demo, diabaikan Git. Vault yang dipakai sungguhan adalah `_DevBrain_Vault`.
 
@@ -150,10 +150,12 @@ Korpus evaluasi kecil (16 catatan, 38 pertanyaan) dan ditulis sendiri. Angkanya 
 
 ## 8. Langkah berikutnya (urut prioritas)
 
+Rencana kerja kini dipecah menjadi **Sprint 14–20** dengan task bernomor (mis. `S14-T03`), keputusan yang dibutuhkan, dan kriteria selesai. Lihat [indeks sprint Level 1](docs/sprints/level-1/_index.md). Daftar di bawah adalah ringkasannya.
+
 1. **Hook Claude Code.** `SessionStart` memuat briefing, `Stop` menyimpan ringkasan. Agar devbrain terpakai tanpa agent harus ingat. Keputusan terbuka: dipasang global (`~/.claude/settings.json`) atau per projek.
 2. **Uji A/B hemat token.** 10 tugas nyata dengan dan tanpa devbrain, dibandingkan lewat `devbrain usage`. Butuh beberapa hari pemakaian dulu.
 3. **Rapikan masalah kecil di bagian 7**: teks dobel, folder dokumen non-Markdown, klasifikasi skill.
-4. **Sambungkan Hermes** lewat `mcp_servers` di `~/.hermes/config.yaml`.
+4. **Sambungkan Hermes** lewat `mcp_servers` di `%LOCALAPPDATA%\hermes\config.yaml` (lihat [dokumen 49](docs/brainstorming/49-siklus-belajar-hermes-dan-adopsinya-di-devbrain.md)).
 5. **Satukan indeks ke SQLite** (FTS5 + vektor). Belum mendesak di ukuran vault sekarang.
 6. **Mode homeserver**: transport HTTP dan autentikasi.
 

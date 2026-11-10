@@ -157,7 +157,7 @@ Framework multi-agent otonom menghasilkan trajektori penalaran (*reasoning traje
 ### 🤖 8. Hermes Agent (NousResearch Autonomous Agent)
 * **Kategori:** Open-Source Autonomous Agent & Tool-Use Engine (Hermes-3 / Function Calling).
 * **Lokasi Folder di OS:**
-  * **Windows:** `C:\Users\<User>\.hermes\`, `C:\Users\<User>\AppData\Roaming\Hermes\`
+  * **Windows:** `C:\Users\<User>\AppData\Local\hermes\` (data: `config.yaml`, `memories/`, `skills/`, `state.db`; program di subfolder `hermes-agent`). *Dikoreksi 2026-11-11, lihat [dokumen 49](./49-siklus-belajar-hermes-dan-adopsinya-di-devbrain.md).*
   * **Linux / macOS:** `~/.hermes/sessions/`, `~/.hermes/memories/`
   * **Workspace Lokal:** `.hermes/`, `hermes_config.yaml`
 * **File & Data yang Di-ingest ke Vault:**
