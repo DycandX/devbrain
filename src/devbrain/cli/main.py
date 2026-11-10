@@ -16,6 +16,7 @@ from devbrain.cli.commands.serve_cmd import serve_command
 from devbrain.cli.commands.skill_cmd import skill_app
 from devbrain.cli.commands.status_cmd import status_command
 from devbrain.cli.commands.uninstall_cmd import uninstall_command
+from devbrain.cli.commands.usage_cmd import usage_command
 from devbrain.cli.commands.vault_cmd import vault_app
 from devbrain.cli.ui.console import console
 
@@ -80,6 +81,11 @@ app.command(
     name="context",
     help="Assemble situational awareness briefing cards for AI Agents.",
 )(context_command)
+
+app.command(
+    name="usage",
+    help="Report Claude Code token usage per project from local session transcripts.",
+)(usage_command)
 
 app.add_typer(
     rules_app,

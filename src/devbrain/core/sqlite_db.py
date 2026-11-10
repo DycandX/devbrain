@@ -1,10 +1,11 @@
 """Embedded SQLite state and relational cache for DevBrain (.brain_data/brain.db)."""
 
+from contextlib import contextmanager
 from datetime import datetime, timezone
 import json
 from pathlib import Path
 import sqlite3
-from typing import Any, Optional
+from typing import Any, Iterator, Optional
 import uuid
 
 from devbrain.core.constants import BRAIN_DATA_DIR
@@ -20,14 +21,24 @@ class BrainSQLiteStorage:
         self.db_path = self.db_dir / "brain.db"
         self._init_db()
 
-    def _get_connection(self) -> sqlite3.Connection:
-        """Returns a configured SQLite connection with foreign keys and row factory."""
+    @contextmanager
+    def _get_connection(self) -> Iterator[sqlite3.Connection]:
+        """Yield a configured SQLite connection, committing on success and always closing it.
+
+        sqlite3's own context manager only ends the transaction; without the
+        explicit close the file handle stays open, which on Windows keeps
+        brain.db locked.
+        """
         conn = sqlite3.connect(str(self.db_path))
-        conn.row_factory = sqlite3.Row
-        conn.execute("PRAGMA journal_mode=WAL;")
-        conn.execute("PRAGMA synchronous=NORMAL;")
-        conn.execute("PRAGMA foreign_keys=ON;")
-        return conn
+        try:
+            conn.row_factory = sqlite3.Row
+            conn.execute("PRAGMA journal_mode=WAL;")
+            conn.execute("PRAGMA synchronous=NORMAL;")
+            conn.execute("PRAGMA foreign_keys=ON;")
+            with conn:
+                yield conn
+        finally:
+            conn.close()
 
     def _init_db(self) -> None:
         """Initializes database schema if tables do not exist."""
@@ -166,6 +177,36 @@ class BrainSQLiteStorage:
                 item["metadata"] = json.loads(item["metadata_json"] or "{}")
                 results.append(item)
             return results
+
+    def get_memory(self, memory_id: str) -> Optional[dict[str, Any]]:
+        """Retrieve one memory by id, whatever its status."""
+        with self._get_connection() as conn:
+            row = conn.execute("SELECT * FROM memories WHERE id = ?", (memory_id,)).fetchone()
+        if not row:
+            return None
+        item = dict(row)
+        item["metadata"] = json.loads(item["metadata_json"] or "{}")
+        return item
+
+    def find_active_memory(self, content: str, project: Optional[str] = None) -> Optional[dict[str, Any]]:
+        """Find an active memory with exactly this content in the same project."""
+        with self._get_connection() as conn:
+            row = conn.execute(
+                "SELECT * FROM memories WHERE status = 'active' AND content = ? AND project IS ?",
+                (content, project),
+            ).fetchone()
+        return dict(row) if row else None
+
+    def set_memory_status(self, memory_id: str, status: str) -> bool:
+        """Change the lifecycle status of a memory (e.g. 'forgotten')."""
+        now = datetime.now(timezone.utc).isoformat()
+        with self._get_connection() as conn:
+            cur = conn.execute(
+                "UPDATE memories SET status = ?, updated_at = ? WHERE id = ?",
+                (status, now, memory_id),
+            )
+            conn.commit()
+            return cur.rowcount > 0
 
     def supersede_memory(self, old_memory_id: str, new_memory_id: str) -> bool:
         """Mark an old memory as superseded by a newer memory."""

@@ -12,6 +12,10 @@ from typing import Any, Optional
 from devbrain.adr.manager import ADRManager
 from devbrain.core.constants import DIR_INBOX, DIR_PROJECTS, DIR_SYSTEM
 from devbrain.core.sqlite_db import BrainSQLiteStorage
+from devbrain.core.textutil import truncate_to_budget
+
+# The preferences file is loaded into every briefing, so it is capped.
+USER_PREFERENCES_MAX_CHARS = 3000
 
 
 @dataclass
@@ -27,6 +31,7 @@ class TaskContextCard:
     relevant_knowledge: list[dict[str, Any]]
     recent_session_work: list[str]
     generated_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    memories: list[str] = field(default_factory=list)
 
     def to_markdown(self) -> str:
         """Render context card as a dense Markdown prompt block for LLMs."""
@@ -53,6 +58,11 @@ class TaskContextCard:
 
         stack_str = ", ".join(self.tech_stack) if self.tech_stack else "Standard Stack"
 
+        memory_block = ""
+        if self.memories:
+            memory_lines = "\n".join(f"- {m}" for m in self.memories)
+            memory_block = f"## 🧠 Remembered Facts\n{memory_lines}\n\n---\n\n"
+
         return f"""# 🧠 SITUATIONAL TASK CONTEXT BRIEFING
 
 ## 🎯 Target Task & Project
@@ -78,7 +88,7 @@ class TaskContextCard:
 
 ---
 
-## 📚 Relevant Knowledge Base Chunks
+{memory_block}## 📚 Relevant Knowledge Base Chunks
 {kb_text.strip()}
 
 ---
@@ -101,6 +111,7 @@ class TaskContextCard:
             "active_decisions": self.active_decisions,
             "relevant_knowledge": self.relevant_knowledge,
             "recent_session_work": self.recent_session_work,
+            "memories": self.memories,
             "generated_at": self.generated_at,
         }
 
@@ -119,7 +130,11 @@ class ContextAssemblyEngine:
         if pref_file.is_file():
             try:
                 with open(pref_file, "r", encoding="utf-8") as f:
-                    return f.read().strip()
+                    return truncate_to_budget(
+                        f.read().strip(),
+                        USER_PREFERENCES_MAX_CHARS,
+                        f"Full file: {DIR_SYSTEM}/User_Preferences.md",
+                    )
             except Exception:
                 pass
 
@@ -194,6 +209,7 @@ class ContextAssemblyEngine:
         task: str,
         project: str,
         relevant_chunks: Optional[list[dict[str, Any]]] = None,
+        memories: Optional[list[str]] = None,
     ) -> TaskContextCard:
         """Assemble all 5 context tiers into a coherent TaskContextCard."""
         user_prefs = self.get_user_preferences()
@@ -210,4 +226,5 @@ class ContextAssemblyEngine:
             active_decisions=active_adrs,
             relevant_knowledge=relevant_chunks or [],
             recent_session_work=recent_work,
+            memories=memories or [],
         )

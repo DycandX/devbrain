@@ -1,8 +1,14 @@
-"""Model Context Protocol (MCP) Server for Central AI Brain Hub (PAIOS Layer)."""
+"""Model Context Protocol (MCP) Server for Central AI Brain Hub (PAIOS Layer).
+
+Tool output is sized deliberately: every response an agent reads costs context
+tokens, so tools return a compact answer first and point to `read_note` for
+detail instead of returning whole files.
+"""
 
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+import re
 from typing import List, Literal, Optional
 import uuid
 
@@ -12,7 +18,17 @@ from devbrain.core.config import BrainConfig, load_config
 from devbrain.core.constants import DIR_AGENT_SKILLS, DIR_INBOX, DIR_PROJECTS
 from devbrain.core.fsutil import atomic_write_text
 from devbrain.core.sqlite_db import BrainSQLiteStorage
+from devbrain.core.textutil import extract_section, one_line, truncate_to_budget
 from devbrain.engine.hybrid_search import HybridEngine
+from devbrain.memory.manager import MemoryManager
+
+# Output budgets in characters (about 4 characters per token).
+SEARCH_PREVIEW_CHARS = 140
+NOTE_MAX_CHARS = 6000
+PROJECT_MAX_CHARS = 6000
+READ_NOTE_HINT = "Call read_note with a `heading` to fetch one section, or raise `max_chars`."
+
+_SKILL_NAME = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
 
 
 def create_mcp_server(
@@ -45,28 +61,62 @@ def create_mcp_server(
     if not engine.chunks:
         engine.index_vault()
 
+    memory = MemoryManager(vault_path, sqlite_storage, engine)
+    linked_vaults = config.resolve_linked_vaults()
+
     server = MCPServer(
         name="central-brain",
         description="Central AI Second Brain Hub — Single Source of Truth for Multi-Agent Coding & Obsidian",
     )
 
+    def resolve_note(ref: str) -> Optional[Path]:
+        """Map a note reference from search results to a file inside a known vault."""
+        ref = ref.strip().strip("`")
+        base, rel = vault_path, ref
+        if ref.startswith("linked:"):
+            parts = ref.split(":", 2)
+            if len(parts) != 3 or parts[1] not in linked_vaults:
+                return None
+            base, rel = linked_vaults[parts[1]], parts[2]
+
+        base = base.resolve()
+        target = (base / rel).resolve()
+        if not target.is_relative_to(base) or target.suffix.lower() != ".md" or not target.is_file():
+            return None
+        return target
+
     # =========================================================================
-    # TOOL 1: search_brain
+    # TOOL: search_brain
     # =========================================================================
     @server.tool(
         name="search_brain",
-        description="Search knowledge, projects, architecture rules, and logs in Central Brain using semantic hybrid search.",
+        description=(
+            "Search notes, project cards, decisions, and session logs. Returns a compact list "
+            "(one line per note) by default; pass detail='snippet' for longer excerpts, then "
+            "read_note for full content. Returns nothing when no note is relevant."
+        ),
     )
     def search_brain(
         query: str,
         limit: int = 5,
         mode: Literal["hybrid", "dense", "bm25"] = "hybrid",
         scope: str = "all",
+        detail: Literal["index", "snippet"] = "index",
     ) -> str:
         """Search notes in the Obsidian vault."""
-        results = engine.search(query=query, limit=limit, mode=mode, scope=scope)
+        results = engine.search(query=query, limit=limit, mode=mode, scope=scope, one_per_note=True)
         if not results:
             return f"No relevant notes found for query: '{query}'"
+
+        if detail == "index":
+            lines = []
+            for idx, r in enumerate(results, 1):
+                breadcrumb = f" > {r.header_path}" if r.header_path else ""
+                lines.append(
+                    f"{idx}. **{r.title}{breadcrumb}** ({int(r.score * 100)}%) `{r.doc_id}`\n"
+                    f"   {one_line(r.snippet, SEARCH_PREVIEW_CHARS)}"
+                )
+            return "\n".join(lines) + "\n\nUse read_note(path) for full content."
 
         formatted = []
         for idx, r in enumerate(results, 1):
@@ -75,7 +125,7 @@ def create_mcp_server(
             tags_str = f" [Tags: {', '.join(r.tags)}]" if r.tags else ""
             entry = (
                 f"### Result {idx}: {r.title}{breadcrumb} ({pct}% Match)\n"
-                f"- **File:** `{r.file_path}`{tags_str}\n"
+                f"- **File:** `{r.doc_id}`{tags_str}\n"
                 f"- **Snippet:**\n{r.snippet}\n"
             )
             formatted.append(entry)
@@ -83,13 +133,39 @@ def create_mcp_server(
         return "\n---\n".join(formatted)
 
     # =========================================================================
-    # TOOL 2: get_project_context
+    # TOOL: read_note
+    # =========================================================================
+    @server.tool(
+        name="read_note",
+        description=(
+            "Read a note by the path shown in search_brain results. Pass `heading` to read "
+            "a single section instead of the whole note."
+        ),
+    )
+    def read_note(path: str, heading: Optional[str] = None, max_chars: int = NOTE_MAX_CHARS) -> str:
+        """Return a note, or one section of it, within a size budget."""
+        note = resolve_note(path)
+        if note is None:
+            return f"Note '{path}' not found. Use the path exactly as search_brain returned it."
+
+        content = note.read_text(encoding="utf-8", errors="replace")
+        if heading:
+            section = extract_section(content, heading)
+            if section is None:
+                headings = [line.lstrip("#").strip() for line in content.splitlines() if line.startswith("#")]
+                return f"No heading matching '{heading}' in `{path}`. Headings: {'; '.join(headings[:30])}"
+            content = section
+
+        return truncate_to_budget(content, max_chars, READ_NOTE_HINT)
+
+    # =========================================================================
+    # TOOL: get_project_context
     # =========================================================================
     @server.tool(
         name="get_project_context",
-        description="Retrieve comprehensive overview, architecture, active tasks, and context for a specific project.",
+        description="Retrieve the project card (overview, stack, structure, status) for a project in 10_Projects/.",
     )
-    def get_project_context(project_name: str) -> str:
+    def get_project_context(project_name: str, max_chars: int = PROJECT_MAX_CHARS) -> str:
         """Fetch project documentation from 10_Projects/."""
         projects_dir = vault_path / DIR_PROJECTS
         if not projects_dir.is_dir():
@@ -115,43 +191,47 @@ def create_mcp_server(
                 found_file = matched[0]
 
         if not found_file:
-            fallback_results = engine.search(query=f"project {project_name}", limit=2, scope="all")
+            fallback_results = engine.search(
+                query=f"project {project_name}", limit=2, scope="all", one_per_note=True
+            )
             if fallback_results:
                 return (
                     f"Project file for '{project_name}' not found directly. Closest matches:\n\n"
-                    + "\n\n".join(f"**{r.title}** (`{r.file_path}`):\n{r.snippet}" for r in fallback_results)
+                    + "\n\n".join(f"**{r.title}** (`{r.doc_id}`):\n{r.snippet}" for r in fallback_results)
                 )
             return f"No documentation found for project '{project_name}' in '{DIR_PROJECTS}/'."
 
-        with open(found_file, "r", encoding="utf-8", errors="replace") as f:
-            content = f.read()
-
+        content = found_file.read_text(encoding="utf-8", errors="replace")
         rel_path = found_file.relative_to(vault_path).as_posix()
-        return f"# Project Context: `{rel_path}`\n\n{content}"
+        body = truncate_to_budget(content, max_chars, f"Call read_note('{rel_path}', heading=...) for the rest.")
+        return f"# Project Context: `{rel_path}`\n\n{body}"
 
     # =========================================================================
-    # TOOL 3: build_task_context (Context Assembly Engine)
+    # TOOL: build_task_context (Context Assembly Engine)
     # =========================================================================
     @server.tool(
         name="build_task_context",
-        description="Assemble instant situational awareness card combining User Preferences, Project State, ADRs, and Knowledge.",
+        description=(
+            "Call first when starting work on a project: one compact briefing with user preferences, "
+            "project state, active decisions, remembered facts, relevant notes, and recent sessions."
+        ),
     )
     def build_task_context(task: str, project: str) -> str:
         """Assemble complete task briefing card."""
-        relevant_chunks = []
-        search_hits = engine.search(query=f"{project} {task}", limit=3, scope="all")
-        for hit in search_hits:
-            relevant_chunks.append({
-                "title": hit.title,
-                "path": hit.file_path,
-                "snippet": hit.snippet,
-            })
+        query = f"{project} {task}"
+        relevant_chunks = [
+            {"title": hit.title, "path": hit.doc_id, "snippet": hit.snippet}
+            for hit in engine.search(query=query, limit=3, scope="all", one_per_note=True)
+        ]
+        memories = [m["content"] for m in memory.recall(query, project=project, limit=5)]
 
-        card = context_engine.build_task_context(task=task, project=project, relevant_chunks=relevant_chunks)
+        card = context_engine.build_task_context(
+            task=task, project=project, relevant_chunks=relevant_chunks, memories=memories
+        )
         return card.to_markdown()
 
     # =========================================================================
-    # TOOL 4: get_user_context
+    # TOOL: get_user_context
     # =========================================================================
     @server.tool(
         name="get_user_context",
@@ -162,7 +242,7 @@ def create_mcp_server(
         return context_engine.get_user_preferences()
 
     # =========================================================================
-    # TOOL 5: get_decisions
+    # TOOL: get_decisions
     # =========================================================================
     @server.tool(
         name="get_decisions",
@@ -186,7 +266,7 @@ def create_mcp_server(
         return "\n".join(lines)
 
     # =========================================================================
-    # TOOL 6: record_decision
+    # TOOL: record_decision
     # =========================================================================
     @server.tool(
         name="record_decision",
@@ -213,11 +293,11 @@ def create_mcp_server(
         return f"Successfully created Architecture Decision Record `{result['id']}`: '{title}' at `{result['file_path']}`."
 
     # =========================================================================
-    # TOOL 7: write_agent_log
+    # TOOL: write_agent_log
     # =========================================================================
     @server.tool(
         name="write_agent_log",
-        description="Record session summary, architecture decision, or progress log into 90_Agent_Inbox/ using append-only UUID partitioning.",
+        description="Record a session summary or progress log into 90_Agent_Inbox/ (append-only).",
     )
     def write_agent_log(
         summary: str,
@@ -271,7 +351,7 @@ tags: {json.dumps(all_tags, ensure_ascii=False)}
         return f"Successfully recorded agent log into `{rel_path}` and indexed into Central Brain memory."
 
     # =========================================================================
-    # TOOL 8: load_skill
+    # TOOL: load_skill
     # =========================================================================
     @server.tool(
         name="load_skill",
@@ -281,30 +361,26 @@ tags: {json.dumps(all_tags, ensure_ascii=False)}
         """Read SKILL.md for a requested skill name from vault or external roots."""
         skills_dir = vault_path / DIR_AGENT_SKILLS
         clean_name = skill_name.strip().replace(" ", "-").lower()
+        external_roots = [Path(root).resolve() for root in config.custom_skill_roots]
 
-        search_locations = [skills_dir / clean_name / "SKILL.md"]
-        for ext_root in config.custom_skill_roots:
-            p = Path(ext_root).resolve()
-            search_locations.append(p / clean_name / "SKILL.md")
-            search_locations.append(p / "skills" / clean_name / "SKILL.md")
+        # A skill name is a folder name, never a path
+        if _SKILL_NAME.match(clean_name):
+            search_locations = [skills_dir / clean_name / "SKILL.md"]
+            for root in external_roots:
+                search_locations.append(root / clean_name / "SKILL.md")
+                search_locations.append(root / "skills" / clean_name / "SKILL.md")
 
-        for skill_file in search_locations:
-            if skill_file.is_file():
-                with open(skill_file, "r", encoding="utf-8", errors="replace") as f:
-                    skill_content = f.read()
-                return f"# Active Skill Instructions: `{clean_name}` (from `{skill_file}`)\n\n{skill_content}"
+            for skill_file in search_locations:
+                if skill_file.is_file():
+                    skill_content = skill_file.read_text(encoding="utf-8", errors="replace")
+                    return f"# Active Skill Instructions: `{clean_name}` (from `{skill_file}`)\n\n{skill_content}"
 
-        all_skills: list[str] = [
-            d.name for d in skills_dir.glob("*")
-            if d.is_dir() and (d / "SKILL.md").is_file()
-        ]
-        for ext_root in config.custom_skill_roots:
-            p = Path(ext_root).resolve()
-            if p.is_dir():
-                all_skills.extend([
-                    d.name for d in p.glob("*")
-                    if d.is_dir() and (d / "SKILL.md").is_file()
-                ])
+        all_skills: list[str] = []
+        for root in [skills_dir, *external_roots]:
+            if root.is_dir():
+                all_skills.extend(
+                    d.name for d in root.glob("*") if d.is_dir() and (d / "SKILL.md").is_file()
+                )
 
         if all_skills:
             return (
@@ -312,5 +388,70 @@ tags: {json.dumps(all_tags, ensure_ascii=False)}
                 f"Available active skills in vault & external roots: {', '.join(sorted(set(all_skills)))}"
             )
         return f"Skill '{skill_name}' not found and no skills are currently available."
+
+    # =========================================================================
+    # TOOLS: remember / recall / forget (long-term memory)
+    # =========================================================================
+    @server.tool(
+        name="remember",
+        description=(
+            "Save one durable fact, preference, or lesson for future sessions (one fact per call, "
+            "under 1000 characters). Use scope='PROJECT' with a project name for project-specific "
+            "facts. Pass `supersedes` with an old memory id when this replaces it."
+        ),
+    )
+    def remember(
+        content: str,
+        scope: Literal["GLOBAL", "PROJECT", "TASK", "SESSION"] = "GLOBAL",
+        project: Optional[str] = None,
+        tags: Optional[List[str]] = None,
+        supersedes: Optional[str] = None,
+    ) -> str:
+        """Store a long-term memory."""
+        try:
+            result = memory.remember(
+                content=content,
+                scope=scope,
+                project=project,
+                tags=tags,
+                source="mcp",
+                supersedes=supersedes,
+            )
+        except ValueError as e:
+            return f"Not saved: {e}"
+
+        if not result["created"]:
+            return f"Already remembered as `{result['id']}`."
+        note = f" Replaced `{result['superseded']}`." if result["superseded"] else ""
+        return f"Remembered as `{result['id']}`.{note}"
+
+    @server.tool(
+        name="recall",
+        description=(
+            "Retrieve remembered facts relevant to a query. With `project`, returns that project's "
+            "memories plus global ones. With an empty query, returns the most recent memories."
+        ),
+    )
+    def recall(query: str = "", project: Optional[str] = None, limit: int = 5) -> str:
+        """Search long-term memories."""
+        memories = memory.recall(query, project=project, limit=limit)
+        if not memories:
+            return "No matching memories."
+
+        lines = []
+        for m in memories:
+            where = m["project"] or m["scope"].lower()
+            lines.append(f"- `{m['id']}` ({where}): {m['content']}")
+        return "\n".join(lines)
+
+    @server.tool(
+        name="forget",
+        description="Retire a memory by id when it is wrong or no longer true.",
+    )
+    def forget(memory_id: str) -> str:
+        """Mark a memory as forgotten."""
+        if memory.forget(memory_id.strip().strip("`")):
+            return f"Forgot `{memory_id}`."
+        return f"No memory with id `{memory_id}`."
 
     return server

@@ -11,6 +11,7 @@ DIR_SYSTEM = "00_System"
 DIR_SYSTEM_RULES = "00_System/rules"
 DIR_SYSTEM_PERSONAS = "00_System/personas"
 DIR_AGENT_SKILLS = "00_System/Agent_Skills"
+DIR_MEMORIES = "00_System/Memories"
 
 DIR_PROJECTS = "10_Projects"
 
@@ -35,6 +36,7 @@ STANDARD_DIRS = [
     DIR_SYSTEM_RULES,
     DIR_SYSTEM_PERSONAS,
     DIR_AGENT_SKILLS,
+    DIR_MEMORIES,
     DIR_PROJECTS,
     DIR_KNOWLEDGE,
     DIR_KNOWLEDGE_ARCH,

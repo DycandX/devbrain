@@ -39,7 +39,7 @@ For complete copy-pasteable testing commands without global installation, check 
 
 ## 🤖 AI Agent FastMCP Pairing
 
-Once initialized, your AI assistants in Antigravity IDE and Claude Code automatically gain access to 4 native memory tools:
+Once initialized, your AI assistants in Antigravity IDE and Claude Code automatically gain access to 12 native tools. The most used:
 
 | MCP Tool | Purpose | Example Interaction |
 | :--- | :--- | :--- |
@@ -47,6 +47,10 @@ Once initialized, your AI assistants in Antigravity IDE and Claude Code automati
 | `get_project_context(project_name)` | Retrieve active project specs, backlog, and architecture from `10_Projects/` | *"Load context and requirements for the auth_service project"* |
 | `write_agent_log(summary, details, tags)` | Record session walkthroughs and decisions to `90_Agent_Inbox/` | *"Save summary of this debugging session to Central Brain"* |
 | `load_skill(skill_name)` | Load modular multi-step workflow instructions from `00_System/Agent_Skills/` | *"Load the docker-deployment skill"* |
+| `read_note(path, heading)` | Read a note, or one section of it, found by `search_brain` | *"Open the deployment section of that note"* |
+| `build_task_context(task, project)` | One compact briefing: preferences, project state, decisions, remembered facts | *"Brief me before I continue the payment feature"* |
+| `remember` / `recall` / `forget` | Long-term memory that persists across sessions and agents | *"Remember that we deploy through GitHub Actions"* |
+| `get_decisions` / `record_decision` | Read and create Architecture Decision Records in `30_Decisions/` | *"Record the decision to use SQLite"* |
 
 ---
 
@@ -65,6 +69,7 @@ Commands:
   ingest      Harvest AI agent sessions, targeted projects, and workspace repos into vault.
   pull        Alias for 'ingest'.
   serve       Launch the FastMCP Protocol Server for Antigravity IDE and Claude.
+  usage       Report Claude Code token usage per project.
   skill       Manage, scaffold, and sync modular AI Agent Skills.
   uninstall   Safely unregister FastMCP servers from IDEs and clean caches.
 ```

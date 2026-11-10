@@ -60,6 +60,9 @@ When connected to the DevBrain FastMCP server, utilize these tools:
 - `build_task_context(task, project)`: Retrieve situational briefing before starting complex tasks.
 - `get_decisions(project)`: Check active Architecture Decision Records (ADRs).
 - `load_skill(skill_name)`: Dynamically load reusable skills from Central Brain.
+- `search_brain(query)` then `read_note(path, heading)`: Find notes, then read only the section you need.
+- `recall(query, project)`: Check remembered facts before asking the user to repeat context.
+- `remember(content, scope, project)`: Save one durable fact or lesson for future sessions.
 - `write_agent_log(summary, details, tags)`: Persist session discoveries.
 
 ---

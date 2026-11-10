@@ -8,6 +8,7 @@ Index of all product versions, feature updates, and sprint releases for **`devbr
 
 | Version | Release Date | Key Highlights | Status | Link |
 | :--- | :--- | :--- | :--- | :--- |
+| **`v1.8.0-alpha`** | 2026-11-10 | Long-term memory tools (`remember`, `recall`, `forget`), size-capped tool output with `read_note`, `devbrain usage` token report, SQLite connection leak fix | 🚧 Unreleased | [v1.8.0-alpha.md](./v1.8.0-alpha.md) |
 | **`v1.7.0-alpha`** | 2026-11-10 | Foundation: test isolation from home config, atomic IDE config writes, Reciprocal Rank Fusion with relevance gate, multilingual embedding default, retrieval eval harness, vault watcher wired into `serve`, per-session Claude Code harvester | 🚧 Unreleased | [v1.7.0-alpha.md](./v1.7.0-alpha.md) |
 | **`v1.6.0-alpha`** | 2026-08-30 | Sprint 10: PAIOS Layer, ADR Framework, Context Assembly Engine, Workspace Rules, & Embedded SQLite Cache | ✅ Released | [v1.6.0-alpha.md](./v1.6.0-alpha.md) |
 | **`v1.5.0-alpha`** | 2026-08-29 | Sprint 09: Multi-Vault Federation, External Vault Linking, Federated Hybrid Search, & Directory Junction Mounts | ✅ Released | [v1.5.0-alpha.md](./v1.5.0-alpha.md) |

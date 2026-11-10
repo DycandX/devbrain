@@ -253,10 +253,15 @@ class HybridEngine:
         limit: int = 5,
         mode: Literal["hybrid", "dense", "bm25"] = "hybrid",
         scope: str = "all",
+        one_per_note: bool = False,
     ) -> List[SearchResult]:
-        """Perform semantic, keyword, or federated hybrid search across indexed chunks."""
+        """Perform semantic, keyword, or federated hybrid search across indexed chunks.
+
+        With one_per_note, only the best-ranked chunk of each note is returned, so
+        a long note cannot fill every result slot.
+        """
         with self._lock:
-            return self._search(query, limit, mode, scope)
+            return self._search(query, limit, mode, scope, one_per_note)
 
     def _search(
         self,
@@ -264,6 +269,7 @@ class HybridEngine:
         limit: int,
         mode: Literal["hybrid", "dense", "bm25"],
         scope: str,
+        one_per_note: bool,
     ) -> List[SearchResult]:
         self.initialize()
 
@@ -302,6 +308,7 @@ class HybridEngine:
         # 4. Scope Filtering & Ranking
         scored_indices = np.argsort(-final_scores)
         results: List[SearchResult] = []
+        seen_docs: set = set()
         scope_clean = scope.strip().lower()
 
         for idx in scored_indices:
@@ -326,6 +333,11 @@ class HybridEngine:
                     in_path = scope_clean in chunk.file_path.lower()
                     if not (in_tags or in_path):
                         continue
+
+            if one_per_note:
+                if chunk.doc_id in seen_docs:
+                    continue
+                seen_docs.add(chunk.doc_id)
 
             # Extract clean snippet without breadcrumb line
             lines = chunk.content.splitlines()

@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.8.0-alpha] - 2026-11-10 (Unreleased)
+
+### 🚀 Added
+- **Long-term memory:** MCP tools `remember`, `recall`, and `forget`. SQLite holds the record; each active memory is mirrored as a note in `00_System/Memories/` so it is visible in Obsidian and searchable. Project-scoped memories stay within their project, and superseded or forgotten memories drop out of recall.
+- **Size-capped tool output:** `search_brain` returns one line per note by default (`detail="snippet"` for excerpts); new `read_note(path, heading, max_chars)` reads a note or a single section; `get_project_context` and user preferences are capped and say how to fetch the rest.
+- **`devbrain usage`:** per-project Claude Code token usage (context, cache hit ratio, output, tool calls, calls to `central-brain`) read from local transcripts.
+- `build_task_context` includes remembered facts relevant to the task.
+
+### 🐛 Fixed
+- **SQLite connection leak:** connections were never closed, which kept `brain.db` locked on Windows.
+- **Path containment:** `load_skill` accepts only plain skill names, and `read_note` refuses paths outside the vault.
+
+### 📊 Measured
+- 12 tool definitions cost about 1,470 tokens per session; index-mode search output is 37% smaller than snippet mode.
+- **Automated Tests:** 75 passing.
+
+For complete details, see [docs/changelog/v1.8.0-alpha.md](docs/changelog/v1.8.0-alpha.md).
+
+---
+
 ## [1.7.0-alpha] - 2026-11-10 (Unreleased)
 
 ### 🐛 Fixed
