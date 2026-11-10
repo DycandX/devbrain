@@ -4,6 +4,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import List, Set
 
+from devbrain.harvester.markers import find_subprojects
+
 IGNORED_DIRECTORIES: Set[str] = {
     ".git",
     "node_modules",
@@ -127,13 +129,7 @@ def analyze_codebase_structure(root_dir: Path) -> CodebaseAnalysisResult:
 
     # 3. Detect sub-projects (for container workspace detection)
     if root_dir.is_dir():
-        for sub in root_dir.iterdir():
-            if sub.is_dir() and sub.name not in IGNORED_DIRECTORIES and not sub.name.startswith("."):
-                has_manifest = any(
-                    (sub / m).is_file() for m in ["package.json", "pyproject.toml", "Cargo.toml", "go.mod", "setup.py", "requirements.txt", "Dockerfile"]
-                ) or (sub / ".git").is_dir()
-                if has_manifest:
-                    subprojects.append(sub)
+        subprojects = find_subprojects(root_dir, max_depth=1)
 
     tree = generate_ascii_tree(root_dir, max_depth=2, max_entries=25)
 

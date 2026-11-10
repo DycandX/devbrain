@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.9.0-alpha] - 2026-11-11 (Unreleased)
+
+### 🚀 Added
+- **Nested workspace scan:** batch scanning descends into folders that hold several projects (up to 3 levels), instead of looking only one level below the workspace root.
+- **Project groups:** a multi-project folder becomes the group of its projects (`group` in frontmatter, `group/<name>` tag). Labels and sandbox status are configurable per folder in `.brainrc.json` (`project_groups`).
+- **Sandboxes:** groups whose name starts with `test`, `sandbox`, `playground`, `scratch`, `tmp`, or `temp` are marked sandbox. Their cards stay searchable but never enter another project's briefing.
+- **More project types:** Flutter (`pubspec.yaml`), PHP / Laravel (`composer.json`), Java (`pom.xml`, Gradle), .NET (`*.csproj`, `*.sln`), C / C++ (`CMakeLists.txt`, `Makefile`).
+
+### 🐛 Fixed
+- **Vault folders** (`.brainrc.json`, or `.obsidian` without a code manifest) are no longer scanned as projects.
+- **Card name clashes:** two projects with the same name get separate cards instead of overwriting each other; scaffold default names such as `laravel` fall back to the folder name.
+- **Rescanning a project** no longer drops the session links collected on its card.
+- **Dry runs** of a batch scan now report what would be created; they returned nothing before.
+
+### 📊 Measured
+- On a real workspace of 45 top-level folders, the scan finds 65 projects (about 26 before) in roughly 19 seconds.
+- **Automated Tests:** 91 passing.
+
+For complete details, see [docs/changelog/v1.9.0-alpha.md](docs/changelog/v1.9.0-alpha.md).
+
+---
+
 ## [1.8.1-alpha] - 2026-11-10 (Unreleased)
 
 ### 🐛 Fixed

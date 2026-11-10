@@ -327,7 +327,8 @@ class ContextAssemblyEngine:
 
         Notes that belong to the project are taken on a normal search match.
         Notes from elsewhere must clear BRIEFING_MIN_AGREEMENT_SCORE, and
-        session logs linked to a different project are never included.
+        session logs linked to a different project, like anything tagged
+        sandbox, are never included.
         Project notes come first.
         """
         if self.engine is None or not task.strip():
@@ -352,7 +353,7 @@ class ContextAssemblyEngine:
             item = {"title": hit.title, "path": hit.doc_id, "snippet": hit.snippet, "score": hit.score}
             if hit.doc_id in project_paths or hit.doc_id.lower().startswith(project_prefixes):
                 own.append(item)
-            elif hit.doc_id in foreign_paths:
+            elif hit.doc_id in foreign_paths or "sandbox" in hit.tags:
                 continue
             elif hit.score >= BRIEFING_MIN_AGREEMENT_SCORE:
                 other.append(item)

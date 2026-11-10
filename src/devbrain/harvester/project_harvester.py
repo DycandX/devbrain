@@ -9,11 +9,13 @@ import shutil
 import subprocess
 from typing import Dict, List, Optional
 
-from devbrain.core.constants import DIR_AGENT_SKILLS, DIR_KNOWLEDGE, DIR_PROJECTS
+from devbrain.core.constants import DIR_AGENT_SKILLS, DIR_INBOX, DIR_KNOWLEDGE, DIR_PROJECTS
+from devbrain.core.fsutil import atomic_write_text
 from devbrain.core.textutil import first_prose_paragraph
 from devbrain.engine.hybrid_search import HybridEngine
 from devbrain.harvester.inspector import RepoType, inspect_repository_type
 from devbrain.harvester.manifest_parser import parse_repository_manifest
+from devbrain.harvester.markers import GENERIC_PROJECT_NAMES, slugify
 from devbrain.harvester.tree_analyzer import analyze_codebase_structure
 
 
@@ -38,6 +40,34 @@ class ScannedProjectMetadata:
     git_branch: Optional[str] = None
     last_commit_time: Optional[datetime] = None
     readme_excerpt: Optional[str] = None
+    # Folder this project was found under when it is one of several (e.g. "_fxmedia")
+    group: Optional[str] = None
+    group_label: Optional[str] = None
+    sandbox: bool = False
+
+    def group_frontmatter(self) -> str:
+        """Frontmatter lines recording the group, empty for ungrouped projects."""
+        if not self.group:
+            return ""
+        lines = f"group: {json.dumps(self.group_label or self.group, ensure_ascii=False)}\n"
+        if self.sandbox:
+            lines += "sandbox: true\n"
+        return lines
+
+    def group_tags(self) -> List[str]:
+        if not self.group:
+            return []
+        tags = [f"group/{slugify(self.group)}"]
+        if self.sandbox:
+            tags.append("sandbox")
+        return tags
+
+    def group_line(self) -> str:
+        """Quote-block line shown under the card title."""
+        if not self.group:
+            return ""
+        note = " (sandbox)" if self.sandbox else ""
+        return f"\n> **Group:** {self.group_label or self.group}{note}"
 
 
 def extract_git_branch(repo_path: Path) -> Optional[str]:
@@ -117,7 +147,9 @@ def scan_project_metadata(
         raw_desc = " ".join(parts)
 
     clean_desc = re.sub(r"\s+", " ", raw_desc).strip().replace('"', "'")
-    clean_name = re.sub(r"[^\w\-_]", "_", manifest.name or repo_path.name).strip("_")
+    if not manifest.name or manifest.name.lower() in GENERIC_PROJECT_NAMES:
+        manifest.name = repo_path.name
+    clean_name = re.sub(r"[^\w\-_]", "_", manifest.name).strip("_")
 
     return ScannedProjectMetadata(
         name=manifest.name or repo_path.name,
@@ -138,6 +170,26 @@ def scan_project_metadata(
         git_branch=branch,
         readme_excerpt=readme_text,
     )
+
+
+SESSION_HISTORY_HEADING = "## 📜 Riwayat Sesi AI Terkini"
+
+
+def _write_project_card(target_file: Path, content: str) -> None:
+    """Write a project card, carrying over the session links a previous version collected."""
+    if target_file.is_file():
+        previous = target_file.read_text(encoding="utf-8", errors="replace")
+        links = [
+            line for line in previous.splitlines()
+            if line.startswith(f"- [[{DIR_INBOX}/") and line not in content
+        ]
+        if links:
+            block = "\n".join(links)
+            if SESSION_HISTORY_HEADING in content:
+                content = content.replace(SESSION_HISTORY_HEADING, f"{SESSION_HISTORY_HEADING}\n{block}", 1)
+            else:
+                content = content.rstrip() + f"\n\n{SESSION_HISTORY_HEADING}\n{block}\n"
+    atomic_write_text(target_file, content)
 
 
 def seed_project_to_vault(
@@ -183,19 +235,19 @@ title: "{metadata.name}"
 type: "project"
 role: "owner"
 status: "active"
-language: {langs_json}
+{metadata.group_frontmatter()}language: {langs_json}
 stack: {stack_json}
 git_remote: "{metadata.git_remote or ''}"
 local_path: "{posix_path}"
 last_scanned: "{now_iso}"
-tags: ["project", "codebase"]
+tags: {json.dumps(["project", "codebase", *metadata.group_tags()])}
 ---
 
 # 🚀 {metadata.name}
 
 > **Local Path:** `{str(metadata.repo_path)}`  
 > **Git Remote:** `{metadata.git_remote or 'Local Repository'}` {f'(`branch: {metadata.git_branch}`)' if metadata.git_branch else ''}  
-> **Tech Stack:** `{'` | `'.join(metadata.stack_tags) if metadata.stack_tags else 'Standard'}`{entrypoints_line}
+> **Tech Stack:** `{'` | `'.join(metadata.stack_tags) if metadata.stack_tags else 'Standard'}`{entrypoints_line}{metadata.group_line()}
 {quick_actions}
 
 ## 📋 Overview
@@ -218,8 +270,7 @@ SORT created DESC
 LIMIT 10
 ```
 """
-        with open(target_file, "w", encoding="utf-8") as f:
-            f.write(content)
+        _write_project_card(target_file, content)
 
     # 2. Cloned External Reference -> 20_Knowledge/External_Repos/<Repo>/README.md
     elif metadata.repo_type == RepoType.REFERENCE:
@@ -294,8 +345,9 @@ description: {metadata.description}
 id: "DOC-{metadata.clean_name.upper()}"
 title: "{metadata.name} Documentation"
 type: "knowledge-doc"
+{metadata.group_frontmatter()}local_path: "{posix_path}"
 last_scanned: "{now_iso}"
-tags: ["knowledge", "documentation"]
+tags: {json.dumps(["knowledge", "documentation", *metadata.group_tags()])}
 ---
 
 # 📖 {metadata.name}

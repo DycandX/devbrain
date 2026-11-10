@@ -8,6 +8,7 @@ Index of all product versions, feature updates, and sprint releases for **`devbr
 
 | Version | Release Date | Key Highlights | Status | Link |
 | :--- | :--- | :--- | :--- | :--- |
+| **`v1.9.0-alpha`** | 2026-11-11 | Workspace scan: nested multi-project folders, project groups and sandboxes, Flutter / PHP / Java / .NET / C detection, vault folders skipped, unique card names | 🚧 Unreleased | [v1.9.0-alpha.md](./v1.9.0-alpha.md) |
 | **`v1.8.1-alpha`** | 2026-11-10 | Briefing quality: project summary without frontmatter, sessions matched by Project Hub link, notes selected by ranker agreement, README prose extraction | 🚧 Unreleased | [v1.8.1-alpha.md](./v1.8.1-alpha.md) |
 | **`v1.8.0-alpha`** | 2026-11-10 | Long-term memory tools (`remember`, `recall`, `forget`), size-capped tool output with `read_note`, `devbrain usage` token report, SQLite connection leak fix | 🚧 Unreleased | [v1.8.0-alpha.md](./v1.8.0-alpha.md) |
 | **`v1.7.0-alpha`** | 2026-11-10 | Foundation: test isolation from home config, atomic IDE config writes, Reciprocal Rank Fusion with relevance gate, multilingual embedding default, retrieval eval harness, vault watcher wired into `serve`, per-session Claude Code harvester | 🚧 Unreleased | [v1.7.0-alpha.md](./v1.7.0-alpha.md) |

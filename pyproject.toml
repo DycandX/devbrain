@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "devbrain"
-version = "1.8.1a0"
+version = "1.9.0a0"
 description = "Central AI Second Brain Hub - Single Source of Truth for Multi-Agent Coding & Obsidian"
 readme = "README.md"
 requires-python = ">=3.10"

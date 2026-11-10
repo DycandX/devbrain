@@ -6,6 +6,12 @@ import subprocess
 from typing import Optional, Tuple
 
 from devbrain.harvester.manifest_parser import parse_repository_manifest
+from devbrain.harvester.markers import (
+    PROJECT_MANIFESTS,
+    find_subprojects,
+    has_project_marker,
+    is_obsidian_vault,
+)
 
 
 class RepoType(str, Enum):
@@ -86,17 +92,12 @@ def inspect_repository_type(
     if (repo_path / "SKILL.md").is_file() or (repo_path / "skills").is_dir():
         return RepoType.SKILL, "Contains SKILL.md or skills/ directory."
 
-    # 2. Check for Direct Code Manifests (Project vs Reference)
-    manifest = parse_repository_manifest(repo_path)
-    has_direct_code = bool(
-        manifest.dependencies or 
-        (repo_path / "package.json").is_file() or
-        (repo_path / "pyproject.toml").is_file() or
-        (repo_path / "Cargo.toml").is_file() or
-        (repo_path / "go.mod").is_file() or
-        (repo_path / "requirements.txt").is_file() or
-        (repo_path / ".git").is_dir()
-    )
+    # 2. A vault holds notes about projects; it is not one itself
+    if is_obsidian_vault(repo_path):
+        return RepoType.UNKNOWN, "Obsidian vault, not a codebase."
+
+    # 3. Check for Direct Code Manifests (Project vs Reference)
+    has_direct_code = has_project_marker(repo_path)
 
     if has_direct_code:
         user_email = get_git_config_email()
@@ -114,24 +115,16 @@ def inspect_repository_type(
 
         return RepoType.PROJECT, "Codebase with active build manifests."
 
-    # 3. Check for Multi-Project Container / Workspace Folder (e.g. _fxmedia)
-    subproject_dirs = []
-    for sub in repo_path.iterdir():
-        if sub.is_dir() and not sub.name.startswith(".") and sub.name not in ["node_modules", "venv", ".venv"]:
-            has_sub_code = any(
-                (sub / m).is_file() for m in ["package.json", "pyproject.toml", "Cargo.toml", "go.mod", "requirements.txt", "Dockerfile"]
-            ) or (sub / ".git").is_dir()
-            if has_sub_code:
-                subproject_dirs.append(sub)
-
-    if len(subproject_dirs) >= 1:
+    # 4. Check for Multi-Project Container / Workspace Folder (e.g. _fxmedia)
+    subproject_dirs = find_subprojects(repo_path)
+    if subproject_dirs:
         return RepoType.CONTAINER, f"Multi-project workspace containing {len(subproject_dirs)} sub-project(s)."
 
-    # 4. Check for Pure Markdown Documentation / Knowledge
+    # 5. Check for Pure Markdown Documentation / Knowledge
     all_files = [p for p in repo_path.rglob("*") if p.is_file() and not any(part.startswith(".") for part in p.parts)]
     if all_files:
         md_files = [p for p in all_files if p.suffix.lower() == ".md"]
-        manifest_files = [p for p in all_files if p.name in ["package.json", "pyproject.toml", "Cargo.toml", "go.mod", "setup.py"]]
+        manifest_files = [p for p in all_files if p.name in PROJECT_MANIFESTS]
         if (len(md_files) / len(all_files) > 0.6) and not manifest_files:
             return RepoType.KNOWLEDGE, "Predominantly Markdown documents with no code manifests."
 

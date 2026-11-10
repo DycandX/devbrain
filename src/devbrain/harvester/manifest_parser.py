@@ -198,6 +198,66 @@ def parse_go_manifest(repo_path: Path) -> ParsedManifest:
     return manifest
 
 
+def parse_flutter_manifest(repo_path: Path) -> ParsedManifest:
+    """Parse pubspec.yaml (Dart / Flutter)."""
+    manifest = ParsedManifest(languages=["Dart"])
+    try:
+        import yaml
+
+        data = yaml.safe_load((repo_path / "pubspec.yaml").read_text(encoding="utf-8", errors="replace")) or {}
+    except Exception:
+        return manifest
+    if not isinstance(data, dict):
+        return manifest
+
+    manifest.name = data.get("name")
+    manifest.description = data.get("description")
+    deps = data.get("dependencies")
+    if isinstance(deps, dict):
+        manifest.dependencies = [k for k in deps if k != "flutter"]
+        if "flutter" in deps:
+            manifest.stack_tags.append("Flutter")
+    return manifest
+
+
+def parse_php_manifest(repo_path: Path) -> ParsedManifest:
+    """Parse composer.json (PHP / Laravel)."""
+    manifest = ParsedManifest(languages=["PHP"])
+    try:
+        data = json.loads((repo_path / "composer.json").read_text(encoding="utf-8", errors="replace"))
+    except Exception:
+        return manifest
+    if not isinstance(data, dict):
+        return manifest
+
+    manifest.name = (data.get("name") or "").split("/")[-1] or None
+    manifest.description = data.get("description")
+    require = data.get("require")
+    if isinstance(require, dict):
+        manifest.dependencies = [k for k in require if k != "php" and not k.startswith("ext-")]
+        if "laravel/framework" in require:
+            manifest.stack_tags.append("Laravel")
+    scripts = data.get("scripts")
+    if isinstance(scripts, dict):
+        manifest.scripts = {k: f"composer {k}" for k in list(scripts)[:8]}
+    return manifest
+
+
+def detect_other_ecosystems(repo_path: Path) -> ParsedManifest:
+    """Languages recognized by a marker file alone: Java, .NET, C/C++."""
+    manifest = ParsedManifest()
+    if any((repo_path / f).is_file() for f in ("pom.xml", "build.gradle", "build.gradle.kts")):
+        manifest.languages.append("Java")
+        manifest.stack_tags.append("Maven" if (repo_path / "pom.xml").is_file() else "Gradle")
+    if next(repo_path.glob("*.csproj"), None) or next(repo_path.glob("*.sln"), None):
+        manifest.languages.append("C#")
+        manifest.stack_tags.append(".NET")
+    if (repo_path / "CMakeLists.txt").is_file() or (repo_path / "Makefile").is_file():
+        if next(repo_path.glob("*.c"), None) or next(repo_path.glob("*.cpp"), None) or (repo_path / "CMakeLists.txt").is_file():
+            manifest.languages.append("C/C++")
+    return manifest
+
+
 def parse_repository_manifest(repo_path: Path) -> ParsedManifest:
     """Aggregated manifest parser detecting all languages and dependencies."""
     combined = ParsedManifest()
@@ -245,7 +305,24 @@ def parse_repository_manifest(repo_path: Path) -> ParsedManifest:
         if not combined.name:
             combined.name = go_man.name
 
-    # 5. Containers / DevOps
+    # 5. Flutter, PHP, and marker-only ecosystems
+    extra = []
+    if (repo_path / "pubspec.yaml").is_file():
+        extra.append(parse_flutter_manifest(repo_path))
+    if (repo_path / "composer.json").is_file():
+        extra.append(parse_php_manifest(repo_path))
+    extra.append(detect_other_ecosystems(repo_path))
+    for man in extra:
+        combined.languages.extend([l for l in man.languages if l not in combined.languages])
+        combined.stack_tags.extend([t for t in man.stack_tags if t not in combined.stack_tags])
+        combined.dependencies.extend(man.dependencies)
+        for key, value in man.scripts.items():
+            combined.scripts.setdefault(key, value)
+        if not combined.name and man.name:
+            combined.name = man.name
+            combined.description = man.description
+
+    # 6. Containers / DevOps
     if (repo_path / "Dockerfile").is_file() or (repo_path / "docker-compose.yml").is_file() or (repo_path / "compose.yaml").is_file():
         if "Docker" not in combined.stack_tags:
             combined.stack_tags.append("Docker")

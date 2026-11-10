@@ -16,6 +16,16 @@ from devbrain.core.constants import (
 from devbrain.core.fsutil import atomic_write_json
 
 
+class ProjectGroup(BaseModel):
+    """Settings for a folder that holds several projects (e.g. an employer or a test area)."""
+
+    label: Optional[str] = Field(default=None, description="Human-readable name shown on project cards")
+    sandbox: Optional[bool] = Field(
+        default=None,
+        description="Throwaway experiments: recorded and searchable, kept out of other projects' briefings",
+    )
+
+
 class BrainConfig(BaseModel):
     """Schema for vault configuration stored in .brainrc.json."""
 
@@ -48,6 +58,10 @@ class BrainConfig(BaseModel):
     linked_vaults: dict[str, str] = Field(
         default_factory=dict,
         description="Dictionary mapping alias -> absolute directory path of external linked vaults",
+    )
+    project_groups: dict[str, ProjectGroup] = Field(
+        default_factory=dict,
+        description="Per-folder settings for multi-project folders, keyed by folder name",
     )
     custom_skill_roots: list[str] = Field(
         default_factory=list,

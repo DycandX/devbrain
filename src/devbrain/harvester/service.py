@@ -6,14 +6,24 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
 from devbrain.core.config import BrainConfig
-from devbrain.core.constants import BRAIN_DATA_DIR, DIR_INBOX
+from devbrain.core.constants import BRAIN_DATA_DIR, DIR_INBOX, DIR_PROJECTS
 from devbrain.core.fsutil import atomic_write_json, atomic_write_text
 from devbrain.engine.hybrid_search import HybridEngine
+from devbrain.engine.parser import parse_frontmatter
 from devbrain.harvester.discovery import discover_sessions
 from devbrain.harvester.entity_linker import inject_backlink_to_project, match_session_to_project
 from devbrain.harvester.extractor import extract_session_payload
 from devbrain.harvester.formatter import format_session_note
-from devbrain.harvester.inspector import RepoType
+from devbrain.harvester.inspector import RepoType, inspect_repository_type
+from devbrain.harvester.markers import (
+    MAX_SCAN_DEPTH,
+    find_subprojects,
+    has_project_marker,
+    is_obsidian_vault,
+    is_scannable_dir,
+    looks_like_sandbox,
+    slugify,
+)
 from devbrain.harvester.project_harvester import (
     ScannedProjectMetadata,
     scan_project_metadata,
@@ -60,6 +70,9 @@ class IngestionService:
         self.inbox_dir = self.vault_path / DIR_INBOX
 
         self._ingested_ids = self._load_registry()
+        # Card name -> project path claimed while scanning; a dry run writes no
+        # cards, so name clashes within one run are tracked here.
+        self._claimed_cards: Dict[str, str] = {}
 
     def _load_registry(self) -> Dict[str, RegistryEntry]:
         """Load history of previously ingested session IDs."""
@@ -85,63 +98,149 @@ class IngestionService:
         dry_run: bool = False,
     ) -> Tuple[ScannedProjectMetadata, Union[Optional[Path], List[Tuple[ScannedProjectMetadata, Optional[Path]]]]]:
         """Scan and seed a single repository, or auto-delegate if it's a multi-project container."""
-        # Self-Ingestion Guard
-        if repo_path.resolve() == self.vault_path.resolve():
-            meta = scan_project_metadata(repo_path, explicit_type=explicit_type)
-            return meta, None
-
+        repo_path = repo_path.resolve()
         metadata = scan_project_metadata(repo_path, explicit_type=explicit_type)
-        
+
+        # Self-Ingestion Guard
+        if repo_path == self.vault_path.resolve():
+            return metadata, None
+
         # Auto-delegation for container workspace folders (e.g. _fxmedia)
         if metadata.repo_type == RepoType.CONTAINER:
-            sub_results = self.ingest_workspace_projects(root_dirs=[repo_path], dry_run=dry_run)
-            return metadata, sub_results
+            results: List[Tuple[ScannedProjectMetadata, Optional[Path]]] = []
+            self._scan_directory(repo_path, repo_path.name, MAX_SCAN_DEPTH, dry_run, results, set())
+            return metadata, results
 
-        created_file = None
-        if not dry_run:
-            created_file = seed_project_to_vault(metadata, vault_path=self.vault_path)
-        return metadata, created_file
+        self._apply_group(metadata, self._infer_group(repo_path))
+        return metadata, self._seed(metadata, dry_run)
 
     def ingest_workspace_projects(
         self,
         root_dirs: Optional[List[Path]] = None,
         dry_run: bool = False,
     ) -> List[Tuple[ScannedProjectMetadata, Optional[Path]]]:
-        """Batch scan workspace root folders for Git repositories and codebases with Self-Ingestion Guard."""
+        """Batch scan workspace roots for projects, descending into multi-project folders.
+
+        A folder that is not a project but holds projects (up to MAX_SCAN_DEPTH
+        levels down) becomes their group. Vaults are skipped.
+        """
         roots = root_dirs or [Path(p) for p in self.config.workspace_roots if Path(p).is_dir()]
         if not roots:
             # Fallback: parent of vault path or current cwd
             roots = [self.vault_path.parent]
 
-        results = []
-        visited_dirs = set()
-
+        results: List[Tuple[ScannedProjectMetadata, Optional[Path]]] = []
+        visited: set = set()
         for root in roots:
-            if not root.is_dir():
-                continue
-            for item in root.iterdir():
-                if not item.is_dir() or item.name.startswith("."):
-                    continue
-                if item.resolve() in visited_dirs:
-                    continue
-                # Self-Ingestion Guard: Skip if item is the Central Brain vault itself
-                if item.resolve() == self.vault_path.resolve():
-                    continue
-
-                visited_dirs.add(item.resolve())
-
-                # Check if it has a git directory or a known code manifest
-                has_git = (item / ".git").is_dir()
-                has_manifest = any((item / m).is_file() for m in ["pyproject.toml", "package.json", "Cargo.toml", "go.mod", "setup.py", "requirements.txt", "SKILL.md", "Dockerfile"])
-                
-                if has_git or has_manifest:
-                    meta, path = self.ingest_single_project(item, dry_run=dry_run)
-                    if isinstance(path, list):
-                        results.extend(path)
-                    elif path is not None:
-                        results.append((meta, path))
-
+            if root.is_dir():
+                self._scan_directory(root, None, MAX_SCAN_DEPTH, dry_run, results, visited)
         return results
+
+    # --- Scanning internals ------------------------------------------------
+
+    def _scan_directory(
+        self,
+        directory: Path,
+        group: Optional[str],
+        depth: int,
+        dry_run: bool,
+        results: List[Tuple[ScannedProjectMetadata, Optional[Path]]],
+        visited: set,
+    ) -> None:
+        """Seed every project directly under `directory`, recursing into multi-project folders."""
+        try:
+            children = sorted(p for p in directory.iterdir() if is_scannable_dir(p))
+        except OSError:
+            return
+
+        # Projects sitting directly in this folder go first, so on a name clash they
+        # keep the plain card name and the nested one gets the group prefix
+        children.sort(key=lambda p: not has_project_marker(p))
+
+        vault = self.vault_path.resolve()
+        for item in children:
+            resolved = item.resolve()
+            if resolved in visited or resolved == vault or is_obsidian_vault(item):
+                continue
+            visited.add(resolved)
+
+            if has_project_marker(item) or (item / "SKILL.md").is_file():
+                metadata = scan_project_metadata(item)
+                if metadata.repo_type in (RepoType.CONTAINER, RepoType.UNKNOWN):
+                    continue
+                self._apply_group(metadata, group)
+                results.append((metadata, self._seed(metadata, dry_run)))
+            elif depth > 1 and (nested := find_subprojects(item, depth - 1)):
+                # The outermost multi-project folder names the group. A folder that
+                # merely wraps one project does not, unless it is configured as one.
+                is_group = (
+                    len(nested) > 1
+                    or item.name in self.config.project_groups
+                    or looks_like_sandbox(item.name)
+                )
+                next_group = group or (item.name if is_group else None)
+                self._scan_directory(item, next_group, depth - 1, dry_run, results, visited)
+            elif group is not None:
+                # Inside a group, a folder of documents is worth recording too
+                repo_type, _ = inspect_repository_type(item)
+                if repo_type == RepoType.KNOWLEDGE:
+                    metadata = scan_project_metadata(item)
+                    self._apply_group(metadata, group)
+                    results.append((metadata, self._seed(metadata, dry_run)))
+
+    def _infer_group(self, repo_path: Path) -> Optional[str]:
+        """Group of a project scanned on its own: its parent folder, when that is a known group."""
+        parent = repo_path.parent
+        if parent.name in self.config.project_groups:
+            return parent.name
+        roots = {Path(p).resolve() for p in self.config.workspace_roots}
+        if parent.parent.resolve() in roots and not has_project_marker(parent):
+            return parent.name
+        return None
+
+    def _apply_group(self, metadata: ScannedProjectMetadata, group: Optional[str]) -> None:
+        """Record which group a project belongs to, using per-group settings when configured."""
+        if not group:
+            return
+        settings = self.config.project_groups.get(group)
+        metadata.group = group
+        metadata.group_label = (settings.label if settings and settings.label else None) or group.strip("_- ") or group
+        metadata.sandbox = (
+            settings.sandbox if settings and settings.sandbox is not None else looks_like_sandbox(group)
+        )
+
+    def _seed(self, metadata: ScannedProjectMetadata, dry_run: bool) -> Optional[Path]:
+        if metadata.repo_type == RepoType.PROJECT:
+            metadata.clean_name = self._unique_card_name(metadata)
+        if dry_run:
+            return None
+        return seed_project_to_vault(metadata, vault_path=self.vault_path)
+
+    def _unique_card_name(self, metadata: ScannedProjectMetadata) -> str:
+        """Card folder name for a project, prefixed when another project already owns it."""
+        name = metadata.clean_name
+        own_path = str(metadata.repo_path).replace("\\", "/").lower()
+        parent = slugify(metadata.repo_path.parent.name)
+        group = slugify(metadata.group) if metadata.group else parent
+
+        candidates = [name, f"{group}-{name}", f"{group}-{parent}-{name}"]
+        candidates += [f"{group}-{name}-{n}" for n in range(2, 50)]
+        for candidate in candidates:
+            if self._card_owner(candidate) in (None, own_path):
+                self._claimed_cards[candidate.lower()] = own_path
+                return candidate
+        return candidates[-1]
+
+    def _card_owner(self, card_name: str) -> Optional[str]:
+        """Project path that holds a card name, from this run or from the vault."""
+        claimed = self._claimed_cards.get(card_name.lower())
+        if claimed:
+            return claimed
+        card = self.vault_path / DIR_PROJECTS / card_name / "README.md"
+        if not card.is_file():
+            return None
+        meta, _ = parse_frontmatter(card.read_text(encoding="utf-8", errors="replace"))
+        return str(meta.get("local_path", "")).lower() or "unknown"
 
     def run_ingestion(
         self,
