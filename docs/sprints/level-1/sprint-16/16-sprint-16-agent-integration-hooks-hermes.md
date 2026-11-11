@@ -4,7 +4,7 @@
 | :--- | :--- |
 | **Sprint** | Sprint 16 |
 | **Target versi** | `v1.12.0-alpha` |
-| **Status** | ⏳ Planned |
+| **Status** | ✅ Done |
 | **Dokumen** | [47](../../../brainstorming/47-hermes-agent-sebagai-badan-jarvis-jev-dan-strategi-ui.md), [48](../../../brainstorming/48-peran-llm-audit-vault-dan-arah-rag.md) langkah 2, [49](../../../brainstorming/49-siklus-belajar-hermes-dan-adopsinya-di-devbrain.md) bagian 5 |
 | **Butuh LLM** | Tidak (agent yang menyuling) |
 | **Syarat** | Sprint 15 selesai |
@@ -23,14 +23,14 @@ DevBrain terpakai tanpa agent harus ingat memanggilnya, dan Hermes berbagi memor
 
 | ID | Task | Berkas | Status |
 | :--- | :--- | :--- | :--- |
-| S16-T01 | Hook `SessionStart`: muat briefing projek dari folder kerja | `hooks/claude_code.py` (baru) | ⏳ |
-| S16-T02 | Hook `Stop`/`SessionEnd`: minta agent meringkas dan memanggil `remember`; panen sesi | `hooks/claude_code.py` | ⏳ |
-| S16-T03 | Perintah `devbrain hooks install / uninstall` | `cli/commands/hooks_cmd.py` (baru) | ⏳ |
-| S16-T04 | Daftarkan DevBrain sebagai MCP di Hermes (`mcp_servers`) | `core/client_config.py` | ⏳ |
-| S16-T05 | Folder skill bersama: `skills.external_dirs` Hermes → `00_System/Agent_Skills` | `core/client_config.py` | ⏳ |
-| S16-T06 | Harvester Hermes: sesi dari `state.db`, isi `MEMORY.md`/`USER.md` | `harvester/hermes.py` (baru), `harvester/discovery.py` | ⏳ |
-| S16-T07 | Lokasi Hermes dari `%LOCALAPPDATA%\hermes` (bukan `~/.hermes`), bisa ditimpa `HERMES_HOME` | `harvester/discovery.py` | ⏳ |
-| S16-T08 | Test, uji langsung dengan Hermes dan Claude Code, changelog, rilis | `tests/`, `docs/changelog/` | ⏳ |
+| S16-T01 | Hook `SessionStart`: muat briefing projek dari folder kerja | `hooks/claude_code.py` (baru) | ✅ |
+| S16-T02 | Hook `Stop`/`SessionEnd`: minta agent meringkas dan memanggil `remember`; panen sesi | `integrations/claude_hooks.py` | ✅ (diubah, lihat Hasil) |
+| S16-T03 | Perintah `devbrain hooks install / uninstall` | `cli/commands/hooks_cmd.py` (baru) | ✅ |
+| S16-T04 | Daftarkan DevBrain sebagai MCP di Hermes (`mcp_servers`) | `core/client_config.py` | ✅ |
+| S16-T05 | Folder skill bersama: `skills.external_dirs` Hermes → `00_System/Agent_Skills` | `core/client_config.py` | ✅ |
+| S16-T06 | Harvester Hermes: sesi dari `state.db`, isi `MEMORY.md`/`USER.md` | `harvester/hermes.py` (baru), `harvester/discovery.py` | ✅ |
+| S16-T07 | Lokasi Hermes dari `%LOCALAPPDATA%\hermes` (bukan `~/.hermes`), bisa ditimpa `HERMES_HOME` | `harvester/discovery.py` | ✅ |
+| S16-T08 | Test, uji langsung dengan Hermes dan Claude Code, changelog, rilis | `tests/`, `docs/changelog/` | ✅ |
 
 ## Rincian
 
@@ -42,6 +42,14 @@ DevBrain terpakai tanpa agent harus ingat memanggilnya, dan Hermes berbagi memor
 
 **S16-T06.** Baca `state.db` dalam mode hanya-baca. Satu catatan per sesi, format seperti harvester Claude Code. Memori inti Hermes dicatat sebagai satu catatan yang diperbarui, bukan dipindahkan.
 *Selesai bila:* `devbrain ingest --from hermes` memanen sesi Hermes; sesi yang bertambah diperbarui di catatan yang sama.
+
+## Hasil
+- Rilis [v1.12.0-alpha](../../../changelog/v1.12.0-alpha.md). Test 132 → 143.
+- Keputusan: D15-1 approval aktif, D16-1 hook per projek, D16-2 skill vault hanya dibaca Hermes.
+- **Penyimpangan S16-T02:** pengingat `remember` ada di briefing awal sesi; `SessionEnd` memanen sesi di latar belakang. Hook `Stop` yang memaksa agent melanjutkan tidak dipakai karena berisiko berulang dan menambah biaya setiap giliran.
+- **Belum diuji lewat Hermes sendiri:** `hermes mcp add` memicu Hermes menyelesaikan pembaruan yang tertunda, jadi CLI Hermes tidak dijalankan lagi. Server diuji dengan perintah dan environment yang sama persis.
+- **Temuan di luar rencana:** auto-provisioning memindai folder home saat sesi Hermes berjalan di sana, dan pencocok sesi ke projek terlalu longgar. Keduanya diperbaiki, panen pertama dibatalkan dan diulang.
+- Lokasi berkas berbeda dari rencana: `integrations/` alih-alih `hooks/`.
 
 ## Catatan
 - Jalankan hook dan integrasi Hermes pada salinan config lebih dulu.

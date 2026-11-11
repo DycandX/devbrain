@@ -4,9 +4,9 @@ Dokumen serah terima untuk agent atau developer yang melanjutkan projek ini. Bac
 
 | | |
 | :--- | :--- |
-| **Versi** | `1.11.0-alpha` |
+| **Versi** | `1.12.0-alpha` |
 | **Branch** | `main`. Commit sejak v1.7.0 belum di-push ke `origin` (cek `git status -sb`) |
-| **Test** | 132 lulus, sekitar 3 menit |
+| **Test** | 143 lulus, sekitar 5 menit |
 | **Ditulis** | 2026-11-11 |
 | **Pemilik** | DycandX (bahasa percakapan: Indonesia) |
 
@@ -36,9 +36,11 @@ Prinsip yang dipegang:
 | Workspace yang dipindai | `E:\_PROJECT` |
 | OS | Windows 11, Python 3.14 (`C:\Python314\python.exe`) |
 | Instalasi | Editable (`pip install -e .`). Perintah `devbrain` **tidak ada di PATH**, pakai `python -m devbrain.cli.main` |
-| Server MCP | `central-brain`, terdaftar di `~/.claude.json` dan tiga `~/.gemini/.../mcp_config.json`, menunjuk ke vault utama |
+| Server MCP | `central-brain`, terdaftar di `~/.claude.json`, tiga `~/.gemini/.../mcp_config.json`, dan config Hermes, menunjuk ke vault utama |
+| Hook | Terpasang di repo ini (`.claude/settings.local.json`, tidak di-commit). Projek lain: `devbrain hooks install <folder>` |
+| Memori | `memory.write_approval` aktif di vault utama: tulisan agent menunggu `devbrain memory approve` |
 | Model embedding | `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` (sekitar 220 MB, cache FastEmbed) |
-| Hermes | Data di `%LOCALAPPDATA%\hermes` (program di subfolder `hermes-agent`, versi git `1c8dcdb`). `~/.hermes` hanya sisa lama. Belum disambungkan ke devbrain |
+| Hermes | Data di `%LOCALAPPDATA%\hermes` (program di subfolder `hermes-agent`). `~/.hermes` hanya sisa lama. Tersambung: `central-brain` di `mcp_servers` dan folder skill vault di `skills.external_dirs` (cadangan `config.yaml.devbrain-bak-*`). Pembaruan Hermes tertunda: pemilik perlu menjalankan `hermes update` |
 
 `demo_vault/` di repo adalah vault lama untuk demo, diabaikan Git. Vault yang dipakai sungguhan adalah `_DevBrain_Vault`.
 
@@ -114,6 +116,7 @@ Setelah mengubah kode server MCP, sesi agent harus dimulai ulang agar `central-b
 | 1.8.0 | `remember`/`recall`/`forget`, `read_note`, batas ukuran keluaran tool, `devbrain usage`, perbaikan kebocoran koneksi SQLite | [v1.8.0](docs/changelog/v1.8.0-alpha.md) |
 | 1.8.1 | Briefing pada vault nyata: ringkasan projek, pemilihan catatan lewat kesepakatan dua pemeringkat, riwayat sesi lewat tautan Project Hub | [v1.8.1](docs/changelog/v1.8.1-alpha.md) |
 | 1.9.0 | Pemindaian workspace bertingkat, grup projek, sandbox, Flutter/PHP/Java/.NET/C | [v1.9.0](docs/changelog/v1.9.0-alpha.md) |
+| 1.12.0 | Sprint 16: hook Claude Code per projek, `devbrain hermes connect`, harvester Hermes, perbaikan auto-provisioning dan pencocok sesi | [v1.12.0](docs/changelog/v1.12.0-alpha.md) |
 | 1.11.0 | Sprint 15: pemeriksa isi memori, mode persetujuan, `devbrain memory`, memori inti dipin, ledger | [v1.11.0](docs/changelog/v1.11.0-alpha.md) |
 | 1.10.0 | Sprint 14: `devbrain lint --fix`, aliases kartu, tautan harian, judul sesi bersih, `adr supersede`; vault utama dimigrasi | [v1.10.0](docs/changelog/v1.10.0-alpha.md) |
 

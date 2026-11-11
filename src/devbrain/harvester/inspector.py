@@ -88,8 +88,11 @@ def inspect_repository_type(
         if t_clean in [r.value for r in RepoType]:
             return RepoType(t_clean), f"Explicitly configured as {t_clean}."
 
-    # 1. Check for Agent Skills
-    if (repo_path / "SKILL.md").is_file() or (repo_path / "skills").is_dir():
+    # 1. Check for Agent Skills. A codebase that only keeps installed skills in
+    #    a skills/ folder is still a project.
+    if (repo_path / "SKILL.md").is_file() or (
+        (repo_path / "skills").is_dir() and not has_project_marker(repo_path)
+    ):
         return RepoType.SKILL, "Contains SKILL.md or skills/ directory."
 
     # 2. A vault holds notes about projects; it is not one itself

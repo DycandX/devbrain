@@ -50,13 +50,19 @@ def match_session_to_project(
         return None
 
     catalog = catalog_known_projects(vault_path)
-    norm_hint = str(Path(workspace_path_hint).resolve()).replace("\\", "/").lower()
+    norm_hint = str(Path(workspace_path_hint).resolve()).replace("\\", "/").lower().rstrip("/")
 
-    # Exact or prefix match
+    # The session ran in the project folder or below it; the deepest project wins.
+    # A session in a parent folder (e.g. the home directory) belongs to no project.
+    best = None
     for known_path, (title, readme_file) in catalog.items():
-        if known_path in norm_hint or norm_hint in known_path:
-            rel_link = f"10_Projects/{readme_file.parent.name}/README"
-            return title, rel_link
+        if "/" not in known_path:
+            continue
+        if norm_hint == known_path or norm_hint.startswith(known_path + "/"):
+            if best is None or len(known_path) > len(best[0]):
+                best = (known_path, title, readme_file)
+    if best:
+        return best[1], f"10_Projects/{best[2].parent.name}/README"
 
     # Name-based match
     hint_name = Path(workspace_path_hint).name.lower()

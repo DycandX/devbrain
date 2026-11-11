@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
 from devbrain.core.config import BrainConfig
-from devbrain.core.constants import BRAIN_DATA_DIR, DIR_INBOX, DIR_PROJECTS
+from devbrain.core.constants import BRAIN_DATA_DIR, DIR_INBOX, DIR_PROJECTS, DIR_SYSTEM
 from devbrain.core.fsutil import atomic_write_json, atomic_write_text
 from devbrain.engine.hybrid_search import HybridEngine
 from devbrain.engine.parser import parse_frontmatter
@@ -242,6 +242,32 @@ class IngestionService:
         meta, _ = parse_frontmatter(card.read_text(encoding="utf-8", errors="replace"))
         return str(meta.get("local_path", "")).lower() or "unknown"
 
+    def _mirror_hermes_memory(self, custom_paths: Optional[Dict[str, Path]]) -> Optional[Path]:
+        """Copy Hermes' core memory into one vault note when it changed. Returns the note if written."""
+        from datetime import datetime, timezone
+
+        from devbrain.harvester.hermes import read_core_memory, render_core_memory_note
+        from devbrain.integrations.hermes import hermes_home
+
+        home = Path(custom_paths["hermes"]) if custom_paths and "hermes" in custom_paths else hermes_home()
+        if home is None or not (home / "memories").is_dir():
+            return None
+        memory = read_core_memory(home)
+        target = self.vault_path / DIR_SYSTEM / "Hermes_Memory.md"
+        previous = target.read_text(encoding="utf-8") if target.is_file() else ""
+        now = datetime.now(timezone.utc).isoformat()
+        content = render_core_memory_note(memory, home, now)
+        # Compare without the timestamps so an unchanged memory is not rewritten
+        strip = lambda t: "\n".join(l for l in t.splitlines() if not l.startswith(("created:", "updated:")))  # noqa: E731
+        if strip(previous) == strip(content):
+            return None
+        if previous:
+            old_created = next((l for l in previous.splitlines() if l.startswith("created:")), None)
+            if old_created:
+                content = content.replace(f"created: {json.dumps(now)}", old_created, 1)
+        atomic_write_text(target, content)
+        return target
+
     def run_ingestion(
         self,
         sources: Optional[List[str]] = None,
@@ -283,10 +309,17 @@ class IngestionService:
             # Match or auto-provision project node
             matched_project = match_session_to_project(payload.workspace_hint, self.vault_path)
             
-            # Auto-provision project card if workspace exists on disk but not in vault
+            # Auto-provision a project card when the session ran in a project folder
+            # that has no card yet. Only the folder itself is scanned: a session that
+            # ran in a parent folder (the home directory, a workspace root) must not
+            # trigger a scan of everything below it.
             if not matched_project and payload.workspace_hint:
                 hint_path = Path(payload.workspace_hint)
-                if hint_path.is_dir() and hint_path.resolve() != self.vault_path.resolve():
+                if (
+                    hint_path.is_dir()
+                    and has_project_marker(hint_path)
+                    and hint_path.resolve() not in (self.vault_path.resolve(), Path.home().resolve())
+                ):
                     try:
                         p_meta, p_file = self.ingest_single_project(hint_path, dry_run=False)
                         if isinstance(p_file, Path):
@@ -332,6 +365,11 @@ class IngestionService:
             self._ingested_ids[unique_key] = {"file": target_file.name, "mtime": session.last_modified}
             created_files.append(target_file)
             ingested_count += 1
+
+        if not dry_run and (not sources or "hermes" in sources):
+            note = self._mirror_hermes_memory(custom_paths)
+            if note:
+                created_files.append(note)
 
         if not dry_run:
             self._save_registry()

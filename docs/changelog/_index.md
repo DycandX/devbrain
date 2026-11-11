@@ -8,6 +8,7 @@ Index of all product versions, feature updates, and sprint releases for **`devbr
 
 | Version | Release Date | Key Highlights | Status | Link |
 | :--- | :--- | :--- | :--- | :--- |
+| **`v1.12.0-alpha`** | 2026-11-11 | Sprint 16 agent integration: Claude Code hooks per project, `devbrain hermes connect`, Hermes session and core-memory harvester, safer session-to-project linking | 🚧 Unreleased | [v1.12.0-alpha.md](./v1.12.0-alpha.md) |
 | **`v1.11.0-alpha`** | 2026-11-11 | Sprint 15 memory write gate: content guard, write approval, `devbrain memory`, pinned core memory with a budget, memory ledger | 🚧 Unreleased | [v1.11.0-alpha.md](./v1.11.0-alpha.md) |
 | **`v1.10.0-alpha`** | 2026-11-11 | Sprint 14 vault hygiene: `devbrain lint --fix`, project card aliases, no daily links, clean session titles, Dataview blocks not indexed, `adr supersede`; main vault migrated | 🚧 Unreleased | [v1.10.0-alpha.md](./v1.10.0-alpha.md) |
 | **`v1.9.0-alpha`** | 2026-11-11 | Workspace scan: nested multi-project folders, project groups and sandboxes, Flutter / PHP / Java / .NET / C detection, vault folders skipped, unique card names | 🚧 Unreleased | [v1.9.0-alpha.md](./v1.9.0-alpha.md) |

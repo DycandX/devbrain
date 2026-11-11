@@ -16,6 +16,18 @@ class HarvestableSession:
     last_modified: float
 
 
+def hermes_home():
+    from devbrain.integrations.hermes import hermes_home as _home
+
+    return _home()
+
+
+def discover_hermes_sessions(root: Path) -> List["HarvestableSession"]:
+    from devbrain.harvester.hermes import discover_hermes_sessions as _discover
+
+    return _discover(root)
+
+
 def get_default_agent_roots() -> Dict[str, List[Path]]:
     """Resolve potential agent session root directories across operating systems."""
     home = Path.home()
@@ -40,6 +52,7 @@ def get_default_agent_roots() -> Dict[str, List[Path]]:
             home / ".config" / "Code" / "User" / "globalStorage" / "saoudrizwan.claude-dev" / "tasks",
             home / "Library" / "Application Support" / "Code" / "User" / "globalStorage" / "saoudrizwan.claude-dev" / "tasks",
         ],
+        "hermes": [p for p in [hermes_home()] if p is not None],
     }
     return roots
 
@@ -115,6 +128,10 @@ def discover_sessions(
                                     last_modified=transcript.stat().st_mtime,
                                 )
                             )
+
+                # Hermes Agent: sessions live in its state.db
+                elif src == "hermes":
+                    discovered.extend(discover_hermes_sessions(root))
 
                 # 3. Cline / Roo Code structure
                 elif src == "cline":

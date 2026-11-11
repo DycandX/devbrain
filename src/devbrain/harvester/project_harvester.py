@@ -307,6 +307,7 @@ id: "REF-{metadata.clean_name.upper()}"
 title: {json.dumps(metadata.name + " (Code Reference)", ensure_ascii=False)}
 aliases: {json.dumps(metadata.aliases(), ensure_ascii=False)}
 type: "reference-repo"
+created: "{now_iso}"
 role: "study"
 language: {langs_json}
 stack: {stack_json}
@@ -366,6 +367,7 @@ id: "DOC-{metadata.clean_name.upper()}"
 title: {json.dumps(metadata.name + " Documentation", ensure_ascii=False)}
 aliases: {json.dumps(metadata.aliases(), ensure_ascii=False)}
 type: "knowledge-doc"
+created: "{now_iso}"
 {metadata.group_frontmatter()}local_path: "{posix_path}"
 last_scanned: "{now_iso}"
 tags: {json.dumps(["knowledge", "documentation", *metadata.group_tags()])}

@@ -86,7 +86,7 @@ def unified_ingest_command(
         "all",
         "--from",
         "-f",
-        help="Source agent to ingest from ('antigravity', 'claude-code', or 'all')",
+        help="Source agent to ingest from ('antigravity', 'claude-code', 'hermes', or 'all')",
     ),
     target_type: Optional[str] = typer.Option(
         None,

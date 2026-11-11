@@ -201,3 +201,13 @@ def test_sandbox_cards_stay_out_of_other_projects_briefings(service: IngestionSe
 
     other = builder.select_relevant_notes(task, "personal-web", limit=10)
     assert not any("jarvis-fe-prototype" in n["path"] for n in other)
+
+
+def test_project_with_skills_folder_stays_a_project(tmp_path: Path):
+    repo = _node(tmp_path / "portfolio", "portfolio")
+    (repo / "skills" / "deploy").mkdir(parents=True)
+    assert inspect_repository_type(repo)[0] == RepoType.PROJECT
+
+    library = tmp_path / "skill-library"
+    (library / "skills" / "deploy").mkdir(parents=True)
+    assert inspect_repository_type(library)[0] == RepoType.SKILL

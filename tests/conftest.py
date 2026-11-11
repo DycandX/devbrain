@@ -31,4 +31,7 @@ def isolated_home(tmp_path_factory, monkeypatch):
     monkeypatch.setenv("HOME", str(fake_home))
     monkeypatch.setenv("USERPROFILE", str(fake_home))
     monkeypatch.setenv("APPDATA", str(fake_home / "AppData" / "Roaming"))
+    # Agent homes such as Hermes (%LOCALAPPDATA%\hermes) must not be found either
+    monkeypatch.setenv("LOCALAPPDATA", str(fake_home / "AppData" / "Local"))
+    monkeypatch.delenv("HERMES_HOME", raising=False)
     return fake_home

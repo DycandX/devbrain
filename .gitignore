@@ -51,3 +51,5 @@ htmlcov/
 demo/
 demo-vault/
 *_vault/
+# Claude Code per-machine settings (devbrain hooks)
+.claude/settings.local.json

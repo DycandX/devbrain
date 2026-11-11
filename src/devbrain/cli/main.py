@@ -10,6 +10,8 @@ from devbrain.cli.commands.context_cmd import context_command
 from devbrain.cli.commands.index_cmd import index_command
 from devbrain.cli.commands.ingest_cmd import unified_ingest_command
 from devbrain.cli.commands.init_cmd import init_command
+from devbrain.cli.commands.hermes_cmd import hermes_app
+from devbrain.cli.commands.hooks_cmd import hooks_app
 from devbrain.cli.commands.lint_cmd import lint_command
 from devbrain.cli.commands.memory_cmd import memory_app
 from devbrain.cli.commands.rules_cmd import rules_app
@@ -93,6 +95,18 @@ app.command(
     name="usage",
     help="Report Claude Code token usage per project from local session transcripts.",
 )(usage_command)
+
+app.add_typer(
+    hooks_app,
+    name="hooks",
+    help="Install Claude Code hooks per project: briefing at session start, harvest at session end.",
+)
+
+app.add_typer(
+    hermes_app,
+    name="hermes",
+    help="Connect devbrain to Hermes Agent as an MCP server with shared skills.",
+)
 
 app.add_typer(
     memory_app,

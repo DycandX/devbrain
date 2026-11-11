@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.12.0-alpha] - 2026-11-11 (Unreleased)
+
+### 🚀 Added
+- **Claude Code hooks** (`devbrain hooks install|uninstall|status`): SessionStart briefs the agent with the matching project's card, core memory, project memories, decisions, and recent sessions (about 2 seconds, no embedding model); SessionEnd harvests sessions in the background. Installed per project in `.claude/settings.local.json`.
+- **Hermes integration** (`devbrain hermes connect|disconnect|status`): registers devbrain as an MCP server in Hermes' `config.yaml` and shares the vault's skill folder, editing the file block by block with a backup and a parse check.
+- **Hermes harvester** (`devbrain ingest --from hermes`): one note per session from `state.db` (read-only), and a mirror of Hermes' core memory in `00_System/Hermes_Memory.md`.
+
+### 🐛 Fixed
+- Sessions run in a parent folder (such as the home directory) no longer trigger a scan of everything below it, nor link to a project inside it.
+- A project that keeps a `skills/` folder is no longer classified as a skill.
+- Tests no longer find the real Hermes install.
+- Reference and documentation cards record `created`.
+
+### 📊 Measured
+- **Automated Tests:** 143 passing.
+
+For complete details, see [docs/changelog/v1.12.0-alpha.md](docs/changelog/v1.12.0-alpha.md).
+
+---
+
 ## [1.11.0-alpha] - 2026-11-11 (Unreleased)
 
 ### 🚀 Added

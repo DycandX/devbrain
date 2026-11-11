@@ -221,4 +221,32 @@ def extract_session_payload(session: HarvestableSession) -> Optional[ExtractedSe
         return extract_antigravity_session(session)
     elif session.source_name == "claude-code":
         return extract_claude_session(session)
+    elif session.source_name == "hermes":
+        return extract_hermes_session(session)
     return None
+
+
+def extract_hermes_session(session: HarvestableSession) -> Optional[ExtractedSessionPayload]:
+    """Summarize one Hermes session from its state.db."""
+    from devbrain.harvester.hermes import parse_hermes_session
+
+    parsed = parse_hermes_session(session.artifact_files[0], session.session_id)
+    if parsed is None:
+        return None
+    summary, title, channel = parsed
+
+    body, num_redactions = sanitize_text(f"> **Channel:** {channel}\n\n" + render_claude_session(summary))
+    first_prompt, _ = sanitize_text(summary.user_prompts[0])
+    clean_title, _ = sanitize_text(title or first_prompt)
+
+    return ExtractedSessionPayload(
+        session_id=session.session_id,
+        source_name="hermes",
+        title=sanitize_frontmatter_string(clean_title, max_length=100),
+        summary=sanitize_frontmatter_string(first_prompt, max_length=200),
+        body_markdown=body,
+        tags=["agent-inbox", "hermes"],
+        created_time=datetime.fromtimestamp(session.last_modified, timezone.utc),
+        num_redactions=num_redactions,
+        workspace_hint=summary.cwd.replace("\\", "/") if summary.cwd else None,
+    )
