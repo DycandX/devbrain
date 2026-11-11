@@ -66,7 +66,7 @@ def test_memory_remember_recall_supersede_forget(vault: Path):
 
     # Same text again is not stored twice
     assert memory.remember("Pengguna lebih suka TypeScript  mode strict untuk semua projek frontend") == {
-        "id": first["id"], "created": False, "superseded": None,
+        "id": first["id"], "created": False, "status": "active", "superseded": None,
     }
 
     scoped = memory.remember(

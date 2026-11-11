@@ -126,7 +126,7 @@ Disusun dari dokumen [45](../../brainstorming/45-roadmap-devbrain-menuju-jarvis.
 | Sprint | Tema | Target | LLM | Syarat | Task | Status |
 | :---: | :--- | :--- | :---: | :--- | :---: | :--- |
 | [14](./sprint-14/14-sprint-14-vault-hygiene.md) | Perapian vault | `v1.10.0` | Tidak | — | 9 | ✅ Done |
-| [15](./sprint-15/15-sprint-15-memory-write-gate.md) | Gerbang tulis & memori inti | `v1.11.0` | Tidak | 14 | 7 | ⏳ Planned |
+| [15](./sprint-15/15-sprint-15-memory-write-gate.md) | Gerbang tulis & memori inti | `v1.11.0` | Tidak | 14 | 7 | ✅ Done |
 | [16](./sprint-16/16-sprint-16-agent-integration-hooks-hermes.md) | Hook Claude Code & integrasi Hermes | `v1.12.0` | Tidak | 15 | 8 | ⏳ Planned |
 | [17](./sprint-17/17-sprint-17-skill-learning.md) | Skill yang dipelajari agent | `v1.13.0` | Tidak | 15, 16 | 8 | ⏳ Planned |
 | [18](./sprint-18/18-sprint-18-curator.md) | Curator tanpa LLM | `v1.14.0` | Tidak | 15, 17 | 7 | ⏳ Planned |
@@ -139,6 +139,7 @@ Disusun dari dokumen [45](../../brainstorming/45-roadmap-devbrain-menuju-jarvis.
 | :--- | :--- | :--- |
 | ~~D14-1~~ | ✅ Diputuskan: `aliases`, nama berkas tetap | Sprint 14 |
 | ~~D14-2~~ | ✅ Diputuskan: tautan harian yang putus dihapus | Sprint 14 |
+| D15-1 | Aktifkan `memory.write_approval` di vault utama sebelum Hermes disambungkan? | Sprint 16 |
 | D16-1 | Hook Claude Code global atau per projek? | Sprint 16 |
 | D16-2 | Skill Hermes langsung ditulis ke vault atau hanya dibaca? | Sprint 16 |
 | D19-1 | Kebijakan privasi LLM per grup (mis. `_fxmedia`) | Sprint 19 |

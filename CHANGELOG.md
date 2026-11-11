@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.11.0-alpha] - 2026-11-11 (Unreleased)
+
+### 🚀 Added
+- **Memory content guard:** `remember` refuses text that reads as instructions to an agent, runs code or sends data elsewhere, contains credentials, or hides Unicode characters.
+- **Write approval:** with `memory.write_approval`, new memories wait as `pending` and stay invisible until approved.
+- **`devbrain memory`:** `list`, `pending`, `approve`, `reject`, `pin`, `unpin`, `edit`, `forget`, `ledger`.
+- **Core memory:** pinned memories appear in every briefing within a character budget per project and for global memories; `remember` gains `pinned`.
+- **Memory ledger:** append-only record of every write, approval, edit, pin, and blocked attempt.
+
+### 📊 Measured
+- Guard: 16 malicious samples refused, 8 look-alike ordinary facts accepted.
+- **Automated Tests:** 132 passing.
+
+For complete details, see [docs/changelog/v1.11.0-alpha.md](docs/changelog/v1.11.0-alpha.md).
+
+---
+
 ## [1.10.0-alpha] - 2026-11-11 (Unreleased)
 
 ### 🚀 Added

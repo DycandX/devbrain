@@ -81,6 +81,17 @@ class BrainSQLiteStorage:
                 CREATE INDEX IF NOT EXISTS idx_decisions_project ON decisions(project);
                 CREATE INDEX IF NOT EXISTS idx_decisions_status ON decisions(status);
 
+                CREATE TABLE IF NOT EXISTS memory_ledger (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    memory_id TEXT,
+                    action TEXT NOT NULL,
+                    source TEXT,
+                    detail TEXT,
+                    at TEXT NOT NULL
+                );
+
+                CREATE INDEX IF NOT EXISTS idx_memory_ledger_memory ON memory_ledger(memory_id);
+
                 CREATE TABLE IF NOT EXISTS file_cache (
                     file_path TEXT PRIMARY KEY,
                     mtime REAL NOT NULL,
@@ -90,6 +101,10 @@ class BrainSQLiteStorage:
                 );
                 """
             )
+            # Columns added after the first release of the schema
+            columns = {row["name"] for row in conn.execute("PRAGMA table_info(memories)")}
+            if "pinned" not in columns:
+                conn.execute("ALTER TABLE memories ADD COLUMN pinned INTEGER NOT NULL DEFAULT 0")
             conn.commit()
 
     # --- Memory Operations ---
@@ -207,6 +222,69 @@ class BrainSQLiteStorage:
             )
             conn.commit()
             return cur.rowcount > 0
+
+    def find_open_memory(self, content: str, project: Optional[str] = None) -> Optional[dict[str, Any]]:
+        """Find an active or pending memory with exactly this content in the same project."""
+        with self._get_connection() as conn:
+            row = conn.execute(
+                "SELECT * FROM memories WHERE status IN ('active', 'pending') AND content = ? AND project IS ?",
+                (content, project),
+            ).fetchone()
+        return dict(row) if row else None
+
+    def update_memory_content(self, memory_id: str, content: str) -> bool:
+        now = datetime.now(timezone.utc).isoformat()
+        with self._get_connection() as conn:
+            cur = conn.execute(
+                "UPDATE memories SET content = ?, updated_at = ? WHERE id = ?", (content, now, memory_id)
+            )
+            return cur.rowcount > 0
+
+    def set_memory_pinned(self, memory_id: str, pinned: bool) -> bool:
+        now = datetime.now(timezone.utc).isoformat()
+        with self._get_connection() as conn:
+            cur = conn.execute(
+                "UPDATE memories SET pinned = ?, updated_at = ? WHERE id = ?", (int(pinned), now, memory_id)
+            )
+            return cur.rowcount > 0
+
+    def get_pinned_memories(self, project: Optional[str] = None, exact_project: bool = False) -> list[dict[str, Any]]:
+        """Active pinned memories: global ones plus the project's, or only the project's."""
+        query = "SELECT * FROM memories WHERE status = 'active' AND pinned = 1"
+        params: list[Any] = []
+        if exact_project:
+            query += " AND project IS ?"
+            params.append(project)
+        elif project:
+            query += " AND (project = ? OR project IS NULL)"
+            params.append(project)
+        else:
+            query += " AND project IS NULL"
+        query += " ORDER BY created_at ASC"
+        with self._get_connection() as conn:
+            return [dict(r) for r in conn.execute(query, params).fetchall()]
+
+    def record_memory_event(
+        self, action: str, memory_id: Optional[str] = None, source: Optional[str] = None, detail: str = ""
+    ) -> None:
+        """Append an entry to the memory ledger. Entries are never updated or deleted."""
+        now = datetime.now(timezone.utc).isoformat()
+        with self._get_connection() as conn:
+            conn.execute(
+                "INSERT INTO memory_ledger (memory_id, action, source, detail, at) VALUES (?, ?, ?, ?, ?)",
+                (memory_id, action, source, detail, now),
+            )
+
+    def get_memory_ledger(self, memory_id: Optional[str] = None, limit: int = 50) -> list[dict[str, Any]]:
+        query = "SELECT * FROM memory_ledger"
+        params: list[Any] = []
+        if memory_id:
+            query += " WHERE memory_id = ?"
+            params.append(memory_id)
+        query += " ORDER BY id DESC LIMIT ?"
+        params.append(limit)
+        with self._get_connection() as conn:
+            return [dict(r) for r in conn.execute(query, params).fetchall()]
 
     def supersede_memory(self, old_memory_id: str, new_memory_id: str) -> bool:
         """Mark an old memory as superseded by a newer memory."""

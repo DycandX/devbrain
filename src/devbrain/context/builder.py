@@ -53,6 +53,7 @@ class TaskContextCard:
     recent_session_work: list[str]
     generated_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     memories: list[str] = field(default_factory=list)
+    core_memories: list[str] = field(default_factory=list)
 
     def to_markdown(self) -> str:
         """Render context card as a dense Markdown prompt block for LLMs."""
@@ -83,9 +84,12 @@ class TaskContextCard:
         stack_str = ", ".join(self.tech_stack) if self.tech_stack else "Standard Stack"
 
         memory_block = ""
+        if self.core_memories:
+            core_lines = "\n".join(f"- {m}" for m in self.core_memories)
+            memory_block += f"## 📌 Core Memory\n{core_lines}\n\n---\n\n"
         if self.memories:
             memory_lines = "\n".join(f"- {m}" for m in self.memories)
-            memory_block = f"## 🧠 Remembered Facts\n{memory_lines}\n\n---\n\n"
+            memory_block += f"## 🧠 Remembered Facts\n{memory_lines}\n\n---\n\n"
 
         return f"""# 🧠 SITUATIONAL TASK CONTEXT BRIEFING
 
@@ -136,6 +140,7 @@ class TaskContextCard:
             "relevant_knowledge": self.relevant_knowledge,
             "recent_session_work": self.recent_session_work,
             "memories": self.memories,
+            "core_memories": self.core_memories,
             "generated_at": self.generated_at,
         }
 
@@ -368,6 +373,7 @@ class ContextAssemblyEngine:
         project: str,
         relevant_chunks: Optional[list[dict[str, Any]]] = None,
         memories: Optional[list[str]] = None,
+        core_memories: Optional[list[str]] = None,
     ) -> TaskContextCard:
         """Assemble all 5 context tiers into a coherent TaskContextCard.
 
@@ -394,4 +400,5 @@ class ContextAssemblyEngine:
             relevant_knowledge=relevant_chunks,
             recent_session_work=[s.describe() for s in recent_sessions],
             memories=memories or [],
+            core_memories=core_memories or [],
         )

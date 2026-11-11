@@ -26,6 +26,19 @@ class ProjectGroup(BaseModel):
     )
 
 
+class MemorySettings(BaseModel):
+    """How agent memory writes are accepted and shown."""
+
+    write_approval: bool = Field(
+        default=False,
+        description="Hold new memories as 'pending' until approved with 'devbrain memory approve'",
+    )
+    core_char_limit: int = Field(
+        default=2000,
+        description="Character budget for pinned (core) memories, per project and for global ones",
+    )
+
+
 class BrainConfig(BaseModel):
     """Schema for vault configuration stored in .brainrc.json."""
 
@@ -59,6 +72,7 @@ class BrainConfig(BaseModel):
         default_factory=dict,
         description="Dictionary mapping alias -> absolute directory path of external linked vaults",
     )
+    memory: MemorySettings = Field(default_factory=MemorySettings, description="Agent memory settings")
     project_groups: dict[str, ProjectGroup] = Field(
         default_factory=dict,
         description="Per-folder settings for multi-project folders, keyed by folder name",

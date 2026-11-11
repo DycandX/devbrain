@@ -23,6 +23,7 @@ python -m devbrain.cli.main --help
 - Buat engine pencarian dengan `HybridEngine.from_config(vault)`, bukan konstruktor langsung, agar model dan pola ignore mengikuti config vault.
 - Penanda projek, vault, dan sandbox ada di `harvester/markers.py`. Jangan menyalin daftar manifest ke tempat lain.
 - Inti devbrain tidak memanggil LLM. Fitur yang butuh LLM harus opsional.
+- Semua jalur yang menulis memori (atau nanti skill) dari agent harus melewati `memory/guard.py` dan tercatat di ledger. Jangan menulis langsung ke tabel `memories`.
 - Nilai frontmatter ditulis dengan `json.dumps`, bukan disisipkan mentah ke dalam tanda kutip. Catatan baru harus lolos skema di `core/schema.py`; cek dengan `python -m devbrain.cli.main lint --vault <salinan-vault>`.
 
 ## Test

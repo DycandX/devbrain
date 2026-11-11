@@ -4,9 +4,9 @@ Dokumen serah terima untuk agent atau developer yang melanjutkan projek ini. Bac
 
 | | |
 | :--- | :--- |
-| **Versi** | `1.10.0-alpha` |
+| **Versi** | `1.11.0-alpha` |
 | **Branch** | `main`. Commit sejak v1.7.0 belum di-push ke `origin` (cek `git status -sb`) |
-| **Test** | 100 lulus, sekitar 3 menit |
+| **Test** | 132 lulus, sekitar 3 menit |
 | **Ditulis** | 2026-11-11 |
 | **Pemilik** | DycandX (bahasa percakapan: Indonesia) |
 
@@ -85,7 +85,7 @@ Penyimpanan per vault, di `.brain_data/`:
 | `read_note` | Baca catatan atau satu bagian (`heading`). Menolak path di luar vault |
 | `build_task_context` | Briefing. Mengutamakan ketepatan: kosong lebih baik daripada salah |
 | `get_project_context` | Kartu projek, dibatasi 6.000 karakter |
-| `remember` / `recall` / `forget` | Memori jangka panjang, dengan scope projek |
+| `remember` / `recall` / `forget` | Memori jangka panjang, dengan scope projek. Setiap tulisan melewati pemeriksa isi (`memory/guard.py`); `pinned` masuk memori inti |
 | `get_user_context`, `get_decisions`, `record_decision`, `write_agent_log`, `load_skill` | |
 
 ---
@@ -114,6 +114,7 @@ Setelah mengubah kode server MCP, sesi agent harus dimulai ulang agar `central-b
 | 1.8.0 | `remember`/`recall`/`forget`, `read_note`, batas ukuran keluaran tool, `devbrain usage`, perbaikan kebocoran koneksi SQLite | [v1.8.0](docs/changelog/v1.8.0-alpha.md) |
 | 1.8.1 | Briefing pada vault nyata: ringkasan projek, pemilihan catatan lewat kesepakatan dua pemeringkat, riwayat sesi lewat tautan Project Hub | [v1.8.1](docs/changelog/v1.8.1-alpha.md) |
 | 1.9.0 | Pemindaian workspace bertingkat, grup projek, sandbox, Flutter/PHP/Java/.NET/C | [v1.9.0](docs/changelog/v1.9.0-alpha.md) |
+| 1.11.0 | Sprint 15: pemeriksa isi memori, mode persetujuan, `devbrain memory`, memori inti dipin, ledger | [v1.11.0](docs/changelog/v1.11.0-alpha.md) |
 | 1.10.0 | Sprint 14: `devbrain lint --fix`, aliases kartu, tautan harian, judul sesi bersih, `adr supersede`; vault utama dimigrasi | [v1.10.0](docs/changelog/v1.10.0-alpha.md) |
 
 Setiap changelog memuat masalah, perbaikan, angka pengukuran, dan keterbatasan.

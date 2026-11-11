@@ -11,6 +11,7 @@ from devbrain.cli.commands.index_cmd import index_command
 from devbrain.cli.commands.ingest_cmd import unified_ingest_command
 from devbrain.cli.commands.init_cmd import init_command
 from devbrain.cli.commands.lint_cmd import lint_command
+from devbrain.cli.commands.memory_cmd import memory_app
 from devbrain.cli.commands.rules_cmd import rules_app
 from devbrain.cli.commands.search_cmd import search_command
 from devbrain.cli.commands.serve_cmd import serve_command
@@ -92,6 +93,12 @@ app.command(
     name="usage",
     help="Report Claude Code token usage per project from local session transcripts.",
 )(usage_command)
+
+app.add_typer(
+    memory_app,
+    name="memory",
+    help="Review pending memories, pin core memories, edit, and audit the memory ledger.",
+)
 
 app.add_typer(
     rules_app,

@@ -60,7 +60,7 @@ def create_mcp_server(
     if not engine.chunks:
         engine.index_vault()
 
-    memory = MemoryManager(vault_path, sqlite_storage, engine)
+    memory = MemoryManager(vault_path, sqlite_storage, engine, config)
     linked_vaults = config.resolve_linked_vaults()
 
     server = MCPServer(
@@ -217,8 +217,11 @@ def create_mcp_server(
     )
     def build_task_context(task: str, project: str) -> str:
         """Assemble complete task briefing card."""
+        core = [m["content"] for m in memory.core_memories(project)]
         memories = [m["content"] for m in memory.recall_for_briefing(task, project)]
-        card = context_engine.build_task_context(task=task, project=project, memories=memories)
+        card = context_engine.build_task_context(
+            task=task, project=project, memories=memories, core_memories=core
+        )
         return card.to_markdown()
 
     # =========================================================================
@@ -388,7 +391,8 @@ tags: {json.dumps(all_tags, ensure_ascii=False)}
         description=(
             "Save one durable fact, preference, or lesson for future sessions (one fact per call, "
             "under 1000 characters). Use scope='PROJECT' with a project name for project-specific "
-            "facts. Pass `supersedes` with an old memory id when this replaces it."
+            "facts. Pass `supersedes` with an old memory id when this replaces it. Set `pinned` only "
+            "for a fact every future session must see; pinned memories share a small budget."
         ),
     )
     def remember(
@@ -397,6 +401,7 @@ tags: {json.dumps(all_tags, ensure_ascii=False)}
         project: Optional[str] = None,
         tags: Optional[List[str]] = None,
         supersedes: Optional[str] = None,
+        pinned: bool = False,
     ) -> str:
         """Store a long-term memory."""
         try:
@@ -407,12 +412,18 @@ tags: {json.dumps(all_tags, ensure_ascii=False)}
                 tags=tags,
                 source="mcp",
                 supersedes=supersedes,
+                pinned=pinned,
             )
         except ValueError as e:
             return f"Not saved: {e}"
 
         if not result["created"]:
-            return f"Already remembered as `{result['id']}`."
+            return f"Already remembered as `{result['id']}` ({result['status']})."
+        if result["status"] == "pending":
+            return (
+                f"Saved as `{result['id']}`, waiting for the owner's approval. "
+                "It is not visible to recall or briefings until approved."
+            )
         note = f" Replaced `{result['superseded']}`." if result["superseded"] else ""
         return f"Remembered as `{result['id']}`.{note}"
 
