@@ -128,7 +128,7 @@ Disusun dari dokumen [45](../../brainstorming/45-roadmap-devbrain-menuju-jarvis.
 | [14](./sprint-14/14-sprint-14-vault-hygiene.md) | Perapian vault | `v1.10.0` | Tidak | — | 9 | ✅ Done |
 | [15](./sprint-15/15-sprint-15-memory-write-gate.md) | Gerbang tulis & memori inti | `v1.11.0` | Tidak | 14 | 7 | ✅ Done |
 | [16](./sprint-16/16-sprint-16-agent-integration-hooks-hermes.md) | Hook Claude Code & integrasi Hermes | `v1.12.0` | Tidak | 15 | 8 | ✅ Done |
-| [17](./sprint-17/17-sprint-17-skill-learning.md) | Skill yang dipelajari agent | `v1.13.0` | Tidak | 15, 16 | 8 | ⏳ Planned |
+| [17](./sprint-17/17-sprint-17-skill-learning.md) | Skill yang dipelajari agent | `v1.13.0` | Tidak | 15, 16 | 8 | ✅ Done |
 | [18](./sprint-18/18-sprint-18-curator.md) | Curator tanpa LLM | `v1.14.0` | Tidak | 15, 17 | 7 | ⏳ Planned |
 | [19](./sprint-19/19-sprint-19-llm-curation-9router.md) | Penyulingan LLM lewat 9router & lapisan knowledge | `v1.15.0` | Ya | 14, 15, 18 | 8 | ⏳ Planned |
 | [20](./sprint-20/20-sprint-20-token-ab-test.md) | Uji A/B hemat token | Laporan | Tidak | 16 + pemakaian | 5 | ⏳ Planned |

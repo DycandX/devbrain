@@ -8,19 +8,19 @@ detail instead of returning whole files.
 from datetime import datetime, timezone
 import json
 from pathlib import Path
-import re
 from typing import List, Literal, Optional
 import uuid
 
 from devbrain.adr.manager import ADRManager
 from devbrain.context.builder import ContextAssemblyEngine
 from devbrain.core.config import BrainConfig, load_config
-from devbrain.core.constants import DIR_AGENT_SKILLS, DIR_INBOX, DIR_PROJECTS
+from devbrain.core.constants import DIR_INBOX, DIR_PROJECTS
 from devbrain.core.fsutil import atomic_write_text
 from devbrain.core.sqlite_db import BrainSQLiteStorage
 from devbrain.core.textutil import extract_section, one_line, truncate_to_budget
 from devbrain.engine.hybrid_search import HybridEngine
 from devbrain.memory.manager import MemoryManager
+from devbrain.skills.manager import SkillManager, SkillRejected
 
 # Output budgets in characters (about 4 characters per token).
 SEARCH_PREVIEW_CHARS = 140
@@ -28,7 +28,6 @@ NOTE_MAX_CHARS = 6000
 PROJECT_MAX_CHARS = 6000
 READ_NOTE_HINT = "Call read_note with a `heading` to fetch one section, or raise `max_chars`."
 
-_SKILL_NAME = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
 
 
 def create_mcp_server(
@@ -61,6 +60,7 @@ def create_mcp_server(
         engine.index_vault()
 
     memory = MemoryManager(vault_path, sqlite_storage, engine, config)
+    skills = SkillManager(vault_path, sqlite_storage, config)
     linked_vaults = config.resolve_linked_vaults()
 
     server = MCPServer(
@@ -345,43 +345,69 @@ tags: {json.dumps(all_tags, ensure_ascii=False)}
         return f"Successfully recorded agent log into `{rel_path}` and indexed into Central Brain memory."
 
     # =========================================================================
-    # TOOL: load_skill
+    # TOOLS: load_skill / save_skill / patch_skill
     # =========================================================================
     @server.tool(
         name="load_skill",
-        description="Load instructions and workflow procedures for an Agent Skill stored in 00_System/Agent_Skills/ or custom skill roots.",
+        description=(
+            "Agent skills (reusable procedures). With no name, lists skills with their descriptions. "
+            "With a name, returns its SKILL.md; with `path`, one of its reference files."
+        ),
     )
-    def load_skill(skill_name: str) -> str:
-        """Read SKILL.md for a requested skill name from vault or external roots."""
-        skills_dir = vault_path / DIR_AGENT_SKILLS
-        clean_name = skill_name.strip().replace(" ", "-").lower()
-        external_roots = [Path(root).resolve() for root in config.custom_skill_roots]
+    def load_skill(skill_name: str = "", path: Optional[str] = None) -> str:
+        """List skills, or read one skill or one of its files."""
+        name = skill_name.strip().replace(" ", "-").lower()
+        if name:
+            try:
+                return skills.load(name, path)
+            except KeyError:
+                pass
+            missing = f"'{skill_name}'" + (f" file '{path}'" if path else "")
+            prefix = f"Skill {missing} not found. "
+        else:
+            prefix = ""
+        catalog = skills.catalog()
+        if not catalog:
+            return prefix + "No skills are available."
+        lines = [f"- **{s['name']}**: {one_line(s['description'], 200)}" + (f" (files: {s['files']})" if s["files"] else "") for s in catalog]
+        return prefix + "Available skills:\n" + "\n".join(lines)
 
-        # A skill name is a folder name, never a path
-        if _SKILL_NAME.match(clean_name):
-            search_locations = [skills_dir / clean_name / "SKILL.md"]
-            for root in external_roots:
-                search_locations.append(root / clean_name / "SKILL.md")
-                search_locations.append(root / "skills" / clean_name / "SKILL.md")
+    @server.tool(
+        name="save_skill",
+        description=(
+            "Save a reusable procedure as a skill shared with every agent: a non-trivial workflow, one "
+            "found after fixing errors, or one the user corrected. Not for one-off tasks. `name`: "
+            "lowercase-hyphenated; `description`: what it does and when to use it; `body`: Markdown steps. "
+            "Replaces an existing skill only if an agent created it."
+        ),
+    )
+    def save_skill(name: str, description: str, body: str) -> str:
+        """Create or replace an agent-owned skill."""
+        try:
+            result = skills.save(name, description, body, source="mcp")
+        except SkillRejected as e:
+            return f"Not saved: {e}"
+        return _skill_result(result)
 
-            for skill_file in search_locations:
-                if skill_file.is_file():
-                    skill_content = skill_file.read_text(encoding="utf-8", errors="replace")
-                    return f"# Active Skill Instructions: `{clean_name}` (from `{skill_file}`)\n\n{skill_content}"
+    @server.tool(
+        name="patch_skill",
+        description="Fix part of an agent-created skill: replace `old_text` (must occur exactly once in SKILL.md) with `new_text`.",
+    )
+    def patch_skill(name: str, old_text: str, new_text: str) -> str:
+        """Edit one span of an agent-owned skill."""
+        try:
+            result = skills.patch(name.strip().lower(), old_text, new_text, source="mcp")
+        except KeyError:
+            return f"No skill named '{name}'."
+        except SkillRejected as e:
+            return f"Not saved: {e}"
+        return _skill_result(result)
 
-        all_skills: list[str] = []
-        for root in [skills_dir, *external_roots]:
-            if root.is_dir():
-                all_skills.extend(
-                    d.name for d in root.glob("*") if d.is_dir() and (d / "SKILL.md").is_file()
-                )
-
-        if all_skills:
-            return (
-                f"Skill '{skill_name}' not found.\n"
-                f"Available active skills in vault & external roots: {', '.join(sorted(set(all_skills)))}"
-            )
-        return f"Skill '{skill_name}' not found and no skills are currently available."
+    def _skill_result(result: dict) -> str:
+        note = f" Reviewer warning: {'; '.join(result['warnings'])}." if result["warnings"] else ""
+        if result["status"] == "pending":
+            return f"Skill '{result['name']}' saved for the owner's approval; other agents see it once approved.{note}"
+        return f"Skill '{result['name']}' saved and shared with all agents.{note}"
 
     # =========================================================================
     # TOOLS: remember / recall / forget (long-term memory)

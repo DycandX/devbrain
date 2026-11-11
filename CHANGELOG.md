@@ -6,6 +6,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.13.0-alpha] - 2026-11-11 (Unreleased)
+
+### 🚀 Added
+- **`save_skill` and `patch_skill` MCP tools:** agents save reusable procedures as agentskills.io skills in the vault, shared with every agent including Hermes.
+- **Ownership and locks:** agents may change only skills that agents created; `devbrain skill lock` blocks agent changes entirely.
+- **Skill write gate:** the content guard refuses instruction overrides, keys, credentials, and hidden characters; download-and-run steps need approval mode. With `skills.write_approval`, writes wait in `.brain_data/pending_skills/`.
+- **Progressive `load_skill`:** list with descriptions, one SKILL.md, or one reference file.
+- **Skill registry and ledger**, and `devbrain skill pending|approve|reject|lock|unlock|ledger`.
+
+### 📊 Measured
+- 14 MCP tools cost about 1,790 tokens per session (12 tools: about 1,470).
+- **Automated Tests:** 157 passing.
+
+For complete details, see [docs/changelog/v1.13.0-alpha.md](docs/changelog/v1.13.0-alpha.md).
+
+---
+
 ## [1.12.0-alpha] - 2026-11-11 (Unreleased)
 
 ### 🚀 Added

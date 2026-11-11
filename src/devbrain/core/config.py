@@ -39,6 +39,15 @@ class MemorySettings(BaseModel):
     )
 
 
+class SkillSettings(BaseModel):
+    """How skills written by agents are accepted."""
+
+    write_approval: bool = Field(
+        default=False,
+        description="Hold skills saved by agents as pending until approved with 'devbrain skill approve'",
+    )
+
+
 class BrainConfig(BaseModel):
     """Schema for vault configuration stored in .brainrc.json."""
 
@@ -73,6 +82,7 @@ class BrainConfig(BaseModel):
         description="Dictionary mapping alias -> absolute directory path of external linked vaults",
     )
     memory: MemorySettings = Field(default_factory=MemorySettings, description="Agent memory settings")
+    skills: SkillSettings = Field(default_factory=SkillSettings, description="Agent skill settings")
     project_groups: dict[str, ProjectGroup] = Field(
         default_factory=dict,
         description="Per-folder settings for multi-project folders, keyed by folder name",

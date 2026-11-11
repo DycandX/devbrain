@@ -92,6 +92,28 @@ class BrainSQLiteStorage:
 
                 CREATE INDEX IF NOT EXISTS idx_memory_ledger_memory ON memory_ledger(memory_id);
 
+                CREATE TABLE IF NOT EXISTS skills (
+                    name TEXT PRIMARY KEY,
+                    status TEXT NOT NULL DEFAULT 'active',
+                    created_by TEXT,
+                    source TEXT,
+                    locked INTEGER NOT NULL DEFAULT 0,
+                    view_count INTEGER NOT NULL DEFAULT 0,
+                    patch_count INTEGER NOT NULL DEFAULT 0,
+                    last_viewed_at TEXT,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                );
+
+                CREATE TABLE IF NOT EXISTS skill_ledger (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    skill TEXT,
+                    action TEXT NOT NULL,
+                    source TEXT,
+                    detail TEXT,
+                    at TEXT NOT NULL
+                );
+
                 CREATE TABLE IF NOT EXISTS file_cache (
                     file_path TEXT PRIMARY KEY,
                     mtime REAL NOT NULL,
@@ -285,6 +307,61 @@ class BrainSQLiteStorage:
         params.append(limit)
         with self._get_connection() as conn:
             return [dict(r) for r in conn.execute(query, params).fetchall()]
+
+    # --- Skill registry ---
+
+    def get_skill(self, name: str) -> Optional[dict[str, Any]]:
+        with self._get_connection() as conn:
+            row = conn.execute("SELECT * FROM skills WHERE name = ?", (name,)).fetchone()
+        return dict(row) if row else None
+
+    def upsert_skill(self, name: str, **fields: Any) -> None:
+        """Insert a skill row or update the given columns."""
+        now = datetime.now(timezone.utc).isoformat()
+        with self._get_connection() as conn:
+            conn.execute(
+                "INSERT INTO skills (name, created_at, updated_at) VALUES (?, ?, ?) ON CONFLICT(name) DO NOTHING",
+                (name, now, now),
+            )
+            if fields:
+                assignments = ", ".join(f"{k} = ?" for k in fields)
+                conn.execute(
+                    f"UPDATE skills SET {assignments}, updated_at = ? WHERE name = ?",
+                    (*fields.values(), now, name),
+                )
+
+    def bump_skill_counter(self, name: str, column: str) -> None:
+        if column not in ("view_count", "patch_count"):
+            raise ValueError(column)
+        now = datetime.now(timezone.utc).isoformat()
+        with self._get_connection() as conn:
+            extra = ", last_viewed_at = ?" if column == "view_count" else ""
+            params = (now, name) if column == "view_count" else (name,)
+            conn.execute(f"UPDATE skills SET {column} = {column} + 1{extra} WHERE name = ?", params)
+
+    def list_skills(self, status: Optional[str] = None) -> list[dict[str, Any]]:
+        query, params = "SELECT * FROM skills", []
+        if status:
+            query += " WHERE status = ?"
+            params.append(status)
+        with self._get_connection() as conn:
+            return [dict(r) for r in conn.execute(query + " ORDER BY name", params).fetchall()]
+
+    def record_skill_event(self, action: str, skill: Optional[str], source: Optional[str] = None, detail: str = "") -> None:
+        now = datetime.now(timezone.utc).isoformat()
+        with self._get_connection() as conn:
+            conn.execute(
+                "INSERT INTO skill_ledger (skill, action, source, detail, at) VALUES (?, ?, ?, ?, ?)",
+                (skill, action, source, detail, now),
+            )
+
+    def get_skill_ledger(self, skill: Optional[str] = None, limit: int = 50) -> list[dict[str, Any]]:
+        query, params = "SELECT * FROM skill_ledger", []
+        if skill:
+            query += " WHERE skill = ?"
+            params.append(skill)
+        with self._get_connection() as conn:
+            return [dict(r) for r in conn.execute(query + " ORDER BY id DESC LIMIT ?", (*params, limit)).fetchall()]
 
     def supersede_memory(self, old_memory_id: str, new_memory_id: str) -> bool:
         """Mark an old memory as superseded by a newer memory."""

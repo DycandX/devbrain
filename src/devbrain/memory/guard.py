@@ -6,7 +6,7 @@ like instructions to an agent, carry credentials, or hide text are refused.
 """
 
 import re
-from typing import List
+from typing import List, Tuple
 import unicodedata
 
 from devbrain.harvester.sanitizer import sanitize_text
@@ -25,10 +25,14 @@ _INSTRUCTION_PATTERNS = [
     r"<\|im_(start|end)\|>",
 ]
 
-# Commands or payloads that run code or move data off the machine.
-_EXFILTRATION_PATTERNS = [
+# Commands that download a script and run it.
+_DOWNLOAD_AND_RUN_PATTERNS = [
     r"\b(curl|wget)\b[^\n|]{0,200}\|\s*(ba|z)?sh\b",
     r"\b(iwr|irm|invoke-webrequest|invoke-restmethod)\b[^\n]{0,200}\b(iex|invoke-expression)\b",
+]
+
+# Keys and payloads that grant access or move data off the machine.
+_EXFILTRATION_PATTERNS = [
     r"\bauthorized_keys\b",
     r"\bssh-(rsa|ed25519|dss) AAAA",
     r"-----BEGIN [A-Z ]*PRIVATE KEY-----",
@@ -38,6 +42,7 @@ _EXFILTRATION_PATTERNS = [
 
 _INSTRUCTION_RE = [re.compile(p, re.IGNORECASE) for p in _INSTRUCTION_PATTERNS]
 _EXFILTRATION_RE = [re.compile(p, re.IGNORECASE) for p in _EXFILTRATION_PATTERNS]
+_DOWNLOAD_AND_RUN_RE = [re.compile(p, re.IGNORECASE) for p in _DOWNLOAD_AND_RUN_PATTERNS]
 
 
 class MemoryRejected(ValueError):
@@ -69,7 +74,7 @@ def check_memory_content(text: str) -> List[str]:
     if any(p.search(text) for p in _INSTRUCTION_RE):
         reasons.append("reads as an instruction to an agent, not a fact")
 
-    if any(p.search(text) for p in _EXFILTRATION_RE):
+    if any(p.search(text) for p in [*_DOWNLOAD_AND_RUN_RE, *_EXFILTRATION_RE]):
         reasons.append("contains a command or key that runs code or sends data elsewhere")
 
     _, redactions = sanitize_text(text)
@@ -77,6 +82,31 @@ def check_memory_content(text: str) -> List[str]:
         reasons.append("contains a credential or API key")
 
     return reasons
+
+
+def check_skill_content(text: str) -> Tuple[List[str], List[str]]:
+    """(refusals, warnings) for a skill's text.
+
+    Skills are procedures, so imperative wording is expected. Refused: the same
+    as for memories, except download-and-run commands, which can be a genuine
+    install step and are reported to the reviewer as a warning instead.
+    """
+    refusals = []
+    hidden = _hidden_characters(text)
+    if hidden:
+        refusals.append(f"contains hidden Unicode characters ({', '.join(hidden[:5])})")
+    if any(p.search(text) for p in _INSTRUCTION_RE):
+        refusals.append("tries to override the agent's instructions")
+    if any(p.search(text) for p in _EXFILTRATION_RE):
+        refusals.append("contains a key or sends data elsewhere")
+    _, redactions = sanitize_text(text)
+    if redactions:
+        refusals.append("contains a credential or API key")
+
+    warnings = []
+    if any(p.search(text) for p in _DOWNLOAD_AND_RUN_RE):
+        warnings.append("downloads and runs a script from the internet")
+    return refusals, warnings
 
 
 def guard_memory_content(text: str) -> None:

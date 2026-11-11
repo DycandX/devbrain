@@ -59,7 +59,8 @@ When resolving conflicting information, all AI agents MUST adhere to this strict
 When connected to the DevBrain FastMCP server, utilize these tools:
 - `build_task_context(task, project)`: Retrieve situational briefing before starting complex tasks.
 - `get_decisions(project)`: Check active Architecture Decision Records (ADRs).
-- `load_skill(skill_name)`: Dynamically load reusable skills from Central Brain.
+- `load_skill()` lists shared skills; `load_skill(name)` loads one.
+- `save_skill(name, description, body)`: Save a workflow worth repeating (non-trivial, found after errors, or corrected by the user); not for one-off tasks.
 - `search_brain(query)` then `read_note(path, heading)`: Find notes, then read only the section you need.
 - `recall(query, project)`: Check remembered facts before asking the user to repeat context.
 - `remember(content, scope, project)`: Save one durable fact or lesson for future sessions.

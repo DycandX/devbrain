@@ -2,7 +2,7 @@
 
 import os
 from pathlib import Path
-from typing import Optional
+from typing import List, Optional
 
 from rich.table import Table
 import typer
@@ -249,3 +249,92 @@ def symlink_skills(
                 pass
 
     print_success(f"Synced {len(skill_folders)} vault skills to Antigravity global directory ({global_skills_dir}).")
+
+
+# --- Review of skills written by agents ------------------------------------
+
+
+def _skill_manager(vault: Optional[str]):
+    from devbrain.skills.manager import SkillManager
+
+    config_path = Path(vault).resolve() / ".brainrc.json" if vault else find_config()
+    if not config_path or not config_path.is_file():
+        print_error("Configuration file .brainrc.json not found! Run 'devbrain init' first.")
+        raise typer.Exit(code=1)
+    config = load_config(config_path)
+    return SkillManager(config.resolve_vault_path(), config=config)
+
+
+@skill_app.command(name="pending", help="Show skills written by agents that wait for approval.")
+def pending_skills(
+    show: bool = typer.Option(False, "--show", help="Print each pending SKILL.md in full"),
+    vault: Optional[str] = typer.Option(None, "--vault", "-v", help="Manual path to vault"),
+):
+    items = _skill_manager(vault).pending()
+    if not items:
+        print_info("No pending skills.")
+        return
+    for item in items:
+        kind = "edit of an active skill" if item["replaces_active"] else "new skill"
+        warn = f" [yellow]⚠ {'; '.join(item['warnings'])}[/yellow]" if item["warnings"] else ""
+        console.print(f"[bold]{item['name']}[/bold] ({kind}){warn}")
+        if show:
+            console.print(item["content"], markup=False)
+
+
+@skill_app.command(name="approve", help="Approve pending skills (names or 'all') so every agent can use them.")
+def approve_skills(
+    names: List[str] = typer.Argument(..., help="Skill names, or 'all'"),
+    vault: Optional[str] = typer.Option(None, "--vault", "-v", help="Manual path to vault"),
+):
+    manager = _skill_manager(vault)
+    for name in [i["name"] for i in manager.pending()] if names == ["all"] else names:
+        try:
+            manager.approve(name)
+            print_success(f"Approved {name}")
+        except KeyError as e:
+            print_error(str(e))
+
+
+@skill_app.command(name="reject", help="Discard pending skills (names or 'all').")
+def reject_skills(
+    names: List[str] = typer.Argument(..., help="Skill names, or 'all'"),
+    vault: Optional[str] = typer.Option(None, "--vault", "-v", help="Manual path to vault"),
+):
+    manager = _skill_manager(vault)
+    for name in [i["name"] for i in manager.pending()] if names == ["all"] else names:
+        try:
+            manager.reject(name)
+            print_success(f"Rejected {name}")
+        except KeyError as e:
+            print_error(str(e))
+
+
+@skill_app.command(name="lock", help="Stop agents from changing a skill.")
+def lock_skill(name: str, vault: Optional[str] = typer.Option(None, "--vault", "-v")):
+    _skill_manager(vault).lock(name)
+    print_success(f"Locked {name}")
+
+
+@skill_app.command(name="unlock", help="Let agents change an agent-created skill again.")
+def unlock_skill(name: str, vault: Optional[str] = typer.Option(None, "--vault", "-v")):
+    _skill_manager(vault).lock(name, False)
+    print_success(f"Unlocked {name}")
+
+
+@skill_app.command(name="ledger", help="History of skill writes, approvals, and refused attempts.")
+def skill_ledger(
+    name: Optional[str] = typer.Argument(None),
+    limit: int = typer.Option(30, "--limit", "-n"),
+    vault: Optional[str] = typer.Option(None, "--vault", "-v"),
+):
+    entries = _skill_manager(vault).ledger(name, limit)
+    if not entries:
+        print_info("The skill ledger is empty.")
+        return
+    table = Table(title="Skill ledger", header_style="bold cyan")
+    for column in ("When", "Action", "Skill", "Source", "Detail"):
+        table.add_column(column, overflow="fold")
+    for e in entries:
+        table.add_row(e["at"][:19], e["action"], e["skill"] or "-", e["source"] or "-", (e["detail"] or "")[:100])
+    console.print(table)
