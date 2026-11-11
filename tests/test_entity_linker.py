@@ -41,7 +41,7 @@ def test_entity_linker_matching_and_formatting(tmp_path: Path):
     dt = datetime(2026, 8, 29, 14, 30, 0, tzinfo=timezone.utc)
     block = generate_graph_links_block(created_time=dt, matched_project=matched, device_name="DevLaptop")
     assert "[[10_Projects/" in block
-    assert "[[99_Daily/2026-08-29|2026-08-29]]" in block
+    assert "99_Daily" not in block  # daily notes are not linked (Sprint 14, D14-2)
     assert "`DevLaptop`" in block
 
 
@@ -95,4 +95,4 @@ def test_service_auto_provisioning_and_linking(tmp_path: Path, monkeypatch):
     assert len(session_files) == 1
     session_text = session_files[0].read_text(encoding="utf-8")
     assert "[[10_Projects/my-microservice/README" in session_text
-    assert "[[99_Daily/" in session_text
+    assert "99_Daily" not in session_text

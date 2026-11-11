@@ -12,6 +12,14 @@ FRONTMATTER_PATTERN = re.compile(r"^---\s*\n(.*?)\n---\s*\n?", re.DOTALL)
 WIKILINK_PATTERN = re.compile(r"\[\[([^\|\]]+)(?:\|([^\]]+))?\]\]")
 INLINE_TAG_PATTERN = re.compile(r"(?<!\w)#([a-zA-Z0-9_\-/]+)")
 CODE_BLOCK_PATTERN = re.compile(r"```[\s\S]*?```|`[^`]+`")
+# Query blocks rendered by Obsidian plugins. They are instructions to a plugin,
+# not content, so they are kept out of the search index.
+VIEW_BLOCK_PATTERN = re.compile(r"^```(?:dataview|dataviewjs|query|tasks|base)\s*\n[\s\S]*?^```[ \t]*\n?", re.MULTILINE)
+
+
+def strip_view_blocks(body: str) -> str:
+    """Remove Dataview, Tasks, Bases, and search query blocks from a note body."""
+    return VIEW_BLOCK_PATTERN.sub("", body)
 
 
 def parse_frontmatter(text: str) -> Tuple[Dict[str, Any], str]:
@@ -111,6 +119,6 @@ def parse_markdown_file(file_path: Path, vault_root: Path) -> Document:
         frontmatter=frontmatter,
         tags=tags,
         wikilinks=wikilinks,
-        raw_content=body,
+        raw_content=strip_view_blocks(body),
         updated_at=mtime,
     )

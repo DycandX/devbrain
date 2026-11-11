@@ -1,6 +1,7 @@
 """Architecture Decision Records (ADR) Manager for DevBrain (30_Decisions/)."""
 
 from datetime import datetime, timezone
+import json
 from pathlib import Path
 import re
 from typing import Any, Optional
@@ -8,6 +9,7 @@ from typing import Any, Optional
 import yaml
 
 from devbrain.core.constants import DIR_DECISIONS, DIR_PROJECTS
+from devbrain.core.fsutil import atomic_write_text
 from devbrain.core.sqlite_db import BrainSQLiteStorage
 
 
@@ -63,6 +65,7 @@ class ADRManager:
             "project": project or "Global",
             "status": status.lower(),
             "date": date_val,
+            "created": datetime.now(timezone.utc).isoformat(),
             "tags": ["adr", "architecture-decision", self._slugify(project or "global")],
         }
 
@@ -149,6 +152,73 @@ class ADRManager:
                     continue
                 results.append(parsed)
         return results
+
+    def find_decision_file(self, adr_id: str) -> Optional[Path]:
+        """Locate an ADR note by its id (e.g. ADR-001), ignoring case."""
+        matches = sorted(self.decisions_dir.glob(f"{adr_id.upper()}-*.md")) or sorted(
+            self.decisions_dir.glob(f"{adr_id.upper()}.md")
+        )
+        return matches[0] if matches else None
+
+    def supersede_decision(self, old_id: str, new_id: str) -> dict[str, Any]:
+        """Mark one ADR as replaced by another and link the two notes.
+
+        The old note keeps its content; only its status changes, so the history
+        of why the earlier choice was made stays readable.
+        """
+        old_id, new_id = old_id.upper(), new_id.upper()
+        if old_id == new_id:
+            raise ValueError("An ADR cannot supersede itself.")
+        old_file, new_file = self.find_decision_file(old_id), self.find_decision_file(new_id)
+        if old_file is None or new_file is None:
+            missing = old_id if old_file is None else new_id
+            raise FileNotFoundError(f"No ADR note found for {missing} in {DIR_DECISIONS}/.")
+
+        self._set_frontmatter(old_file, {"status": "superseded", "superseded_by": new_id})
+        self._append_note_line(old_file, f"> **Superseded by** [[{new_file.stem}|{new_id}]].")
+        self._set_frontmatter(new_file, {"supersedes": old_id})
+        self._append_note_line(new_file, f"> **Supersedes** [[{old_file.stem}|{old_id}]].")
+
+        for adr_file, status, superseded_by in ((old_file, "superseded", new_id), (new_file, None, None)):
+            parsed = self.parse_adr_file(adr_file) or {}
+            self.sqlite.upsert_decision(
+                id=str(parsed.get("id") or re.match(r"(ADR-\d+)", adr_file.stem, re.IGNORECASE).group(1).upper()),
+                title=str(parsed.get("title") or adr_file.stem),
+                file_path=str(adr_file),
+                date=str(parsed.get("date") or parsed.get("created") or ""),
+                project=None if parsed.get("project") in (None, "Global") else parsed.get("project"),
+                status=status or str(parsed.get("status") or "accepted"),
+                superseded_by=superseded_by,
+            )
+        return {"old": old_id, "new": new_id, "old_file": str(old_file), "new_file": str(new_file)}
+
+    def _set_frontmatter(self, file_path: Path, values: dict[str, Any]) -> None:
+        """Set frontmatter keys in an ADR note, leaving its other lines untouched."""
+        raw = file_path.read_text(encoding="utf-8")
+        parts = raw.split("---", 2)
+        if not raw.startswith("---") or len(parts) < 3:
+            raise ValueError(f"{file_path.name} has no frontmatter.")
+        lines = parts[1].strip("\n").split("\n")
+        for key, value in values.items():
+            line = f"{key}: {json.dumps(value, ensure_ascii=False)}"
+            index = next((i for i, l in enumerate(lines) if re.match(rf"^{key}:", l)), None)
+            if index is None:
+                lines.append(line)
+            else:
+                lines[index] = line
+        atomic_write_text(file_path, "---\n" + "\n".join(lines) + "\n---" + parts[2])
+
+    def _append_note_line(self, file_path: Path, line: str) -> None:
+        """Add a line under the title, once."""
+        raw = file_path.read_text(encoding="utf-8")
+        if line in raw:
+            return
+        heading = re.search(r"^# .*$", raw, re.MULTILINE)
+        if heading:
+            raw = raw[: heading.end()] + f"\n\n{line}" + raw[heading.end():]
+        else:
+            raw = raw.rstrip() + f"\n\n{line}\n"
+        atomic_write_text(file_path, raw)
 
     def parse_adr_file(self, file_path: Path) -> Optional[dict[str, Any]]:
         """Parse frontmatter and content from an ADR file."""

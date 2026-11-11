@@ -2,9 +2,11 @@
 
 from datetime import datetime
 from pathlib import Path
+import re
 from typing import Dict, Optional, Tuple
 
 from devbrain.core.constants import DIR_PROJECTS
+from devbrain.core.fsutil import atomic_write_text
 from devbrain.engine.parser import parse_frontmatter
 
 
@@ -71,15 +73,16 @@ def generate_graph_links_block(
     matched_project: Optional[Tuple[str, str]] = None,
     device_name: Optional[str] = None,
 ) -> str:
-    """Generate a clean markdown relations section to ensure graph connectivity."""
-    date_str = created_time.strftime("%Y-%m-%d")
+    """Generate a clean markdown relations section to ensure graph connectivity.
+
+    Daily notes are not linked: devbrain does not create them, and links to
+    missing notes only add phantom nodes to the Obsidian graph.
+    """
     lines = ["## 🔗 Graph Connections & Context:"]
 
     if matched_project:
         proj_title, proj_link = matched_project
         lines.append(f"- **Project Hub:** [[{proj_link}|{proj_title}]]")
-
-    lines.append(f"- **Timeline:** [[99_Daily/{date_str}|{date_str}]]")
 
     if device_name:
         lines.append(f"- **Device Origin:** `{device_name}`")
@@ -107,17 +110,14 @@ def inject_backlink_to_project(
         if clean_rel in content:
             return False  # Already linked
 
-        # Find or create recent sessions section
-        if "## 📜 Riwayat Sesi AI Terkini" in content:
-            updated = content.replace(
-                "## 📜 Riwayat Sesi AI Terkini",
-                f"## 📜 Riwayat Sesi AI Terkini\n{link_markdown}",
-            )
+        # Insert after the whole heading line, whatever follows the heading text
+        heading = re.search(r"^## 📜 Riwayat Sesi AI Terkini[^\n]*$", content, re.MULTILINE)
+        if heading:
+            updated = content[: heading.end()] + f"\n{link_markdown}" + content[heading.end():]
         else:
             updated = content + f"\n\n## 📜 Riwayat Sesi AI Terkini\n{link_markdown}\n"
 
-        with open(project_readme, "w", encoding="utf-8") as f:
-            f.write(updated)
+        atomic_write_text(project_readme, updated)
         return True
     except Exception:
         return False

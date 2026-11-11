@@ -35,10 +35,10 @@ def format_session_note(
 
     note_content = f"""---
 id: "INGEST-{timestamp_str}-{clean_session_id}"
-title: "{clean_title}"
+title: {json.dumps(clean_title, ensure_ascii=False)}
 type: "agent-session-log"
 source: "{payload.source_name}"
-device: "{device_name}"
+device: {json.dumps(device_name, ensure_ascii=False)}
 created: "{payload.created_time.isoformat()}"
 redactions_applied: {payload.num_redactions}
 tags: {tags_json}

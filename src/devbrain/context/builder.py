@@ -196,7 +196,7 @@ class ContextAssemblyEngine:
             try:
                 with open(pref_file, "r", encoding="utf-8") as f:
                     return truncate_to_budget(
-                        f.read().strip(),
+                        parse_frontmatter(f.read())[1].strip(),
                         USER_PREFERENCES_MAX_CHARS,
                         f"Full file: {DIR_SYSTEM}/User_Preferences.md",
                     )

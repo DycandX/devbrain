@@ -62,6 +62,11 @@ class ScannedProjectMetadata:
             tags.append("sandbox")
         return tags
 
+    def aliases(self) -> List[str]:
+        """Names Obsidian should find this card under; its file is always README.md."""
+        names = [self.name, self.clean_name, self.repo_path.name]
+        return list(dict.fromkeys(n for n in names if n and n != "README"))
+
     def group_line(self) -> str:
         """Quote-block line shown under the card title."""
         if not self.group:
@@ -175,14 +180,25 @@ def scan_project_metadata(
 SESSION_HISTORY_HEADING = "## 📜 Riwayat Sesi AI Terkini"
 
 
+# Older cards appended this to the heading, and links were injected in front of it.
+_LEGACY_HEADING_SUFFIX = " (Live Dataview):"
+
+
 def _write_project_card(target_file: Path, content: str) -> None:
     """Write a project card, carrying over the session links a previous version collected."""
     if target_file.is_file():
         previous = target_file.read_text(encoding="utf-8", errors="replace")
-        links = [
-            line for line in previous.splitlines()
-            if line.startswith(f"- [[{DIR_INBOX}/") and line not in content
-        ]
+        # A card's creation time survives rescans
+        old_created = re.search(r"^created: .*$", previous, re.MULTILINE)
+        if old_created:
+            content = re.sub(r"^created: .*$", lambda _: old_created.group(0), content, count=1, flags=re.MULTILINE)
+        links = []
+        for line in previous.splitlines():
+            if not line.startswith(f"- [[{DIR_INBOX}/"):
+                continue
+            line = line.replace(_LEGACY_HEADING_SUFFIX, "").rstrip()
+            if line not in content and line not in links:
+                links.append(line)
         if links:
             block = "\n".join(links)
             if SESSION_HISTORY_HEADING in content:
@@ -231,8 +247,10 @@ def seed_project_to_vault(
 
         content = f"""---
 id: "PROJ-{metadata.clean_name.upper()}"
-title: "{metadata.name}"
+title: {json.dumps(metadata.name, ensure_ascii=False)}
+aliases: {json.dumps(metadata.aliases(), ensure_ascii=False)}
 type: "project"
+created: "{now_iso}"
 role: "owner"
 status: "active"
 {metadata.group_frontmatter()}language: {langs_json}
@@ -261,7 +279,8 @@ tags: {json.dumps(["project", "codebase", *metadata.group_tags()])}
 
 ---
 
-## 📜 Riwayat Sesi AI Terkini (Live Dataview):
+## 📜 Riwayat Sesi AI Terkini
+
 ```dataview
 TABLE created, device, title
 FROM "90_Agent_Inbox"
@@ -285,7 +304,8 @@ LIMIT 10
 
         content = f"""---
 id: "REF-{metadata.clean_name.upper()}"
-title: "{metadata.name} (Code Reference)"
+title: {json.dumps(metadata.name + " (Code Reference)", ensure_ascii=False)}
+aliases: {json.dumps(metadata.aliases(), ensure_ascii=False)}
 type: "reference-repo"
 role: "study"
 language: {langs_json}
@@ -325,7 +345,7 @@ tags: ["reference", "code-study", "external-repo"]
             with open(target_file, "w", encoding="utf-8") as f:
                 f.write(f"""---
 name: {metadata.clean_name}
-description: {metadata.description}
+description: {json.dumps(metadata.description, ensure_ascii=False)}
 ---
 
 # {metadata.name} Skill
@@ -343,7 +363,8 @@ description: {metadata.description}
 
         content = f"""---
 id: "DOC-{metadata.clean_name.upper()}"
-title: "{metadata.name} Documentation"
+title: {json.dumps(metadata.name + " Documentation", ensure_ascii=False)}
+aliases: {json.dumps(metadata.aliases(), ensure_ascii=False)}
 type: "knowledge-doc"
 {metadata.group_frontmatter()}local_path: "{posix_path}"
 last_scanned: "{now_iso}"

@@ -8,6 +8,7 @@ Index of all product versions, feature updates, and sprint releases for **`devbr
 
 | Version | Release Date | Key Highlights | Status | Link |
 | :--- | :--- | :--- | :--- | :--- |
+| **`v1.10.0-alpha`** | 2026-11-11 | Sprint 14 vault hygiene: `devbrain lint --fix`, project card aliases, no daily links, clean session titles, Dataview blocks not indexed, `adr supersede`; main vault migrated | 🚧 Unreleased | [v1.10.0-alpha.md](./v1.10.0-alpha.md) |
 | **`v1.9.0-alpha`** | 2026-11-11 | Workspace scan: nested multi-project folders, project groups and sandboxes, Flutter / PHP / Java / .NET / C detection, vault folders skipped, unique card names | 🚧 Unreleased | [v1.9.0-alpha.md](./v1.9.0-alpha.md) |
 | **`v1.8.1-alpha`** | 2026-11-10 | Briefing quality: project summary without frontmatter, sessions matched by Project Hub link, notes selected by ranker agreement, README prose extraction | 🚧 Unreleased | [v1.8.1-alpha.md](./v1.8.1-alpha.md) |
 | **`v1.8.0-alpha`** | 2026-11-10 | Long-term memory tools (`remember`, `recall`, `forget`), size-capped tool output with `read_note`, `devbrain usage` token report, SQLite connection leak fix | 🚧 Unreleased | [v1.8.0-alpha.md](./v1.8.0-alpha.md) |

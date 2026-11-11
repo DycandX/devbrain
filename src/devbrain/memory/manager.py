@@ -7,6 +7,7 @@ that are superseded or forgotten keep their SQLite row and lose their note, so
 recall only ever sees active ones.
 """
 
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 from typing import Any, Optional
@@ -169,6 +170,8 @@ class MemoryManager:
             "---",
             f'id: "{memory_id}"',
             "type: memory",
+            f"title: {json.dumps(content[:80], ensure_ascii=False)}",
+            f'created: "{datetime.now(timezone.utc).isoformat()}"',
             f"memory_type: {json.dumps(memory_type)}",
             f"scope: {scope}",
         ]

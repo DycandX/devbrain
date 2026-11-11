@@ -10,6 +10,7 @@ from devbrain.cli.commands.context_cmd import context_command
 from devbrain.cli.commands.index_cmd import index_command
 from devbrain.cli.commands.ingest_cmd import unified_ingest_command
 from devbrain.cli.commands.init_cmd import init_command
+from devbrain.cli.commands.lint_cmd import lint_command
 from devbrain.cli.commands.rules_cmd import rules_app
 from devbrain.cli.commands.search_cmd import search_command
 from devbrain.cli.commands.serve_cmd import serve_command
@@ -81,6 +82,11 @@ app.command(
     name="context",
     help="Assemble situational awareness briefing cards for AI Agents.",
 )(context_command)
+
+app.command(
+    name="lint",
+    help="Check vault notes against the frontmatter schema; repair with --fix.",
+)(lint_command)
 
 app.command(
     name="usage",

@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.10.0-alpha] - 2026-11-11 (Unreleased)
+
+### 🚀 Added
+- **`devbrain lint`:** checks every note against a shared frontmatter schema and known defects; `--fix` repairs them by editing frontmatter line by line.
+- **`devbrain adr supersede <old> <new>`:** marks a decision as replaced and links both notes; briefings show only accepted decisions.
+
+### 🐛 Fixed
+- Antigravity session titles no longer carry the `<USER_SETTINGS_CHANGE>` notice; whole harness tag blocks are dropped.
+- Session notes no longer link to daily notes that do not exist.
+- Project cards get `aliases`, so Obsidian lists them by name instead of "README"; they also keep their `created` time across rescans.
+- Session links on project cards no longer pick up a stray `(Live Dataview):` suffix.
+- Frontmatter values are written with `json.dumps`, fixing invalid YAML from Windows paths and Markdown badges.
+- Dataview, Tasks, Bases, and query blocks are no longer indexed.
+
+### 📊 Measured
+- Main vault migrated: 142 of 143 notes repaired; 30 broken daily links, 34 noisy session notes, and 3 invalid frontmatter blocks removed.
+- **Automated Tests:** 100 passing.
+
+For complete details, see [docs/changelog/v1.10.0-alpha.md](docs/changelog/v1.10.0-alpha.md).
+
+---
+
 ## [1.9.0-alpha] - 2026-11-11 (Unreleased)
 
 ### 🚀 Added

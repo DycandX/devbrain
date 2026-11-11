@@ -85,6 +85,22 @@ def adr_list(
     console.print(table)
 
 
+@adr_app.command(name="supersede")
+def adr_supersede(
+    old_id: str = typer.Argument(..., help="ADR being replaced, e.g. ADR-001"),
+    new_id: str = typer.Argument(..., help="ADR replacing it, e.g. ADR-002"),
+    vault: Optional[Path] = typer.Option(None, "--vault", "-v", help="Path to Obsidian vault"),
+):
+    """Mark an ADR as superseded by a newer one; briefings then show only the newer one."""
+    manager = ADRManager(_resolve_vault(vault))
+    try:
+        result = manager.supersede_decision(old_id, new_id)
+    except (FileNotFoundError, ValueError) as e:
+        console.print(f"[bold red]✖[/bold red] {e}")
+        raise typer.Exit(code=1)
+    console.print(f"[bold green]✔[/bold green] {result['old']} is now superseded by {result['new']}.")
+
+
 def _resolve_vault(vault: Optional[Path]) -> Path:
     """Resolve vault path from argument, config file, or current directory."""
     if vault:

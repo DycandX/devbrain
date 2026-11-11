@@ -4,9 +4,9 @@ Dokumen serah terima untuk agent atau developer yang melanjutkan projek ini. Bac
 
 | | |
 | :--- | :--- |
-| **Versi** | `1.9.0-alpha` (belum dirilis ke remote) |
+| **Versi** | `1.10.0-alpha` |
 | **Branch** | `main`. Commit sejak v1.7.0 belum di-push ke `origin` (cek `git status -sb`) |
-| **Test** | 91 lulus, sekitar 3 menit |
+| **Test** | 100 lulus, sekitar 3 menit |
 | **Ditulis** | 2026-11-11 |
 | **Pemilik** | DycandX (bahasa percakapan: Indonesia) |
 
@@ -114,6 +114,7 @@ Setelah mengubah kode server MCP, sesi agent harus dimulai ulang agar `central-b
 | 1.8.0 | `remember`/`recall`/`forget`, `read_note`, batas ukuran keluaran tool, `devbrain usage`, perbaikan kebocoran koneksi SQLite | [v1.8.0](docs/changelog/v1.8.0-alpha.md) |
 | 1.8.1 | Briefing pada vault nyata: ringkasan projek, pemilihan catatan lewat kesepakatan dua pemeringkat, riwayat sesi lewat tautan Project Hub | [v1.8.1](docs/changelog/v1.8.1-alpha.md) |
 | 1.9.0 | Pemindaian workspace bertingkat, grup projek, sandbox, Flutter/PHP/Java/.NET/C | [v1.9.0](docs/changelog/v1.9.0-alpha.md) |
+| 1.10.0 | Sprint 14: `devbrain lint --fix`, aliases kartu, tautan harian, judul sesi bersih, `adr supersede`; vault utama dimigrasi | [v1.10.0](docs/changelog/v1.10.0-alpha.md) |
 
 Setiap changelog memuat masalah, perbaikan, angka pengukuran, dan keterbatasan.
 
@@ -137,7 +138,6 @@ Korpus evaluasi kecil (16 catatan, 38 pertanyaan) dan ditulis sendiri. Angkanya 
 
 | Masalah | Dampak | Tempat |
 | :--- | :--- | :--- |
-| Teks `(Live Dataview):` dobel di baris tautan sesi pada kartu yang dipindai ulang | Kosmetik | `harvester/project_harvester.py` `_write_project_card`, warisan `entity_linker.inject_backlink_to_project` |
 | `DOCS` dan `_Laporan Magang FXMedia` di `_fxmedia` tidak tercatat | Konteks magang hilang | Aturan "mayoritas Markdown" di `inspector.py` |
 | Folder berisi `skills/` dianggap skill, bukan projek | Satu projek portofolio salah kelas | `inspector.py` langkah 1 |
 | Sesi yang dijalankan di folder projek tapi tidak terkait tetap muncul di riwayat projek itu | Briefing sedikit berisik | `context/builder.py` `get_project_sessions` |

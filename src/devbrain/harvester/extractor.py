@@ -26,14 +26,23 @@ class ExtractedSessionPayload:
     workspace_hint: Optional[str] = None
 
 
+# Upper-case tag blocks injected by agent harnesses around the user's text.
+HARNESS_BLOCK = re.compile(r"<([A-Z][A-Z0-9_]{2,})>[\s\S]*?</\1>")
+# The settings notice, once its tags are gone, runs to the end of its line (often
+# truncated mid-word), so everything from its first words to the line end goes.
+HARNESS_NOTICE = re.compile(r"[ \t]*The user changed setting\b[^\n]*", re.IGNORECASE)
+
+
 def clean_user_prompt(raw_text: str) -> str:
     """Extract clean user request text without XML tags or metadata blocks."""
     if not raw_text:
         return ""
-    # Strip <ADDITIONAL_METADATA>...</ADDITIONAL_METADATA>
-    text = re.sub(r"<ADDITIONAL_METADATA>[\s\S]*?</ADDITIONAL_METADATA>", "", raw_text, flags=re.IGNORECASE)
-    # Strip <USER_REQUEST> tags
-    text = re.sub(r"</?USER_REQUEST>", "", text, flags=re.IGNORECASE)
+    # Harness blocks (<ADDITIONAL_METADATA>, <USER_SETTINGS_CHANGE>, ...) are dropped
+    # whole; only the <USER_REQUEST> wrapper keeps its content.
+    text = re.sub(r"</?USER_REQUEST>", "", raw_text, flags=re.IGNORECASE)
+    text = HARNESS_BLOCK.sub(" ", text)
+    # Notices whose tags were already stripped by an earlier pass
+    text = HARNESS_NOTICE.sub(" ", text)
     # Strip any remaining XML/HTML tags
     text = re.sub(r"<[^>]+>", " ", text)
     return text.strip()
